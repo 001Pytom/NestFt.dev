@@ -3,6 +3,7 @@ import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/footer";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -26,12 +27,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en\" className={`${inter.variable} ${spaceGrotesk.variable}`}>
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
       <body className="antialiased flex flex-col min-h-screen">
-        <Navbar />
-
-        <main>{children}</main>
-        <Footer />
+        <AuthGuard>
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+        </AuthGuard>
       </body>
     </html>
   );
