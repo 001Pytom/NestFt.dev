@@ -1,193 +1,116 @@
 "use client";
 
-import { motion } from "framer-motion";
-// import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
+    <main className="min-h-screen bg-gray-50 text-slate-900 font-inter">
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden flex flex-col items-center justify-center text-center px-6 pt-32 pb-20 md:pt-40">
         {/* Background Blobs */}
-        <div className="absolute inset-0 overflow-hidden -z-10">
-          <div className="blob absolute top-0 left-0 w-[500px] h-[500px] bg-primary/20 rounded-full" />
-          <div className="blob absolute bottom-0 right-0 w-[400px] h-[400px] bg-accent/20 rounded-full" />
-        </div>
+        <div className="absolute -top-40 -left-40 w-[30rem] h-[30rem] bg-indigo-800 opacity-20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -right-40 w-[30rem] h-[30rem] bg-emerald-500 opacity-20 rounded-full blur-3xl animate-pulse"></div>
+        <h1 className="text-5xl md:text-6xl font-bold leading-tight tracking-tight font-space mb-6">
+          Get real. Get hired. <br /> Build projects that prove your skills.
+        </h1>
+        <p className="text-lg text-slate-600 max-w-2xl">
+          A platform for frontend devs, backend engineers, and analysts to build
+          real-world projects, get scored by AI, and grow through collaboration.
+        </p>
 
-        <div className="container mx-auto px-4 py-20">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="max-w-4xl mx-auto text-center"
-          >
-            <h1 className="text-5xl md:text-6xl font-bold font-display mb-6">
-              Build Real Experience.
-              <br />
-              Get Hired.
-              <br />
-              <span className="text-accent">Join the DevNest.</span>
-            </h1>
-            <p className="text-xl text-text-secondary mb-8">
-              Collaborate on real projects, get AI-graded, and grow your tech career.
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-primary text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-primary/90 transition-colors"
+        {/* CTA Buttons */}
+        <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+          <Link href="/signup">
+            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 text-sm uppercase font-medium rounded-full shadow-lg">
+              Join DevNest
+            </Button>
+          </Link>
+          <Link href="#projects">
+            <Button
+              variant="outline"
+              className="border-indigo-800 text-indigo-800 hover:bg-indigo-800 hover:text-white px-6 py-3 text-sm uppercase font-medium rounded-full"
             >
-              Get Started
-            </motion.button>
-          </motion.div>
+              Explore Projects <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-20 bg-white/50 dark:bg-black/50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 font-display">How It Works</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {steps.map((step, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.2 }}
-                className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg"
-              >
-                <div className="text-4xl text-accent mb-4">{step.icon}</div>
-                <h3 className="text-xl font-bold mb-2">{step.title}</h3>
-                <p className="text-text-secondary">{step.description}</p>
-              </motion.div>
-            ))}
+      {/* Walkthrough Section */}
+      <section id="projects" className="bg-white py-20 px-6 text-center">
+        <h2 className="text-4xl font-bold mb-6 font-space text-indigo-800">
+          How DevNest Works
+        </h2>
+        <p className="text-slate-600 max-w-2xl mx-auto mb-12 text-lg">
+          Choose your skill level, pick a tech stack, complete real projects,
+          get AI feedback, collaborate, and build your portfolio — all in one
+          place.
+        </p>
+
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto text-left">
+          <div className="bg-gray-100 p-6 rounded-lg shadow hover:shadow-lg transition-all">
+            <h3 className="text-xl font-semibold mb-2">1. Choose Your Level</h3>
+            <p className="text-slate-600">
+              Beginner, Intermediate, or Advanced — unlock projects by
+              completing quests.
+            </p>
+          </div>
+          <div className="bg-gray-100 p-6 rounded-lg shadow hover:shadow-lg transition-all">
+            <h3 className="text-xl font-semibold mb-2">
+              2. Build Projects in the Browser
+            </h3>
+            <p className="text-slate-600">
+              Use our in-browser IDE with folders, live previews, and deployment
+              options.
+            </p>
+          </div>
+          <div className="bg-gray-100 p-6 rounded-lg shadow hover:shadow-lg transition-all">
+            <h3 className="text-xl font-semibold mb-2">
+              3. Get Feedback & Collaborate
+            </h3>
+            <p className="text-slate-600">
+              Receive AI review scores, real-time team feedback, and grow your
+              GitHub profile.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16 font-display">Platform Features</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg"
-              >
-                <div className="text-3xl text-primary mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-                <p className="text-text-secondary">{feature.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Leaderboard + Portfolio Preview */}
+      <section className="py-20 px-6 bg-gray-50 text-center">
+        <h2 className="text-4xl font-bold font-space text-indigo-800 mb-6">
+          Prove It. Share It.
+        </h2>
+        <p className="text-slate-600 max-w-2xl mx-auto mb-12 text-lg">
+          DevNest helps you stand out with a built-in portfolio, AI scores,
+          GitHub pushes, and a global leaderboard of real contributors.
+        </p>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-primary text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-8 font-display">Ready to Start Your Journey?</h2>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-accent text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-accent/90 transition-colors"
-          >
-            Join the Nest
-          </motion.button>
+        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-xl font-bold mb-2">🌟 Leaderboard</h3>
+            <p className="text-slate-600">
+              Compete and get ranked by skill level, project completions, and
+              feedback score.
+            </p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h3 className="text-xl font-bold mb-2">📁 Your Portfolio</h3>
+            <p className="text-slate-600">
+              Every completed project is stored in your profile and can be
+              shared or deployed.
+            </p>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-xl font-bold mb-4">NestFT.dev</h3>
-              <p className="text-gray-400">Building the next generation of tech talent.</p>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Platform</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white">Projects</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Leaderboard</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Job Board</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Community</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white">Discord</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Twitter</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Blog</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Legal</h4>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white">Privacy</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Terms</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
-            <p>&copy; {new Date().getFullYear()} NestFT.dev. All rights reserved.</p>
-          </div>
-        </div>
+      <footer className="bg-indigo-800 text-white py-6 text-center text-sm">
+        © {new Date().getFullYear()} DevNest. Made for Devs by Devs.
       </footer>
-    </div>
+    </main>
   );
 }
-
-const steps = [
-  {
-    icon: "🎯",
-    title: "Choose Your Path",
-    description: "Select your skill level and preferred tech stack to start your journey.",
-  },
-  {
-    icon: "🚀",
-    title: "Complete Projects",
-    description: "Work on real-world projects with other developers and get AI-powered feedback.",
-  },
-  {
-    icon: "🏆",
-    title: "Level Up",
-    description: "Unlock new challenges, build your portfolio, and advance your career.",
-  },
-];
-
-const features = [
-  {
-    icon: "💻",
-    title: "Interactive Projects",
-    description: "Work on real-world projects that matter, with increasing complexity as you progress.",
-  },
-  {
-    icon: "🤝",
-    title: "Collaboration Tools",
-    description: "Built-in IDE and communication features for seamless team collaboration.",
-  },
-  {
-    icon: "🤖",
-    title: "AI Grading",
-    description: "Get instant feedback and suggestions from our AI-powered code review system.",
-  },
-  {
-    icon: "📊",
-    title: "Progress Tracking",
-    description: "Monitor your growth with detailed analytics and achievement badges.",
-  },
-  {
-    icon: "🎨",
-    title: "Portfolio Builder",
-    description: "Automatically generate a professional portfolio from your completed projects.",
-  },
-  {
-    icon: "💼",
-    title: "Job Board",
-    description: "Access exclusive job opportunities and hackathons from our partners.",
-  },
-];
