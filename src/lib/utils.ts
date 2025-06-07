@@ -1,35 +1,28 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-export function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
+  return twMerge(clsx(inputs))
 }
 
-export const difficultyLevels = ["Easy", "Intermediate", "Hard"] as const;
-export type DifficultyLevel = (typeof difficultyLevels)[number];
-
-export type SkillLevel = "Newbie" | "Intermediate";
-
-export const technologies = [
-  "HTML/CSS",
-  "JavaScript",
-  "React",
-  "Vue",
-  "Angular",
-  "Node.js",
-  "Python",
-  "Django",
-  "Express",
-  "Next.js",
-  "TypeScript",
-  "TailwindCSS",
-] as const;
-
-export type Technology = (typeof technologies)[number];
+export type DifficultyLevel = "Easy" | "Intermediate" | "Advanced"
+export type SkillLevel = "Beginner" | "Intermediate" | "Advanced" | "Expert"
+export type Technology = 
+  | "React" 
+  | "Node.js" 
+  | "Express" 
+  | "MongoDB" 
+  | "Socket.io" 
+  | "HTML/CSS" 
+  | "JavaScript" 
+  | "TypeScript"
+  | "Python"
+  | "Django"
+  | "Flask"
+  | "PostgreSQL"
+  | "MySQL"
+  | "APIs"
+  | "Next.js"
+  | "Vue.js"
+  | "Angular"
+  | "Tailwind CSS"
