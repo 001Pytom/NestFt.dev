@@ -104,9 +104,9 @@ export function Navbar() {
               </Link>
               <Link href="/profile" className="ml-4">
                 <Avatar>
-                  <AvatarImage src={user?.avatar_url} alt={user?.name} />
+                  <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.name} />
                   <AvatarFallback>
-                    {user?.name?.charAt(0) || "U"}
+                    {user?.user_metadata?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                   </AvatarFallback>
                 </Avatar>
               </Link>
@@ -175,13 +175,13 @@ export function Navbar() {
             <>
               <div className="flex items-center gap-3 pb-3 mb-2 border-b">
                 <Avatar>
-                  <AvatarImage src={user?.avatar_url} alt={user?.name} />
+                  <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.name} />
                   <AvatarFallback>
-                    {user?.name?.charAt(0) || "U"}
+                    {user?.user_metadata?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <div className="font-medium">{user?.name}</div>
+                  <div className="font-medium">{user?.user_name}</div>
                   <div className="text-sm text-muted-foreground">
                     {user?.email}
                   </div>
