@@ -46,7 +46,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pr-12">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-24">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-2">
@@ -55,12 +55,11 @@ export function Navbar() {
             onClick={closeMenu}
             className="flex items-center gap-2 font-semibold text-xl text-black"
           >
-            {/* Replace Package icon with your logo image */}
             <Image
               src="/logo.png"
               alt="NestFT.dev Logo"
-              width={32}
-              height={32}
+              width={45}
+              height={45}
             />
             <span>NestFT.dev</span>
           </Link>

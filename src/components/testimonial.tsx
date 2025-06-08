@@ -1,6 +1,6 @@
-import React from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Card, CardContent } from './ui/card';
+import React from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Card, CardContent } from "./ui/card";
 
 interface TestimonialProps {
   quote: string;
@@ -13,7 +13,7 @@ export function Testimonial({ quote, name, title, avatar }: TestimonialProps) {
   return (
     <Card className="bg-card h-full">
       <CardContent className="p-6 flex flex-col gap-4">
-        <div className="text-lg italic text-foreground/90">&ldquo;{quote}&rdquo;</div>
+        <div className="text-lg italic text-black ">&ldquo;{quote}&rdquo;</div>
         <div className="flex items-center gap-3 mt-2">
           <Avatar>
             <AvatarImage src={avatar} alt={name} />
