@@ -8,7 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ProjectCard } from '@/components/project-card';
 import { Project } from '@/types';
-import { difficultyLevels,technologies } from '@/lib/utils';
+import { difficultyLevels, technologies } from '@/lib/utils';
 
 // Sample projects data
 const projects: Project[] = [
