@@ -136,13 +136,13 @@ export default function Home() {
           place.
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-24">
           <div className="bg-card border rounded-lg p-6 flex flex-col items-start">
             <div className="rounded-full bg-primary/10 p-3 mb-4">
               <Package className="h-6 w-6 text-primary" />
             </div>
             <h3 className="text-xl font-medium mb-2">Choose Projects</h3>
-            <p className="text-foreground mb-4">
+            <p className="text-slate-600 mb-4  text-start">
               Select from a variety of real-world projects across different
               difficulty levels and technologies.
             </p>
@@ -172,8 +172,8 @@ export default function Home() {
             <div className="rounded-full bg-secondary/10 p-3 mb-4">
               <Users className="h-6 w-6 text-secondary" />
             </div>
-            <h3 className="text-xl font-medium mb-2">Collaborate</h3>
-            <p className="text-foreground mb-4">
+            <h3 className="text-xl font-medium mb-2">Build Projects</h3>
+            <p className="text-slate-600 mb-4 text-start">
               Work with other developers in real-time using our collaborative
               coding environment.
             </p>
@@ -197,8 +197,10 @@ export default function Home() {
             <div className="rounded-full bg-accent/10 p-3 mb-4">
               <BarChart3 className="h-6 w-6 text-accent" />
             </div>
-            <h3 className="text-xl font-medium mb-2">Build Portfolio</h3>
-            <p className="text-foreground mb-4">
+            <h3 className="text-xl font-medium mb-2">
+              Get Feedback & Build Portfolio
+            </h3>
+            <p className="text-slate-600 mb-4 text-start">
               Showcase your completed projects with automatically generated
               portfolio entries.
             </p>
@@ -223,14 +225,14 @@ export default function Home() {
       </section>
 
       {/* Featured Projects */}
-      <section className="py-16 md:py-24 bg-muted/50">
+      <section className="py-16 px-24 md:py-24   bg-white">
         <div className="container px-4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
                 Featured Projects
               </h2>
-              <p className="text-lg text-foreground/80 max-w-2xl">
+              <p className="text-lg text-slate-600/80 max-w-2xl">
                 Explore some of our most popular challenges that developers are
                 building right now.
               </p>
@@ -252,19 +254,19 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-16 md:py-24">
+      <section className="py-16 px-24 md:py-24 ">
         <div className="container px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               What Developers Say
             </h2>
-            <p className="text-lg text-foreground/80 max-w-2xl mx-auto">
+            <p className="text-lg text-slate-600/80 max-w-2xl mx-auto">
               Hear from developers who have boosted their careers through our
               platform.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 ">
             <Testimonial
               quote="After completing 5 projects on BuildTogether, I landed my first developer job! The real-world experience and code reviews made all the difference."
               name="Alex Johnson"
@@ -293,7 +295,7 @@ export default function Home() {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready to Level Up Your Tech Career?
           </h2>
-          <p className="text-lg text-foreground/80 max-w-2xl mx-auto mb-8">
+          <p className="text-lg text-slate-600/80 max-w-2xl mx-auto mb-8">
             Join thousands of developers who are building projects,
             collaborating, and landing their dream jobs.
           </p>
