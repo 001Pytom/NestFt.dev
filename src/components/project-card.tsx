@@ -1,11 +1,17 @@
-import React from 'react';
-import Link from 'next/link';
-import { Project } from '../types';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Users, Clock } from 'lucide-react';
-import { Button } from './ui/button';
-import Image from 'next/image';
+import React from "react";
+import Link from "next/link";
+import { Project } from "../types";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Badge } from "./ui/badge";
+import { Users, Clock } from "lucide-react";
+import { Button } from "./ui/button";
+import Image from "next/image";
 
 interface ProjectCardProps {
   project: Project;
@@ -14,13 +20,12 @@ interface ProjectCardProps {
 export function ProjectCard({ project }: ProjectCardProps) {
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md">
-      <div className="aspect-video w-full overflow-hidden">
-        <Image 
-          src={project.thumbnail} 
+      <div className="aspect-video w-full overflow-hidden relative">
+        <Image
+          src={project.thumbnail}
           alt={project.title}
-        width={16}
-        height={16}
-          className="h-full w-full object-cover transition-transform hover:scale-105"
+          fill
+          className="object-cover transition-transform hover:scale-105"
         />
       </div>
       <CardHeader className="p-4">
@@ -31,7 +36,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             </Badge>
           ))}
           {project.technologies.length > 3 && (
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-xs text-black">
               +{project.technologies.length - 3} more
             </Badge>
           )}

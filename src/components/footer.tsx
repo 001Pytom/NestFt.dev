@@ -1,21 +1,30 @@
 "use client";
 
 import React from "react";
-import { Package } from "lucide-react";
+import { Github, Linkedin, Twitter } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export function Footer() {
   return (
-    <footer className="w-full border-t bg-background p-12">
+    <footer className="w-full border-t bg-background py-12 px-24">
       <div className="container grid grid-cols-1 gap-8 md:grid-cols-4">
         <div className="flex flex-col gap-2">
-          <Link
-            href="/"
-            className="flex items-center gap-2 font-semibold text-xl"
-          >
-            <Package className="h-6 w-6 text-primary" />
-            <span>NestFT.dev</span>
-          </Link>
+          <div className="flex items-center">
+            <Link
+              href="/"
+              className="flex items-center gap-2 font-semibold text-xl "
+            >
+              <Image
+                src="/logo.png"
+                alt="NestFT.dev Logo"
+                width={45}
+                height={45}
+              />
+
+              <span>NestFT.dev</span>
+            </Link>
+          </div>
           <p className="text-sm text-muted-foreground mt-2">
             Level up your tech career by building real projects with other
             developers.
@@ -25,21 +34,21 @@ export function Footer() {
               href="#"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
-              {/* <Github className="h-5 w-5" /> */}
+              <Github className="h-5 w-5" />
               <span className="sr-only">GitHub</span>
             </a>
             <a
               href="#"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
-              {/* <Twitter className="h-5 w-5" /> */}
+              <Twitter className="h-5 w-5" />
               <span className="sr-only">Twitter</span>
             </a>
             <a
               href="#"
               className="text-muted-foreground hover:text-primary transition-colors"
             >
-              {/* <LinkedIn className="h-5 w-5" /> */}
+              <Linkedin className="h-5 w-5" />
               <span className="sr-only">LinkedIn</span>
             </a>
           </div>
