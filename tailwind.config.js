@@ -1,5 +1,3 @@
-import tailwindcssAnimate from "tailwindcss-animate";
-
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -8,135 +6,55 @@ module.exports = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-          50: "#f5f3ff",
-          100: "#ede9fe",
-          200: "#ddd6fe",
-          300: "#c4b5fd",
-          400: "#a78bfa",
-          500: "#8b5cf6",
-          600: "#7c3aed",
-          700: "#6d28d9",
-          800: "#5b21b6",
-          900: "#4c1d95",
-          950: "#2e1065",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-          50: "#f0f9ff",
-          100: "#e0f2fe",
-          200: "#bae6fd",
-          300: "#7dd3fc",
-          400: "#38bdf8",
-          500: "#0ea5e9",
-          600: "#0284c7",
-          700: "#0369a1",
-          800: "#075985",
-          900: "#0c4a6e",
-          950: "#082f49",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-          50: "#fff7ed",
-          100: "#ffedd5",
-          200: "#fed7aa",
-          300: "#fdba74",
-          400: "#fb923c",
-          500: "#f97316",
-          600: "#ea580c",
-          700: "#c2410c",
-          800: "#9a3412",
-          900: "#7c2d12",
-          950: "#431407",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        success: {
-          DEFAULT: "hsl(var(--success))",
-          foreground: "hsl(var(--success-foreground))",
-          50: "#f0fdf4",
-          100: "#dcfce7",
-          200: "#bbf7d0",
-          300: "#86efac",
-          400: "#4ade80",
-          500: "#22c55e",
-          600: "#16a34a",
-          700: "#15803d",
-          800: "#166534",
-          900: "#14532d",
-          950: "#052e16",
-        },
-        warning: {
-          DEFAULT: "hsl(var(--warning))",
-          foreground: "hsl(var(--warning-foreground))",
-          50: "#fefce8",
-          100: "#fef9c3",
-          200: "#fef08a",
-          300: "#fde047",
-          400: "#facc15",
-          500: "#eab308",
-          600: "#ca8a04",
-          700: "#a16207",
-          800: "#854d0e",
-          900: "#713f12",
-          950: "#422006",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        success: "hsl(142.1 72% 29%)",
+        "success-foreground": "hsl(210 40% 98%)",
+
+        warning: "hsl(45 93% 47%)",
+        "warning-foreground": "hsl(222.2 47.4% 11.2%)",
+
+        background: "hsl(var(--background) / <alpha-value>)",
+        foreground: "hsl(var(--foreground) / <alpha-value>)",
+
+        card: "hsl(var(--card) / <alpha-value>)",
+        "card-foreground": "hsl(var(--card-foreground) / <alpha-value>)",
+
+        popover: "hsl(var(--popover) / <alpha-value>)",
+        "popover-foreground": "hsl(var(--popover-foreground) / <alpha-value>)",
+
+        primary: "hsl(var(--primary) / <alpha-value>)",
+        "primary-foreground": "hsl(var(--primary-foreground) / <alpha-value>)",
+
+        secondary: "hsl(var(--secondary) / <alpha-value>)",
+        "secondary-foreground":
+          "hsl(var(--secondary-foreground) / <alpha-value>)",
+
+        accent: "hsl(var(--accent) / <alpha-value>)",
+        "accent-foreground": "hsl(var(--accent-foreground) / <alpha-value>)",
+
+        muted: "hsl(var(--muted) / <alpha-value>)",
+        "muted-foreground": "hsl(var(--muted-foreground) / <alpha-value>)",
+
+        destructive: "hsl(var(--destructive) / <alpha-value>)",
+        "destructive-foreground":
+          "hsl(var(--destructive-foreground) / <alpha-value>)",
+
+        success: "hsl(var(--success) / <alpha-value>)",
+        "success-foreground": "hsl(var(--success-foreground) / <alpha-value>)",
+
+        warning: "hsl(var(--warning) / <alpha-value>)",
+        "warning-foreground": "hsl(var(--warning-foreground) / <alpha-value>)",
+
+        border: "hsl(var(--border) / <alpha-value>)",
+        input: "hsl(var(--input) / <alpha-value>)",
+        ring: "hsl(var(--ring) / <alpha-value>)",
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
-      },
-      keyframes: {
-        "accordion-down": {
-          from: { height: 0 },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: 0 },
-        },
-      },
-      animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
+        sans: ["var(--font-inter)"],
+        display: ["var(--font-space-grotesk)"],
       },
     },
   },
-  plugins: [tailwindcssAnimate],
+  plugins: [],
 };
