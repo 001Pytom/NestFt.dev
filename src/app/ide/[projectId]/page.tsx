@@ -20,7 +20,8 @@ import {
   Upload,
   Download,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  X
 } from 'lucide-react'
 import { beginnerProjects, intermediateProjects, advancedProjects, techStacks } from '@/data/projects'
 import { ProjectTemplate, TechTemplate } from '@/types/project'
