@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/footer";
+// import { Footer } from "@/components/footer";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 
 const inter = Inter({
@@ -32,7 +32,7 @@ export default function RootLayout({
         <AuthGuard>
           <Navbar />
           <main>{children}</main>
-          <Footer />
+          {/* <Footer /> */}
         </AuthGuard>
       </body>
     </html>
