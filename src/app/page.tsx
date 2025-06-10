@@ -280,7 +280,7 @@ export default function Home() {
               avatar="https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
             />
             <Testimonial
-              quote="BuildTogether filled the gap in my resume. I had the knowledge from bootcamp, but needed real projects to show employers. This platform delivered exactly that."
+              quote="Nestft.Dev filled the gap in my resume. I had the knowledge from bootcamp, but needed real projects to show employers. This platform delivered exactly that."
               name="Marcus Williams"
               title="Software Engineer at StartupX"
               avatar="https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
