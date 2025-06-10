@@ -172,7 +172,7 @@ export function Footer() {
       <div className="container mt-8 border-t pt-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © 2025 BuildTogether. All rights reserved.
+            © 2025 Nestft.dev. All rights reserved.
           </p>
           <div className="flex gap-4 text-sm text-muted-foreground">
             <Link
