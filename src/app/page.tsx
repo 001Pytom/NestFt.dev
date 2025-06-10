@@ -268,7 +268,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 ">
             <Testimonial
-              quote="After completing 5 projects on BuildTogether, I landed my first developer job! The real-world experience and code reviews made all the difference."
+              quote="After completing 5 projects on Nestft.Dev, I landed my first developer job! The real-world experience and code reviews made all the difference."
               name="Alex Johnson"
               title="Frontend Developer at TechCorp"
               avatar="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
