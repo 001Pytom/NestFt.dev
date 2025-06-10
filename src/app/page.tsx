@@ -302,7 +302,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link href="/signup">
               <Button size="lg" className="font-medium">
-                Get Started Now
+                Get Started Now (Remove later)
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
