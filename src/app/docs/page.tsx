@@ -51,7 +51,7 @@ function DocsPage() {
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
               Everything you need to know to get started and master
-              BuildTogether.
+              NestFt.dev.
             </p>
             <div className="relative max-w-md mx-auto">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -104,7 +104,7 @@ function DocsPage() {
               <h2 className="text-3xl font-bold mb-6">Quick Start Guide</h2>
               <div className="prose prose-lg max-w-none">
                 <p className="text-muted-foreground mb-6">
-                  Get up and running with BuildTogether in just a few minutes.
+                  Get up and running with NestFt.dev in just a few minutes.
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -156,7 +156,7 @@ function DocsPage() {
                 <div className="space-y-4">
                   <p className="text-muted-foreground">
                     Follow these steps to create and complete your first project
-                    on BuildTogether:
+                    on NestFt.dev:
                   </p>
 
                   <ol className="space-y-4 list-decimal list-inside">

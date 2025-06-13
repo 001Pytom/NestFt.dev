@@ -14,7 +14,7 @@ function TermsPage() {
               Terms of Service
             </h1>
             <p className="text-xl text-muted-foreground">
-              Please read these terms carefully before using BuildTogether.
+              Please read these terms carefully before using NestFt.dev.
             </p>
             <p className="text-sm text-muted-foreground mt-4">
               Last updated: January 15, 2025
@@ -64,13 +64,13 @@ function TermsPage() {
               <h2 className="text-2xl font-bold mb-6">1. Acceptance of Terms</h2>
               
               <p className="text-muted-foreground mb-6">
-                By accessing and using BuildTogether ( &quot;the Service &quot;), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
+                By accessing and using NestFt.dev ( &quot;the Service &quot;), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
               </p>
 
               <h2 className="text-2xl font-bold mb-6">2. Description of Service</h2>
               
               <p className="text-muted-foreground mb-4">
-                BuildTogether is a collaborative development platform that provides:
+                NestFt.dev is a collaborative development platform that provides:
               </p>
               
               <ul className="list-disc list-inside space-y-2 text-muted-foreground mb-6">
@@ -152,7 +152,7 @@ function TermsPage() {
                 <div>
                   <h3 className="text-xl font-semibold mb-3">Our Content</h3>
                   <p className="text-muted-foreground">
-                    The Service, including its design, functionality, and educational content, is owned by BuildTogether and protected by intellectual property laws. You may not copy, modify, or distribute our proprietary content without permission.
+                    The Service, including its design, functionality, and educational content, is owned by NestFt.dev and protected by intellectual property laws. You may not copy, modify, or distribute our proprietary content without permission.
                   </p>
                 </div>
 
@@ -218,7 +218,7 @@ function TermsPage() {
               <h2 className="text-2xl font-bold mb-6 mt-12">9. Limitation of Liability</h2>
               
               <p className="text-muted-foreground mb-4">
-                To the maximum extent permitted by law, BuildTogether shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to:
+                To the maximum extent permitted by law, NestFt.dev shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to:
               </p>
               
               <ul className="list-disc list-inside space-y-2 text-muted-foreground mb-4">
@@ -235,7 +235,7 @@ function TermsPage() {
               <h2 className="text-2xl font-bold mb-6 mt-12">10. Indemnification</h2>
               
               <p className="text-muted-foreground">
-                You agree to indemnify and hold harmless BuildTogether from any claims, damages, or expenses arising from your use of the Service, violation of these terms, or infringement of any rights of another party.
+                You agree to indemnify and hold harmless NestFt.dev from any claims, damages, or expenses arising from your use of the Service, violation of these terms, or infringement of any rights of another party.
               </p>
 
               <h2 className="text-2xl font-bold mb-6 mt-12">11. Termination</h2>
@@ -271,7 +271,7 @@ function TermsPage() {
               
               <div className="bg-muted/50 rounded-lg p-4">
                 <p className="text-sm">
-                  <strong>Email:</strong> legal@buildtogether.dev<br />
+                  <strong>Email:</strong> legal@NestFt.dev.dev<br />
                   <strong>Address:</strong> 123 Tech Street, San Francisco, CA 94105<br />
                   <strong>Phone:</strong> +1 (555) 123-4567
                 </p>

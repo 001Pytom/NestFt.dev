@@ -47,8 +47,8 @@ const blogPosts: BlogPost[] = [
   },
   {
     id: '3',
-    title: 'From Bootcamp to Big Tech: Success Stories from BuildTogether Alumni',
-    excerpt: 'Read inspiring stories from developers who used BuildTogether to transition into successful tech careers.',
+    title: 'From Bootcamp to Big Tech: Success Stories from NestFt.dev Alumni',
+    excerpt: 'Read inspiring stories from developers who used NestFt.dev to transition into successful tech careers.',
     content: '',
     author: 'Emily Rodriguez',
     authorAvatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg',
@@ -97,7 +97,7 @@ function BlogPage() {
         <div className="container px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              BuildTogether Blog
+              NestFt.dev Blog
             </h1>
             <p className="text-xl text-muted-foreground">
               Insights, tutorials, and stories from the world of collaborative development.

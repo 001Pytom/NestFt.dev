@@ -142,8 +142,8 @@ function ContactPage() {
                       <p className="text-sm text-muted-foreground mb-2">
                         Get in touch via email
                       </p>
-                      <a href="mailto:support@buildtogether.dev" className="text-sm text-primary hover:underline">
-                        support@buildtogether.dev
+                      <a href="mailto:support@NestFt.dev.dev" className="text-sm text-primary hover:underline">
+                        support@NestFt.dev.dev
                       </a>
                     </div>
                   </div>
