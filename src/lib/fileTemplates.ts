@@ -786,7 +786,7 @@ const getDefaultFileContent = (fileName: string, projectName: string): string =>
     return `# ${projectName}
 
 ## Description
-This project was created using the BuildTogether platform.
+This project was created using the NestFt.dev platform.
 
 ## Getting Started
 

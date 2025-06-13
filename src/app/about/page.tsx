@@ -78,7 +78,7 @@ function AboutPage() {
             <h2 className="text-3xl font-bold mb-6">Our Story</h2>
             <div className="prose prose-lg">
               <p className="text-muted-foreground mb-4">
-                BuildTogether was founded in 2025 with a simple yet powerful
+                NestFt.dev was founded in 2025 with a simple yet powerful
                 idea: make tech education practical, collaborative, and
                 accessible to everyone.
               </p>

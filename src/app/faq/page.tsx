@@ -15,20 +15,20 @@ interface FAQItem {
 const faqData: FAQItem[] = [
   {
     id: '1',
-    question: 'What is BuildTogether?',
-    answer: 'BuildTogether is a collaborative platform where developers can work on real-world projects together, build their portfolios, and advance their careers. We provide a browser-based IDE, project templates, and a community of developers to learn and grow with.',
+    question: 'What is NestFt.dev?',
+    answer: 'NestFt.dev is a collaborative platform where developers can work on real-world projects together, build their portfolios, and advance their careers. We provide a browser-based IDE, project templates, and a community of developers to learn and grow with.',
     category: 'General'
   },
   {
     id: '2',
-    question: 'Is BuildTogether free to use?',
-    answer: 'Yes! BuildTogether offers a free tier that includes access to basic projects, the collaborative IDE, and community features. We also offer premium plans with additional features like advanced projects, priority support, and enhanced collaboration tools.',
+    question: 'Is NestFt.dev free to use?',
+    answer: 'Yes! NestFt.dev offers a free tier that includes access to basic projects, the collaborative IDE, and community features. We also offer premium plans with additional features like advanced projects, priority support, and enhanced collaboration tools.',
     category: 'Pricing'
   },
   {
     id: '3',
     question: 'What skill level do I need to get started?',
-    answer: 'BuildTogether welcomes developers of all skill levels! We have projects ranging from beginner-friendly tutorials to advanced challenges. Our onboarding process helps you choose projects that match your current skill level and learning goals.',
+    answer: 'NestFt.dev welcomes developers of all skill levels! We have projects ranging from beginner-friendly tutorials to advanced challenges. Our onboarding process helps you choose projects that match your current skill level and learning goals.',
     category: 'Getting Started'
   },
   {
@@ -52,25 +52,25 @@ const faqData: FAQItem[] = [
   {
     id: '7',
     question: 'How do I deploy my projects?',
-    answer: 'BuildTogether offers one-click deployment to popular hosting platforms. Once your project is complete, you can deploy it instantly and get a live URL to share with potential employers or add to your portfolio.',
+    answer: 'NestFt.dev offers one-click deployment to popular hosting platforms. Once your project is complete, you can deploy it instantly and get a live URL to share with potential employers or add to your portfolio.',
     category: 'Deployment'
   },
   {
     id: '8',
     question: 'Can I use my own GitHub repository?',
-    answer: 'Yes! You can connect your GitHub account and either import existing repositories or automatically create new ones for your BuildTogether projects. All your work is saved and version-controlled through Git.',
+    answer: 'Yes! You can connect your GitHub account and either import existing repositories or automatically create new ones for your NestFt.dev projects. All your work is saved and version-controlled through Git.',
     category: 'Technical'
   },
   {
     id: '9',
     question: 'How does the portfolio feature work?',
-    answer: 'As you complete projects, they\'re automatically added to your BuildTogether portfolio. You can customize your portfolio with themes, descriptions, and showcase your best work. Your portfolio gets a unique URL that you can share with employers.',
+    answer: 'As you complete projects, they\'re automatically added to your NestFt.dev portfolio. You can customize your portfolio with themes, descriptions, and showcase your best work. Your portfolio gets a unique URL that you can share with employers.',
     category: 'Portfolio'
   },
   {
     id: '10',
     question: 'Is there a mobile app?',
-    answer: 'Currently, BuildTogether is a web-based platform optimized for desktop and tablet use. While you can access it on mobile devices, we recommend using a desktop or laptop for the best coding experience.',
+    answer: 'Currently, NestFt.dev is a web-based platform optimized for desktop and tablet use. While you can access it on mobile devices, we recommend using a desktop or laptop for the best coding experience.',
     category: 'Technical'
   },
   {
@@ -82,7 +82,7 @@ const faqData: FAQItem[] = [
   {
     id: '12',
     question: 'Can I invite friends to collaborate on projects?',
-    answer: 'Yes! You can invite anyone to collaborate on your projects by sharing a project link. They can join as collaborators and work with you in real-time, even if they don\'t have a BuildTogether account initially.',
+    answer: 'Yes! You can invite anyone to collaborate on your projects by sharing a project link. They can join as collaborators and work with you in real-time, even if they don\'t have a NestFt.dev account initially.',
     category: 'Collaboration'
   }
 ];
@@ -115,7 +115,7 @@ const categories = ['All', 'General', 'Getting Started', 'Projects', 'Collaborat
               Frequently Asked Questions
             </h1>
             <p className="text-xl text-muted-foreground">
-              Find answers to common questions about BuildTogether and how to get the most out of our platform.
+              Find answers to common questions about NestFt.dev and how to get the most out of our platform.
             </p>
           </div>
         </div>

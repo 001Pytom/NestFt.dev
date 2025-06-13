@@ -291,7 +291,7 @@ function CookiesPage() {
               
               <div className="bg-muted/50 rounded-lg p-4">
                 <p className="text-sm">
-                  <strong>Email:</strong> privacy@buildtogether.dev<br />
+                  <strong>Email:</strong> privacy@NestFt.dev.dev<br />
                   <strong>Address:</strong> 123 Tech Street, San Francisco, CA 94105<br />
                   <strong>Phone:</strong> +1 (555) 123-4567
                 </p>
