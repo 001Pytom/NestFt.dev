@@ -1,93 +1,69 @@
-import { ProjectTemplate, TechStack } from "@/types/project";
+import { ProjectTemplate, TechStack } from '@/types/project';
 
 export const beginnerProjects: ProjectTemplate[] = [
   {
-    id: "bg-1",
-    name: "Personal Portfolio Website",
-    description:
-      "Create a responsive personal portfolio website showcasing your skills, projects, and contact information.",
-    stack: "frontend",
-    difficulty: "beginner",
-    technologies: ["HTML", "CSS", "JavaScript"],
+    id: 'bg-1',
+    name: 'Personal Portfolio Website',
+    description: 'Create a responsive personal portfolio website showcasing your skills, projects, and contact information.',
+    stack: 'frontend',
+    difficulty: 'beginner',
+    technologies: ['HTML', 'CSS', 'JavaScript'],
     estimatedHours: 8,
     maxPoints: 100,
     requirements: [
-      "Responsive design that works on mobile and desktop",
-      "Navigation menu with smooth scrolling",
-      "About section with personal information",
-      "Skills section with progress bars or icons",
-      "Projects section with at least 3 sample projects",
-      "Contact form with validation",
-      "Clean, modern design with consistent styling",
+      'Responsive design that works on mobile and desktop',
+      'Navigation menu with smooth scrolling',
+      'About section with personal information',
+      'Skills section with progress bars or icons',
+      'Projects section with at least 3 sample projects',
+      'Contact form with validation',
+      'Clean, modern design with consistent styling'
     ],
     gradingCriteria: [
       {
-        id: "bg-1-design",
-        category: "Design & UI",
-        description: "Visual appeal, layout, and user experience",
+        id: 'bg-1-design',
+        category: 'Design & UI',
+        description: 'Visual appeal, layout, and user experience',
         maxPoints: 25,
-        requirements: [
-          "Clean design",
-          "Consistent styling",
-          "Good color scheme",
-          "Professional appearance",
-        ],
+        requirements: ['Clean design', 'Consistent styling', 'Good color scheme', 'Professional appearance']
       },
       {
-        id: "bg-1-responsive",
-        category: "Responsiveness",
-        description: "Mobile-first design and cross-device compatibility",
+        id: 'bg-1-responsive',
+        category: 'Responsiveness',
+        description: 'Mobile-first design and cross-device compatibility',
         maxPoints: 20,
-        requirements: [
-          "Mobile responsive",
-          "Tablet compatible",
-          "Desktop optimized",
-        ],
+        requirements: ['Mobile responsive', 'Tablet compatible', 'Desktop optimized']
       },
       {
-        id: "bg-1-functionality",
-        category: "Functionality",
-        description: "Working features and user interactions",
+        id: 'bg-1-functionality',
+        category: 'Functionality',
+        description: 'Working features and user interactions',
         maxPoints: 25,
-        requirements: [
-          "Working navigation",
-          "Form validation",
-          "Smooth scrolling",
-          "Interactive elements",
-        ],
+        requirements: ['Working navigation', 'Form validation', 'Smooth scrolling', 'Interactive elements']
       },
       {
-        id: "bg-1-code",
-        category: "Code Quality",
-        description: "Clean, organized, and semantic code",
+        id: 'bg-1-code',
+        category: 'Code Quality',
+        description: 'Clean, organized, and semantic code',
         maxPoints: 20,
-        requirements: [
-          "Semantic HTML",
-          "Organized CSS",
-          "Clean JavaScript",
-          "Proper file structure",
-        ],
+        requirements: ['Semantic HTML', 'Organized CSS', 'Clean JavaScript', 'Proper file structure']
       },
       {
-        id: "bg-1-content",
-        category: "Content",
-        description: "Complete and relevant content",
+        id: 'bg-1-content',
+        category: 'Content',
+        description: 'Complete and relevant content',
         maxPoints: 10,
-        requirements: [
-          "All sections completed",
-          "Relevant content",
-          "Professional presentation",
-        ],
-      },
+        requirements: ['All sections completed', 'Relevant content', 'Professional presentation']
+      }
     ],
     folderStructure: {
-      "index.html": "",
-      css: {
-        "style.css": "",
-        "responsive.css": "",
+      'index.html': '',
+      'css': {
+        'style.css': '',
+        'responsive.css': ''
       },
-      js: {
-        "main.js": "",
+      'js': {
+        'main.js': ''
       },
       'images': {},
       'README.md': ''
@@ -816,7 +792,8 @@ export const intermediateBackendProjects: ProjectTemplate[] = [
   // Add 19 more intermediate backend projects...
 ];
 
-export const advancedProjects: ProjectTemplate[] = [
+// Advanced Backend Projects
+export const advancedBackendProjects: ProjectTemplate[] = [
   {
     id: 'adv-be-1',
     name: 'Microservices E-commerce Backend',
@@ -905,307 +882,307 @@ export const advancedProjects: ProjectTemplate[] = [
 
 export const techStacks: TechStack[] = [
   {
-    id: "frontend",
-    name: "Frontend Development",
-    description: "Build user interfaces and client-side applications",
-    icon: "🎨",
+    id: 'frontend',
+    name: 'Frontend Development',
+    description: 'Build user interfaces and client-side applications',
+    icon: '🎨',
     templates: [
       {
-        id: "html-css-js",
-        name: "HTML/CSS/JavaScript",
-        description: "Vanilla web development with core technologies",
-        language: "JavaScript",
+        id: 'html-css-js',
+        name: 'HTML/CSS/JavaScript',
+        description: 'Vanilla web development with core technologies',
+        language: 'JavaScript',
         folderStructure: {
-          "index.html": "",
-          css: {
-            "style.css": "",
+          'index.html': '',
+          'css': {
+            'style.css': ''
           },
-          js: {
-            "main.js": "",
+          'js': {
+            'main.js': ''
           },
-          images: {},
-          "README.md": "",
+          'images': {},
+          'README.md': ''
         },
         dependencies: [],
-        startCommand: "Open index.html in browser",
+        startCommand: 'Open index.html in browser'
       },
       {
-        id: "react",
-        name: "React",
-        description: "Modern React application with hooks and components",
-        language: "JavaScript",
-        framework: "React",
+        id: 'react',
+        name: 'React',
+        description: 'Modern React application with hooks and components',
+        language: 'JavaScript',
+        framework: 'React',
         folderStructure: {
-          src: {
-            components: {},
-            pages: {},
-            hooks: {},
-            utils: {},
-            "App.js": "",
-            "index.js": "",
+          'src': {
+            'components': {},
+            'pages': {},
+            'hooks': {},
+            'utils': {},
+            'App.js': '',
+            'index.js': ''
           },
-          public: {
-            "index.html": "",
+          'public': {
+            'index.html': ''
           },
-          "package.json": "",
-          "README.md": "",
+          'package.json': '',
+          'README.md': ''
         },
-        dependencies: ["react", "react-dom", "react-scripts"],
-        startCommand: "npm start",
+        dependencies: ['react', 'react-dom', 'react-scripts'],
+        startCommand: 'npm start'
       },
       {
-        id: "nextjs",
-        name: "Next.js",
-        description: "Full-stack React framework with SSR and API routes",
-        language: "JavaScript",
-        framework: "Next.js",
+        id: 'nextjs',
+        name: 'Next.js',
+        description: 'Full-stack React framework with SSR and API routes',
+        language: 'JavaScript',
+        framework: 'Next.js',
         folderStructure: {
-          pages: {
-            api: {},
-            "index.js": "",
-            "_app.js": "",
+          'pages': {
+            'api': {},
+            'index.js': '',
+            '_app.js': ''
           },
-          components: {},
-          styles: {
-            "globals.css": "",
+          'components': {},
+          'styles': {
+            'globals.css': ''
           },
-          public: {},
-          "package.json": "",
-          "README.md": "",
+          'public': {},
+          'package.json': '',
+          'README.md': ''
         },
-        dependencies: ["next", "react", "react-dom"],
-        startCommand: "npm run dev",
+        dependencies: ['next', 'react', 'react-dom'],
+        startCommand: 'npm run dev'
       },
       {
-        id: "vue",
-        name: "Vue.js",
-        description: "Progressive Vue.js application",
-        language: "JavaScript",
-        framework: "Vue.js",
+        id: 'vue',
+        name: 'Vue.js',
+        description: 'Progressive Vue.js application',
+        language: 'JavaScript',
+        framework: 'Vue.js',
         folderStructure: {
-          src: {
-            components: {},
-            views: {},
-            router: {},
-            store: {},
-            "App.vue": "",
-            "main.js": "",
+          'src': {
+            'components': {},
+            'views': {},
+            'router': {},
+            'store': {},
+            'App.vue': '',
+            'main.js': ''
           },
-          public: {
-            "index.html": "",
+          'public': {
+            'index.html': ''
           },
-          "package.json": "",
-          "README.md": "",
+          'package.json': '',
+          'README.md': ''
         },
-        dependencies: ["vue", "@vue/cli-service"],
-        startCommand: "npm run serve",
-      },
-    ],
+        dependencies: ['vue', '@vue/cli-service'],
+        startCommand: 'npm run serve'
+      }
+    ]
   },
   {
-    id: "backend",
-    name: "Backend Development",
-    description: "Build server-side applications and APIs",
-    icon: "⚙️",
+    id: 'backend',
+    name: 'Backend Development',
+    description: 'Build server-side applications and APIs',
+    icon: '⚙️',
     templates: [
       {
-        id: "nodejs-express",
-        name: "Node.js + Express",
-        description: "RESTful API with Express.js framework",
-        language: "JavaScript",
-        framework: "Express.js",
+        id: 'nodejs-express',
+        name: 'Node.js + Express',
+        description: 'RESTful API with Express.js framework',
+        language: 'JavaScript',
+        framework: 'Express.js',
         folderStructure: {
-          src: {
-            routes: {},
-            controllers: {},
-            models: {},
-            middleware: {},
-            config: {},
-            utils: {},
+          'src': {
+            'routes': {},
+            'controllers': {},
+            'models': {},
+            'middleware': {},
+            'config': {},
+            'utils': {}
           },
-          "server.js": "",
-          "package.json": "",
-          "README.md": "",
+          'server.js': '',
+          'package.json': '',
+          'README.md': ''
         },
-        dependencies: ["express", "cors", "dotenv", "helmet"],
-        startCommand: "npm start",
+        dependencies: ['express', 'cors', 'dotenv', 'helmet'],
+        startCommand: 'npm start'
       },
       {
-        id: "python-flask",
-        name: "Python + Flask",
-        description: "Lightweight Python web framework",
-        language: "Python",
-        framework: "Flask",
+        id: 'python-flask',
+        name: 'Python + Flask',
+        description: 'Lightweight Python web framework',
+        language: 'Python',
+        framework: 'Flask',
         folderStructure: {
-          app: {
-            routes: {},
-            models: {},
-            utils: {},
-            "__init__.py": "",
+          'app': {
+            'routes': {},
+            'models': {},
+            'utils': {},
+            '__init__.py': ''
           },
-          "config.py": "",
-          "run.py": "",
-          "requirements.txt": "",
-          "README.md": "",
+          'config.py': '',
+          'run.py': '',
+          'requirements.txt': '',
+          'README.md': ''
         },
-        dependencies: ["Flask", "Flask-CORS", "python-dotenv"],
-        startCommand: "python run.py",
+        dependencies: ['Flask', 'Flask-CORS', 'python-dotenv'],
+        startCommand: 'python run.py'
       },
       {
-        id: "python-django",
-        name: "Python + Django",
-        description: "Full-featured Python web framework",
-        language: "Python",
-        framework: "Django",
+        id: 'python-django',
+        name: 'Python + Django',
+        description: 'Full-featured Python web framework',
+        language: 'Python',
+        framework: 'Django',
         folderStructure: {
-          project: {
-            "settings.py": "",
-            "urls.py": "",
-            "wsgi.py": "",
+          'project': {
+            'settings.py': '',
+            'urls.py': '',
+            'wsgi.py': ''
           },
-          apps: {},
-          static: {},
-          templates: {},
-          "manage.py": "",
-          "requirements.txt": "",
-          "README.md": "",
+          'apps': {},
+          'static': {},
+          'templates': {},
+          'manage.py': '',
+          'requirements.txt': '',
+          'README.md': ''
         },
-        dependencies: ["Django", "djangorestframework", "django-cors-headers"],
-        startCommand: "python manage.py runserver",
+        dependencies: ['Django', 'djangorestframework', 'django-cors-headers'],
+        startCommand: 'python manage.py runserver'
       },
       {
-        id: "nodejs-fastify",
-        name: "Node.js + Fastify",
-        description: "Fast and low overhead web framework",
-        language: "JavaScript",
-        framework: "Fastify",
+        id: 'nodejs-fastify',
+        name: 'Node.js + Fastify',
+        description: 'Fast and low overhead web framework',
+        language: 'JavaScript',
+        framework: 'Fastify',
         folderStructure: {
-          src: {
-            routes: {},
-            plugins: {},
-            schemas: {},
-            services: {},
+          'src': {
+            'routes': {},
+            'plugins': {},
+            'schemas': {},
+            'services': {}
           },
-          "server.js": "",
-          "package.json": "",
-          "README.md": "",
+          'server.js': '',
+          'package.json': '',
+          'README.md': ''
         },
-        dependencies: ["fastify", "@fastify/cors", "@fastify/helmet"],
-        startCommand: "npm start",
-      },
-    ],
+        dependencies: ['fastify', '@fastify/cors', '@fastify/helmet'],
+        startCommand: 'npm start'
+      }
+    ]
   },
   {
-    id: "fullstack",
-    name: "Full-Stack Development",
-    description: "Complete web applications with frontend and backend",
-    icon: "🚀",
+    id: 'fullstack',
+    name: 'Full-Stack Development',
+    description: 'Complete web applications with frontend and backend',
+    icon: '🚀',
     templates: [
       {
-        id: "mern",
-        name: "MERN Stack",
-        description: "MongoDB, Express, React, Node.js",
-        language: "JavaScript",
-        framework: "MERN",
+        id: 'mern',
+        name: 'MERN Stack',
+        description: 'MongoDB, Express, React, Node.js',
+        language: 'JavaScript',
+        framework: 'MERN',
         folderStructure: {
-          client: {
-            src: {
-              components: {},
-              pages: {},
-              hooks: {},
-              utils: {},
+          'client': {
+            'src': {
+              'components': {},
+              'pages': {},
+              'hooks': {},
+              'utils': {}
             },
-            public: {},
-            "package.json": "",
+            'public': {},
+            'package.json': ''
           },
-          server: {
-            routes: {},
-            models: {},
-            middleware: {},
-            controllers: {},
-            config: {},
-            "server.js": "",
-            "package.json": "",
+          'server': {
+            'routes': {},
+            'models': {},
+            'middleware': {},
+            'controllers': {},
+            'config': {},
+            'server.js': '',
+            'package.json': ''
           },
-          "README.md": "",
+          'README.md': ''
         },
-        dependencies: ["react", "express", "mongoose", "cors"],
-        startCommand: "npm run dev",
+        dependencies: ['react', 'express', 'mongoose', 'cors'],
+        startCommand: 'npm run dev'
       },
       {
-        id: "mean",
-        name: "MEAN Stack",
-        description: "MongoDB, Express, Angular, Node.js",
-        language: "TypeScript",
-        framework: "MEAN",
+        id: 'mean',
+        name: 'MEAN Stack',
+        description: 'MongoDB, Express, Angular, Node.js',
+        language: 'TypeScript',
+        framework: 'MEAN',
         folderStructure: {
-          client: {
-            src: {
-              app: {
-                components: {},
-                services: {},
-                models: {},
-              },
+          'client': {
+            'src': {
+              'app': {
+                'components': {},
+                'services': {},
+                'models': {}
+              }
             },
-            "angular.json": "",
-            "package.json": "",
+            'angular.json': '',
+            'package.json': ''
           },
-          server: {
-            routes: {},
-            models: {},
-            middleware: {},
-            "server.js": "",
-            "package.json": "",
+          'server': {
+            'routes': {},
+            'models': {},
+            'middleware': {},
+            'server.js': '',
+            'package.json': ''
           },
-          "README.md": "",
+          'README.md': ''
         },
-        dependencies: ["@angular/core", "express", "mongoose"],
-        startCommand: "npm run dev",
+        dependencies: ['@angular/core', 'express', 'mongoose'],
+        startCommand: 'npm run dev'
       },
       {
-        id: "nextjs-fullstack",
-        name: "Next.js Full-Stack",
-        description: "Next.js with API routes and database",
-        language: "JavaScript",
-        framework: "Next.js",
+        id: 'nextjs-fullstack',
+        name: 'Next.js Full-Stack',
+        description: 'Next.js with API routes and database',
+        language: 'JavaScript',
+        framework: 'Next.js',
         folderStructure: {
-          pages: {
-            api: {},
-            "index.js": "",
-            "_app.js": "",
+          'pages': {
+            'api': {},
+            'index.js': '',
+            '_app.js': ''
           },
-          components: {},
-          lib: {
-            "database.js": "",
-            "auth.js": "",
+          'components': {},
+          'lib': {
+            'database.js': '',
+            'auth.js': ''
           },
-          styles: {},
-          public: {},
-          "package.json": "",
-          "README.md": "",
+          'styles': {},
+          'public': {},
+          'package.json': '',
+          'README.md': ''
         },
-        dependencies: ["next", "react", "react-dom", "mongoose"],
-        startCommand: "npm run dev",
-      },
-    ],
-  },
+        dependencies: ['next', 'react', 'react-dom', 'mongoose'],
+        startCommand: 'npm run dev'
+      }
+    ]
+  }
 ];
 
 // Combine all projects by stack
 export const allProjects = {
   frontend: {
-    beginner: beginnerProjects.filter((p) => p.stack === "frontend"),
-    intermediate: intermediateProjects.filter((p) => p.stack === "frontend"),
-    advanced: advancedProjects.filter((p) => p.stack === "frontend"),
+    beginner: beginnerProjects.filter(p => p.stack === 'frontend'),
+    intermediate: intermediateProjects.filter(p => p.stack === 'frontend'),
+    advanced: advancedProjects.filter(p => p.stack === 'frontend')
   },
   backend: {
     beginner: beginnerBackendProjects,
     intermediate: intermediateBackendProjects,
-    advanced: advancedBackendProjects,
+    advanced: advancedBackendProjects
   },
   fullstack: {
-    beginner: beginnerProjects.filter((p) => p.stack === "fullstack"),
-    intermediate: intermediateProjects.filter((p) => p.stack === "fullstack"),
-    advanced: advancedProjects.filter((p) => p.stack === "fullstack"),
-  },
+    beginner: beginnerProjects.filter(p => p.stack === 'fullstack'),
+    intermediate: intermediateProjects.filter(p => p.stack === 'fullstack'),
+    advanced: advancedProjects.filter(p => p.stack === 'fullstack')
+  }
 };
