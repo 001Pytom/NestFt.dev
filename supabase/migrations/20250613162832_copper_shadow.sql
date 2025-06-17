@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS user_achievements (
   achievement_type text NOT NULL,
   achievement_data jsonb NOT NULL,
   earned_at timestamptz DEFAULT now()
-);
+); 
 
 -- Learning Guides Table
 CREATE TABLE IF NOT EXISTS learning_guides (

@@ -4,27 +4,62 @@ import { motion } from 'framer-motion'
 import { useAuthStore } from '@/lib/store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { BarChart3, BookOpen, Trophy, Users, ArrowRight, Target, Clock, Star } from 'lucide-react'
+import { BarChart3, BookOpen, Trophy, Users, ArrowRight, Target, Clock, Star, Award } from 'lucide-react'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { getUserProfile, getUserProjects, calculateUserProgress, createUserProfile } from '@/lib/database'
+import { UserProfile, UserProject } from '@/lib/database'
 
 export default function DashboardPage() {
   const { user } = useAuthStore()
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  const [userProjects, setUserProjects] = useState<UserProject[]>([])
+  const [progress, setProgress] = useState({
+    beginner: { completed: 0, total: 20, percentage: 0 },
+    intermediate: { completed: 0, total: 20, percentage: 0 },
+    advanced: { completed: 0, total: 20, percentage: 0 }
+  })
+  const [loading, setLoading] = useState(true)
 
-  // Mock user progress data
-  const userProgress = {
-    currentStage: 'beginner' as const,
-    completedProjects: [
-      { projectId: 'bg-1', score: 85, completedAt: '2025-01-10' },
-      { projectId: 'bg-2', score: 92, completedAt: '2025-01-12' },
-    ],
-    totalPoints: 177,
-    canAdvance: false // Need 70% of 20 projects = 14 projects
-  }
+  useEffect(() => {
+    if (user) {
+      loadUserData()
+    }
+  }, [user])
 
-  const stageProgress = {
-    beginner: { completed: 2, total: 20, required: 14 },
-    intermediate: { completed: 0, total: 20, required: 14 },
-    advanced: { completed: 0, total: 20, required: 14 }
+  const loadUserData = async () => {
+    if (!user) return
+
+    try {
+      // Get or create user profile
+      let profile = await getUserProfile(user?.id)
+      if (!profile) {
+        profile = await createUserProfile({
+          user_id: user.id,
+          full_name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+          avatar_url: user.user_metadata?.avatar_url,
+          current_stage: 'beginner',
+          total_points: 0,
+          streak_days: 0,
+          last_activity_date: new Date().toISOString().split('T')[0],
+          github_connected: false
+        })
+      }
+      setUserProfile(profile)
+
+      // Get user projects
+      const projects = await getUserProjects(user.id)
+      setUserProjects(projects)
+
+      // Calculate progress
+      const userProgress = await calculateUserProgress(user.id)
+      setProgress(userProgress)
+
+    } catch (error) {
+      console.error('Error loading user data:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const getStageColor = (stage: string) => {
@@ -40,8 +75,31 @@ export default function DashboardPage() {
     }
   }
 
-  const calculateProgress = (completed: number, required: number) => {
-    return Math.min((completed / required) * 100, 100)
+  const canAdvanceToNext = () => {
+    if (userProfile?.current_stage === 'beginner') {
+      return progress.beginner.percentage >= 70
+    }
+    if (userProfile?.current_stage === 'intermediate') {
+      return progress.intermediate.percentage >= 70
+    }
+    return false
+  }
+
+  const getNextStage = () => {
+    if (userProfile?.current_stage === 'beginner') return 'intermediate'
+    if (userProfile?.current_stage === 'intermediate') return 'advanced'
+    return null
+  }
+
+  const completedProjects = userProjects.filter(p => p.status === 'completed')
+  const currentStageProgress = progress[userProfile?.current_stage || 'beginner']
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    )
   }
 
   return (
@@ -54,7 +112,7 @@ export default function DashboardPage() {
           className="mb-8"
         >
           <h1 className="text-3xl font-bold mb-2">
-            Welcome back, {user?.user_metadata?.name || user?.email}!
+            Welcome back, {userProfile?.full_name || user?.email}!
           </h1>
           <p className="text-muted-foreground">
             Ready to continue building amazing projects? Let's level up your skills!
@@ -68,11 +126,11 @@ export default function DashboardPage() {
           transition={{ delay: 0.1 }}
           className="mb-8"
         >
-          <Card className={`${getStageColor(userProgress.currentStage)} border-2`}>
+          <Card className={`${getStageColor(userProfile?.current_stage || 'beginner')} border-2`}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5" />
-                Current Stage: {userProgress.currentStage.charAt(0).toUpperCase() + userProgress.currentStage.slice(1)}
+                Current Stage: {(userProfile?.current_stage || 'beginner').charAt(0).toUpperCase() + (userProfile?.current_stage || 'beginner').slice(1)}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -81,25 +139,28 @@ export default function DashboardPage() {
                   <div className="flex justify-between text-sm mb-2">
                     <span>Progress to Next Stage</span>
                     <span>
-                      {stageProgress[userProgress.currentStage].completed} / {stageProgress[userProgress.currentStage].required} projects
+                      {currentStageProgress.completed} / {Math.ceil(currentStageProgress.total * 0.7)} projects (70% required)
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
                       className="bg-primary h-2 rounded-full transition-all duration-300"
-                      style={{ 
-                        width: `${calculateProgress(
-                          stageProgress[userProgress.currentStage].completed,
-                          stageProgress[userProgress.currentStage].required
-                        )}%` 
-                      }}
+                      style={{ width: `${Math.min(currentStageProgress.percentage, 100)}%` }}
                     />
                   </div>
                 </div>
                 
                 <p className="text-sm">
-                  Complete {stageProgress[userProgress.currentStage].required - stageProgress[userProgress.currentStage].completed} more projects 
-                  to unlock the next stage!
+                  {canAdvanceToNext() ? (
+                    <span className="text-green-600 font-medium">
+                      🎉 Congratulations! You can advance to {getNextStage()} level!
+                    </span>
+                  ) : (
+                    <>
+                      Complete {Math.ceil(currentStageProgress.total * 0.7) - currentStageProgress.completed} more projects 
+                      to unlock the {getNextStage() || 'next'} stage!
+                    </>
+                  )}
                 </p>
                 
                 <Link href="/projects/browse">
@@ -126,9 +187,9 @@ export default function DashboardPage() {
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{userProgress.completedProjects.length}</div>
+              <div className="text-2xl font-bold">{completedProjects.length}</div>
               <p className="text-xs text-muted-foreground">
-                {stageProgress[userProgress.currentStage].total - userProgress.completedProjects.length} remaining in current stage
+                {currentStageProgress.total - currentStageProgress.completed} remaining in current stage
               </p>
             </CardContent>
           </Card>
@@ -139,9 +200,9 @@ export default function DashboardPage() {
               <Trophy className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{userProgress.totalPoints}</div>
+              <div className="text-2xl font-bold">{userProfile?.total_points || 0}</div>
               <p className="text-xs text-muted-foreground">
-                Avg: {Math.round(userProgress.totalPoints / userProgress.completedProjects.length || 0)} per project
+                Avg: {completedProjects.length > 0 ? Math.round((userProfile?.total_points || 0) / completedProjects.length) : 0} per project
               </p>
             </CardContent>
           </Card>
@@ -152,7 +213,7 @@ export default function DashboardPage() {
               <Star className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">3</div>
+              <div className="text-2xl font-bold">{userProfile?.streak_days || 0}</div>
               <p className="text-xs text-muted-foreground">Days coding</p>
             </CardContent>
           </Card>
@@ -163,9 +224,9 @@ export default function DashboardPage() {
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold capitalize">{userProgress.currentStage}</div>
+              <div className="text-2xl font-bold capitalize">{userProfile?.current_stage || 'beginner'}</div>
               <p className="text-xs text-muted-foreground">
-                {userProgress.canAdvance ? 'Ready to advance!' : 'Keep building!'}
+                {canAdvanceToNext() ? 'Ready to advance!' : 'Keep building!'}
               </p>
             </CardContent>
           </Card>
@@ -178,37 +239,46 @@ export default function DashboardPage() {
           transition={{ delay: 0.3 }}
           className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8"
         >
-          {Object.entries(stageProgress).map(([stage, progress]) => (
+          {Object.entries(progress).map(([stage, stageProgress]) => (
             <Card 
               key={stage} 
               className={`${getStageColor(stage)} ${
-                stage === userProgress.currentStage ? 'ring-2 ring-primary' : ''
+                stage === userProfile?.current_stage ? 'ring-2 ring-primary' : ''
               }`}
             >
               <CardHeader>
-                <CardTitle className="capitalize">{stage} Stage</CardTitle>
+                <CardTitle className="capitalize flex items-center gap-2">
+                  {stage === 'beginner' && <Star className="h-4 w-4" />}
+                  {stage === 'intermediate' && <Trophy className="h-4 w-4" />}
+                  {stage === 'advanced' && <Award className="h-4 w-4" />}
+                  {stage} Stage
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
                     <span>Progress</span>
-                    <span>{progress.completed} / {progress.total}</span>
+                    <span>{stageProgress.completed} / {stageProgress.total}</span>
                   </div>
                   
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
                       className="bg-current h-2 rounded-full transition-all duration-300 opacity-70"
-                      style={{ width: `${(progress.completed / progress.total) * 100}%` }}
+                      style={{ width: `${(stageProgress.completed / stageProgress.total) * 100}%` }}
                     />
                   </div>
                   
                   <div className="text-xs">
-                    {stage === userProgress.currentStage ? (
-                      <span>Current Stage</span>
-                    ) : progress.completed >= progress.required ? (
+                    {stage === userProfile?.current_stage ? (
+                      <span className="font-medium">Current Stage</span>
+                    ) : stageProgress.percentage >= 70 ? (
                       <span className="text-green-600">✓ Completed</span>
                     ) : (
-                      <span>Locked</span>
+                      <span className="text-gray-500">
+                        {userProfile?.current_stage === 'beginner' && stage === 'intermediate' ? 'Complete 70% of Beginner first' :
+                         userProfile?.current_stage === 'intermediate' && stage === 'advanced' ? 'Complete 70% of Intermediate first' :
+                         'Locked'}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -230,20 +300,20 @@ export default function DashboardPage() {
               <CardTitle>Recent Projects</CardTitle>
             </CardHeader>
             <CardContent>
-              {userProgress.completedProjects.length > 0 ? (
+              {completedProjects.length > 0 ? (
                 <div className="space-y-3">
-                  {userProgress.completedProjects.slice(-3).map((project) => (
-                    <div key={project.projectId} className="flex items-center justify-between p-3 border rounded-lg">
+                  {completedProjects.slice(-3).map((project) => (
+                    <div key={project.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div>
-                        <div className="font-medium">Project {project.projectId}</div>
+                        <div className="font-medium">{project.project_name}</div>
                         <div className="text-sm text-muted-foreground">
-                          Completed {new Date(project.completedAt).toLocaleDateString()}
+                          Completed {new Date(project.completed_at || '').toLocaleDateString()}
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-primary">{project.score} pts</div>
+                        <div className="font-bold text-primary">{project.score || 0} pts</div>
                         <div className="text-xs text-muted-foreground">
-                          {project.score >= 90 ? 'Excellent' : project.score >= 75 ? 'Good' : 'Fair'}
+                          {(project.score || 0) >= 90 ? 'Excellent' : (project.score || 0) >= 75 ? 'Good' : 'Fair'}
                         </div>
                       </div>
                     </div>
