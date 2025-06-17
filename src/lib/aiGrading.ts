@@ -19,32 +19,128 @@ export async function gradeProject(
 ): Promise<GradingResult> {
   try {
     // Simulate AI processing time
-    await new Promise(resolve => setTimeout(resolve, 3000))
+    await new Promise(resolve => setTimeout(resolve, 5000))
 
     const feedback: AIFeedback[] = []
     let totalScore = 0
     const maxScore = project.maxPoints
 
-    // Grade each criteria
+    // Validate that we have actual code to grade
+    if (!codeAnalysis.files || Object.keys(codeAnalysis.files).length === 0) {
+      throw new Error('No code files found for grading')
+    }
+
+    // Check if repository URL is valid (basic validation)
+    if (codeAnalysis.repositoryUrl && !isValidGitHubUrl(codeAnalysis.repositoryUrl)) {
+      throw new Error('Invalid GitHub repository URL')
+    }
+
+    // Grade each criteria based on actual code analysis
     for (const criteria of project.gradingCriteria) {
       const score = await gradeCriteria(criteria, codeAnalysis, project)
       feedback.push(score)
       totalScore += score.score
     }
 
+    // Additional validation - check if requirements are met
+    const requirementsMet = await validateProjectRequirements(project, codeAnalysis)
+    if (!requirementsMet.isValid) {
+      // Reduce score for missing requirements
+      totalScore = Math.max(0, totalScore - (maxScore * 0.3))
+      feedback.push({
+        category: 'Requirements Validation',
+        score: 0,
+        maxScore: maxScore * 0.3,
+        feedback: 'Some project requirements are not met: ' + requirementsMet.missingRequirements.join(', '),
+        suggestions: ['Ensure all project requirements are implemented', 'Review the project specification']
+      })
+    }
+
     const percentage = (totalScore / maxScore) * 100
     const overallGrade = getOverallGrade(percentage)
 
     return {
-      totalScore,
+      totalScore: Math.round(totalScore),
       maxScore,
       feedback,
       overallGrade
     }
   } catch (error) {
     console.error('Error grading project:', error)
-    throw new Error('Failed to grade project')
+    throw new Error('Failed to grade project: ' + error.message)
   }
+}
+
+function isValidGitHubUrl(url: string): boolean {
+  const githubPattern = /^https:\/\/github\.com\/[\w\-\.]+\/[\w\-\.]+\/?$/
+  return githubPattern.test(url)
+}
+
+async function validateProjectRequirements(
+  project: ProjectTemplate,
+  codeAnalysis: CodeAnalysis
+): Promise<{ isValid: boolean; missingRequirements: string[] }> {
+  const missingRequirements: string[] = []
+  const files = codeAnalysis.files
+  const fileContents = Object.values(files).join('\n').toLowerCase()
+
+  // Check basic requirements based on project type
+  for (const requirement of project.requirements) {
+    const reqLower = requirement.toLowerCase()
+    
+    // Check for specific patterns in the code
+    if (reqLower.includes('responsive') && !hasResponsiveDesign(files)) {
+      missingRequirements.push('Responsive design')
+    }
+    
+    if (reqLower.includes('form') && !hasFormElements(fileContents)) {
+      missingRequirements.push('Form implementation')
+    }
+    
+    if (reqLower.includes('api') && !hasAPIIntegration(fileContents)) {
+      missingRequirements.push('API integration')
+    }
+    
+    if (reqLower.includes('authentication') && !hasAuthentication(fileContents)) {
+      missingRequirements.push('Authentication system')
+    }
+  }
+
+  return {
+    isValid: missingRequirements.length === 0,
+    missingRequirements
+  }
+}
+
+function hasResponsiveDesign(files: Record<string, string>): boolean {
+  const cssFiles = Object.entries(files).filter(([path]) => path.endsWith('.css'))
+  return cssFiles.some(([, content]) => 
+    content.includes('@media') || 
+    content.includes('responsive') ||
+    content.includes('flex') ||
+    content.includes('grid')
+  )
+}
+
+function hasFormElements(content: string): boolean {
+  return content.includes('<form') || 
+         content.includes('input') || 
+         content.includes('textarea') ||
+         content.includes('form')
+}
+
+function hasAPIIntegration(content: string): boolean {
+  return content.includes('fetch(') || 
+         content.includes('axios') || 
+         content.includes('api') ||
+         content.includes('endpoint')
+}
+
+function hasAuthentication(content: string): boolean {
+  return content.includes('login') || 
+         content.includes('auth') || 
+         content.includes('jwt') ||
+         content.includes('password')
 }
 
 async function gradeCriteria(
@@ -108,271 +204,286 @@ async function gradeCriteria(
       break
 
     default:
-      score = Math.floor(Math.random() * (maxPoints * 0.4)) + (maxPoints * 0.6)
+      score = await gradeGenericCriteria(codeAnalysis, maxPoints, requirements)
       feedback = generateGenericFeedback(category, score, maxPoints)
       suggestions = generateGenericSuggestions(category)
   }
 
   return {
     category,
-    score: Math.min(score, maxPoints),
+    score: Math.min(Math.max(0, Math.round(score)), maxPoints),
     maxScore: maxPoints,
     feedback,
     suggestions
   }
 }
 
-// Design & UI Grading
+// Enhanced grading functions with more sophisticated analysis
+
 async function gradeDesignAndUI(codeAnalysis: CodeAnalysis, maxPoints: number, requirements: string[]): Promise<number> {
   let score = 0
   const files = codeAnalysis.files
 
-  // Check for CSS files
-  const cssFiles = Object.keys(files).filter(file => file.endsWith('.css'))
-  if (cssFiles.length > 0) score += maxPoints * 0.2
+  // Check for CSS files and quality
+  const cssFiles = Object.entries(files).filter(([path]) => path.endsWith('.css'))
+  if (cssFiles.length === 0) {
+    return maxPoints * 0.1 // Very low score for no CSS
+  }
 
-  // Check for responsive design
-  const hasResponsiveCSS = cssFiles.some(file => 
-    files[file].includes('@media') || files[file].includes('responsive')
-  )
-  if (hasResponsiveCSS) score += maxPoints * 0.3
-
+  const cssContent = cssFiles.map(([, content]) => content).join('\n')
+  
   // Check for modern CSS features
-  const hasModernCSS = cssFiles.some(file => 
-    files[file].includes('flexbox') || 
-    files[file].includes('grid') || 
-    files[file].includes('flex') ||
-    files[file].includes('display: flex') ||
-    files[file].includes('display: grid')
-  )
-  if (hasModernCSS) score += maxPoints * 0.2
+  if (cssContent.includes('flexbox') || cssContent.includes('display: flex')) score += maxPoints * 0.15
+  if (cssContent.includes('grid') || cssContent.includes('display: grid')) score += maxPoints * 0.15
+  if (cssContent.includes('@media')) score += maxPoints * 0.2 // Responsive design
+  
+  // Check for color usage and styling depth
+  const colorMatches = cssContent.match(/color\s*:/g)
+  if (colorMatches && colorMatches.length > 3) score += maxPoints * 0.1
+  
+  // Check for animations and transitions
+  if (cssContent.includes('transition') || cssContent.includes('animation')) score += maxPoints * 0.1
+  
+  // Check for consistent styling (multiple classes)
+  const classMatches = cssContent.match(/\.[a-zA-Z-_]+\s*{/g)
+  if (classMatches && classMatches.length > 5) score += maxPoints * 0.15
+  
+  // Check HTML structure quality
+  const htmlFiles = Object.entries(files).filter(([path]) => path.endsWith('.html'))
+  if (htmlFiles.length > 0) {
+    const htmlContent = htmlFiles.map(([, content]) => content).join('\n')
+    if (htmlContent.includes('<header>') || htmlContent.includes('<nav>')) score += maxPoints * 0.05
+    if (htmlContent.includes('<main>') || htmlContent.includes('<section>')) score += maxPoints * 0.05
+    if (htmlContent.includes('<footer>')) score += maxPoints * 0.05
+  }
 
-  // Check for color scheme and styling
-  const hasGoodStyling = cssFiles.some(file => 
-    files[file].includes('color') && 
-    files[file].includes('font') &&
-    files[file].length > 500 // Substantial CSS
-  )
-  if (hasGoodStyling) score += maxPoints * 0.3
-
-  return Math.floor(score)
+  return Math.min(score, maxPoints)
 }
 
-// Functionality Grading
 async function gradeFunctionality(codeAnalysis: CodeAnalysis, maxPoints: number, requirements: string[], project: ProjectTemplate): Promise<number> {
   let score = 0
   const files = codeAnalysis.files
+  const allContent = Object.values(files).join('\n').toLowerCase()
 
   // Check for JavaScript functionality
-  const jsFiles = Object.keys(files).filter(file => file.endsWith('.js') || file.endsWith('.jsx'))
-  if (jsFiles.length > 0) score += maxPoints * 0.2
+  const jsFiles = Object.entries(files).filter(([path]) => 
+    path.endsWith('.js') || path.endsWith('.jsx') || path.endsWith('.ts') || path.endsWith('.tsx')
+  )
+  
+  if (jsFiles.length === 0) {
+    return maxPoints * 0.2 // Low score for no JavaScript
+  }
 
+  const jsContent = jsFiles.map(([, content]) => content).join('\n').toLowerCase()
+  
   // Check for event handling
-  const hasEventHandling = jsFiles.some(file => 
-    files[file].includes('addEventListener') || 
-    files[file].includes('onClick') ||
-    files[file].includes('onSubmit')
-  )
-  if (hasEventHandling) score += maxPoints * 0.3
+  if (jsContent.includes('addeventlistener') || jsContent.includes('onclick')) score += maxPoints * 0.2
+  
+  // Check for form handling
+  if (jsContent.includes('form') && jsContent.includes('submit')) score += maxPoints * 0.15
+  
+  // Check for API calls
+  if (jsContent.includes('fetch') || jsContent.includes('axios') || jsContent.includes('api')) score += maxPoints * 0.2
+  
+  // Check for DOM manipulation
+  if (jsContent.includes('getelementbyid') || jsContent.includes('queryselector')) score += maxPoints * 0.15
+  
+  // Check for data validation
+  if (jsContent.includes('validation') || jsContent.includes('validate')) score += maxPoints * 0.1
+  
+  // Check for error handling
+  if (jsContent.includes('try') && jsContent.includes('catch')) score += maxPoints * 0.1
+  
+  // Check project-specific requirements
+  for (const requirement of requirements) {
+    const reqLower = requirement.toLowerCase()
+    if (allContent.includes(reqLower.split(' ')[0])) {
+      score += maxPoints * 0.05
+    }
+  }
 
-  // Check for form validation
-  const hasFormValidation = jsFiles.some(file => 
-    files[file].includes('validation') || 
-    files[file].includes('required') ||
-    files[file].includes('validate')
-  )
-  if (hasFormValidation) score += maxPoints * 0.2
-
-  // Check for API integration (if applicable)
-  const hasAPIIntegration = jsFiles.some(file => 
-    files[file].includes('fetch') || 
-    files[file].includes('axios') ||
-    files[file].includes('api')
-  )
-  if (hasAPIIntegration) score += maxPoints * 0.3
-
-  return Math.floor(score)
+  return Math.min(score, maxPoints)
 }
 
-// Code Quality Grading
 async function gradeCodeQuality(codeAnalysis: CodeAnalysis, maxPoints: number, requirements: string[]): Promise<number> {
   let score = 0
   const files = codeAnalysis.files
 
-  // Check for proper file organization
-  const hasGoodStructure = Object.keys(files).length >= 3
-  if (hasGoodStructure) score += maxPoints * 0.2
+  // Check file organization
+  const fileCount = Object.keys(files).length
+  if (fileCount >= 3) score += maxPoints * 0.2
+  if (fileCount >= 5) score += maxPoints * 0.1
+
+  // Check for proper file structure
+  const hasCSS = Object.keys(files).some(path => path.endsWith('.css'))
+  const hasJS = Object.keys(files).some(path => path.endsWith('.js') || path.endsWith('.jsx'))
+  const hasHTML = Object.keys(files).some(path => path.endsWith('.html'))
+  
+  if (hasCSS && hasJS && hasHTML) score += maxPoints * 0.2
 
   // Check for comments
   const hasComments = Object.values(files).some(content => 
     content.includes('//') || content.includes('/*') || content.includes('<!--')
   )
-  if (hasComments) score += maxPoints * 0.2
+  if (hasComments) score += maxPoints * 0.15
+
+  // Check for consistent naming (lowercase, no spaces)
+  const hasConsistentNaming = Object.keys(files).every(path => 
+    path.toLowerCase() === path && !path.includes(' ')
+  )
+  if (hasConsistentNaming) score += maxPoints * 0.1
 
   // Check for semantic HTML
-  const htmlFiles = Object.keys(files).filter(file => file.endsWith('.html'))
-  const hasSemanticHTML = htmlFiles.some(file => 
-    files[file].includes('<header>') || 
-    files[file].includes('<nav>') ||
-    files[file].includes('<main>') ||
-    files[file].includes('<section>')
-  )
-  if (hasSemanticHTML) score += maxPoints * 0.3
+  const htmlContent = Object.entries(files)
+    .filter(([path]) => path.endsWith('.html'))
+    .map(([, content]) => content)
+    .join('\n')
+  
+  if (htmlContent.includes('<header>') || htmlContent.includes('<nav>') || 
+      htmlContent.includes('<main>') || htmlContent.includes('<section>')) {
+    score += maxPoints * 0.15
+  }
 
-  // Check for consistent naming
-  const hasConsistentNaming = Object.keys(files).every(file => 
-    file.toLowerCase() === file && !file.includes(' ')
+  // Check for proper indentation (basic check)
+  const isWellFormatted = Object.values(files).some(content => 
+    content.includes('  ') || content.includes('\t') // Has indentation
   )
-  if (hasConsistentNaming) score += maxPoints * 0.3
+  if (isWellFormatted) score += maxPoints * 0.1
 
-  return Math.floor(score)
+  return Math.min(score, maxPoints)
 }
 
-// Responsiveness Grading
 async function gradeResponsiveness(codeAnalysis: CodeAnalysis, maxPoints: number, requirements: string[]): Promise<number> {
   let score = 0
   const files = codeAnalysis.files
 
   // Check for viewport meta tag
-  const htmlFiles = Object.keys(files).filter(file => file.endsWith('.html'))
-  const hasViewport = htmlFiles.some(file => 
-    files[file].includes('viewport') && files[file].includes('width=device-width')
+  const htmlFiles = Object.entries(files).filter(([path]) => path.endsWith('.html'))
+  const hasViewport = htmlFiles.some(([, content]) => 
+    content.includes('viewport') && content.includes('width=device-width')
   )
   if (hasViewport) score += maxPoints * 0.3
 
   // Check for media queries
-  const cssFiles = Object.keys(files).filter(file => file.endsWith('.css'))
-  const hasMediaQueries = cssFiles.some(file => files[file].includes('@media'))
+  const cssFiles = Object.entries(files).filter(([path]) => path.endsWith('.css'))
+  const hasMediaQueries = cssFiles.some(([, content]) => content.includes('@media'))
   if (hasMediaQueries) score += maxPoints * 0.4
 
   // Check for flexible layouts
-  const hasFlexibleLayout = cssFiles.some(file => 
-    files[file].includes('flex') || 
-    files[file].includes('grid') ||
-    files[file].includes('%') ||
-    files[file].includes('rem') ||
-    files[file].includes('em')
-  )
-  if (hasFlexibleLayout) score += maxPoints * 0.3
+  const cssContent = cssFiles.map(([, content]) => content).join('\n')
+  if (cssContent.includes('flex') || cssContent.includes('grid')) score += maxPoints * 0.2
+  
+  // Check for relative units
+  if (cssContent.includes('%') || cssContent.includes('rem') || cssContent.includes('em')) {
+    score += maxPoints * 0.1
+  }
 
-  return Math.floor(score)
+  return Math.min(score, maxPoints)
 }
 
-// API Endpoints Grading (for backend projects)
 async function gradeAPIEndpoints(codeAnalysis: CodeAnalysis, maxPoints: number, requirements: string[]): Promise<number> {
   let score = 0
   const files = codeAnalysis.files
+  const allContent = Object.values(files).join('\n').toLowerCase()
 
   // Check for route definitions
-  const hasRoutes = Object.values(files).some(content => 
-    content.includes('app.get') || 
-    content.includes('app.post') ||
-    content.includes('router.get') ||
-    content.includes('router.post')
-  )
-  if (hasRoutes) score += maxPoints * 0.3
-
-  // Check for CRUD operations
-  const hasCRUD = Object.values(files).some(content => 
-    content.includes('GET') && 
-    content.includes('POST') &&
-    (content.includes('PUT') || content.includes('PATCH')) &&
-    content.includes('DELETE')
-  )
-  if (hasCRUD) score += maxPoints * 0.4
+  if (allContent.includes('app.get') || allContent.includes('router.get')) score += maxPoints * 0.2
+  if (allContent.includes('app.post') || allContent.includes('router.post')) score += maxPoints * 0.2
+  if (allContent.includes('app.put') || allContent.includes('router.put')) score += maxPoints * 0.15
+  if (allContent.includes('app.delete') || allContent.includes('router.delete')) score += maxPoints * 0.15
 
   // Check for error handling
-  const hasErrorHandling = Object.values(files).some(content => 
-    content.includes('try') && content.includes('catch') ||
-    content.includes('error') ||
-    content.includes('status(4') ||
-    content.includes('status(5')
-  )
-  if (hasErrorHandling) score += maxPoints * 0.3
+  if (allContent.includes('try') && allContent.includes('catch')) score += maxPoints * 0.15
+  
+  // Check for status codes
+  if (allContent.includes('status(') || allContent.includes('.status')) score += maxPoints * 0.1
 
-  return Math.floor(score)
+  // Check for middleware
+  if (allContent.includes('middleware') || allContent.includes('app.use')) score += maxPoints * 0.05
+
+  return Math.min(score, maxPoints)
 }
 
-// Security Grading
 async function gradeSecurity(codeAnalysis: CodeAnalysis, maxPoints: number, requirements: string[]): Promise<number> {
   let score = 0
-  const files = codeAnalysis.files
+  const allContent = Object.values(codeAnalysis.files).join('\n').toLowerCase()
 
   // Check for authentication
-  const hasAuth = Object.values(files).some(content => 
-    content.includes('jwt') || 
-    content.includes('bcrypt') ||
-    content.includes('passport') ||
-    content.includes('auth')
-  )
-  if (hasAuth) score += maxPoints * 0.4
-
+  if (allContent.includes('jwt') || allContent.includes('auth')) score += maxPoints * 0.3
+  
+  // Check for password hashing
+  if (allContent.includes('bcrypt') || allContent.includes('hash')) score += maxPoints * 0.2
+  
   // Check for input validation
-  const hasValidation = Object.values(files).some(content => 
-    content.includes('validation') || 
-    content.includes('sanitize') ||
-    content.includes('validate')
-  )
-  if (hasValidation) score += maxPoints * 0.3
-
+  if (allContent.includes('validation') || allContent.includes('validate')) score += maxPoints * 0.2
+  
   // Check for security middleware
-  const hasSecurityMiddleware = Object.values(files).some(content => 
-    content.includes('helmet') || 
-    content.includes('cors') ||
-    content.includes('rate-limit')
-  )
-  if (hasSecurityMiddleware) score += maxPoints * 0.3
+  if (allContent.includes('helmet') || allContent.includes('cors')) score += maxPoints * 0.15
+  
+  // Check for environment variables
+  if (allContent.includes('process.env') || allContent.includes('.env')) score += maxPoints * 0.1
+  
+  // Check for rate limiting
+  if (allContent.includes('rate') && allContent.includes('limit')) score += maxPoints * 0.05
 
-  return Math.floor(score)
+  return Math.min(score, maxPoints)
 }
 
-// Database Grading
 async function gradeDatabase(codeAnalysis: CodeAnalysis, maxPoints: number, requirements: string[]): Promise<number> {
   let score = 0
-  const files = codeAnalysis.files
+  const allContent = Object.values(codeAnalysis.files).join('\n').toLowerCase()
 
   // Check for database connection
-  const hasDBConnection = Object.values(files).some(content => 
-    content.includes('mongoose') || 
-    content.includes('mongodb') ||
-    content.includes('sequelize') ||
-    content.includes('database')
-  )
-  if (hasDBConnection) score += maxPoints * 0.3
-
+  if (allContent.includes('mongoose') || allContent.includes('mongodb')) score += maxPoints * 0.25
+  if (allContent.includes('sequelize') || allContent.includes('postgresql')) score += maxPoints * 0.25
+  
   // Check for models/schemas
-  const hasModels = Object.values(files).some(content => 
-    content.includes('Schema') || 
-    content.includes('model') ||
-    content.includes('Model')
-  )
-  if (hasModels) score += maxPoints * 0.4
+  if (allContent.includes('schema') || allContent.includes('model')) score += maxPoints * 0.3
+  
+  // Check for CRUD operations
+  if (allContent.includes('find') || allContent.includes('select')) score += maxPoints * 0.1
+  if (allContent.includes('save') || allContent.includes('insert')) score += maxPoints * 0.1
+  if (allContent.includes('update')) score += maxPoints * 0.1
+  if (allContent.includes('delete') || allContent.includes('remove')) score += maxPoints * 0.1
 
-  // Check for database operations
-  const hasDBOperations = Object.values(files).some(content => 
-    content.includes('find') || 
-    content.includes('save') ||
-    content.includes('create') ||
-    content.includes('update') ||
-    content.includes('delete')
-  )
-  if (hasDBOperations) score += maxPoints * 0.3
-
-  return Math.floor(score)
+  return Math.min(score, maxPoints)
 }
 
-// Feedback Generation Functions
+async function gradeGenericCriteria(codeAnalysis: CodeAnalysis, maxPoints: number, requirements: string[]): Promise<number> {
+  // Basic scoring based on code presence and structure
+  const fileCount = Object.keys(codeAnalysis.files).length
+  const totalLines = Object.values(codeAnalysis.files).reduce((sum, content) => 
+    sum + content.split('\n').length, 0
+  )
+  
+  let score = 0
+  
+  // Score based on file count
+  if (fileCount >= 3) score += maxPoints * 0.3
+  if (fileCount >= 5) score += maxPoints * 0.2
+  
+  // Score based on code volume
+  if (totalLines >= 50) score += maxPoints * 0.3
+  if (totalLines >= 100) score += maxPoints * 0.2
+  
+  return Math.min(score, maxPoints)
+}
+
+// Feedback generation functions (keeping existing ones but enhancing them)
+
 function generateDesignFeedback(score: number, maxPoints: number): string {
   const percentage = (score / maxPoints) * 100
   
   if (percentage >= 90) {
-    return "Excellent design implementation! Your UI demonstrates strong visual hierarchy, consistent styling, and professional appearance. The design choices enhance user experience effectively."
+    return "Outstanding design implementation! Your UI demonstrates excellent visual hierarchy, modern CSS techniques, and professional styling. The design choices significantly enhance user experience."
   } else if (percentage >= 75) {
-    return "Good design work! The interface is clean and functional with room for minor improvements in visual consistency and modern design patterns."
+    return "Good design work! The interface is well-structured with modern CSS features. There are opportunities to enhance visual consistency and add more sophisticated styling."
   } else if (percentage >= 60) {
-    return "Decent design foundation. The basic styling is present but could benefit from improved color schemes, typography, and overall visual appeal."
+    return "Decent design foundation with basic styling present. Consider improving color schemes, typography, and implementing responsive design patterns."
+  } else if (percentage >= 40) {
+    return "Basic styling is present but needs significant improvement. Focus on implementing proper CSS structure, responsive design, and visual hierarchy."
   } else {
-    return "Design needs significant improvement. Focus on creating a more visually appealing interface with consistent styling, proper color schemes, and better layout structure."
+    return "Design implementation is minimal. The project needs comprehensive styling with CSS, proper layout structure, and attention to visual design principles."
   }
 }
 
@@ -381,30 +492,32 @@ function generateDesignSuggestions(score: number, maxPoints: number): string[] {
   
   if (percentage >= 90) {
     return [
-      "Consider adding subtle animations for enhanced user experience",
-      "Explore advanced CSS features like custom properties",
-      "Add dark mode support for better accessibility"
+      "Consider adding CSS animations and micro-interactions",
+      "Implement advanced CSS features like custom properties",
+      "Add dark mode support for enhanced accessibility",
+      "Optimize for performance with CSS best practices"
     ]
   } else if (percentage >= 75) {
     return [
       "Improve color contrast for better accessibility",
-      "Add more consistent spacing throughout the design",
-      "Consider using a design system or style guide"
+      "Add consistent spacing using a design system",
+      "Implement more sophisticated hover states",
+      "Consider using CSS Grid for complex layouts"
     ]
   } else if (percentage >= 60) {
     return [
-      "Implement a consistent color palette",
+      "Develop a consistent color palette and stick to it",
       "Improve typography hierarchy and readability",
-      "Add proper spacing and alignment",
-      "Use modern CSS layout techniques like Flexbox or Grid"
+      "Add proper spacing and alignment throughout",
+      "Implement responsive design with media queries"
     ]
   } else {
     return [
-      "Start with a basic color scheme and stick to it",
-      "Focus on clean, simple layouts",
-      "Ensure proper contrast between text and background",
-      "Use consistent fonts and sizing throughout",
-      "Add basic styling to all elements"
+      "Start with a basic CSS file and fundamental styling",
+      "Implement a simple color scheme",
+      "Add basic layout structure with proper spacing",
+      "Ensure text is readable with proper contrast",
+      "Use semantic HTML elements for better structure"
     ]
   }
 }
@@ -413,13 +526,15 @@ function generateFunctionalityFeedback(score: number, maxPoints: number): string
   const percentage = (score / maxPoints) * 100
   
   if (percentage >= 90) {
-    return "Outstanding functionality implementation! All features work correctly with proper error handling and user feedback. The interactive elements enhance the user experience significantly."
+    return "Excellent functionality implementation! All features work correctly with robust error handling, proper validation, and smooth user interactions. The code demonstrates advanced JavaScript concepts."
   } else if (percentage >= 75) {
-    return "Good functional implementation. Most features work as expected with minor areas for improvement in error handling or user feedback."
+    return "Good functional implementation with most features working as expected. Minor improvements needed in error handling or user feedback mechanisms."
   } else if (percentage >= 60) {
     return "Basic functionality is present but needs refinement. Some features may not work correctly or lack proper validation and error handling."
+  } else if (percentage >= 40) {
+    return "Limited functionality implemented. Several core features are missing or not working correctly. Focus on implementing the basic requirements first."
   } else {
-    return "Functionality needs major improvements. Many required features are missing or not working correctly. Focus on implementing core requirements first."
+    return "Functionality is severely lacking. Most required features are missing or non-functional. Start by implementing core JavaScript functionality and event handling."
   }
 }
 
@@ -429,23 +544,24 @@ function generateFunctionalitySuggestions(score: number, maxPoints: number): str
   if (percentage >= 90) {
     return [
       "Add advanced features like keyboard shortcuts",
-      "Implement progressive enhancement",
-      "Consider adding offline functionality"
+      "Implement progressive enhancement patterns",
+      "Consider adding offline functionality",
+      "Add comprehensive error boundaries"
     ]
   } else if (percentage >= 75) {
     return [
       "Add loading states for better user experience",
-      "Implement proper error boundaries",
-      "Add form validation feedback",
+      "Implement comprehensive error handling",
+      "Add form validation with user feedback",
       "Include success/error notifications"
     ]
   } else {
     return [
-      "Implement all required functionality from the project requirements",
-      "Add basic form validation",
-      "Include error handling for user inputs",
+      "Implement all required functionality from project requirements",
+      "Add basic form validation and error handling",
+      "Include proper event listeners for user interactions",
       "Test all interactive elements thoroughly",
-      "Add proper event listeners for user interactions"
+      "Add basic JavaScript functionality for dynamic behavior"
     ]
   }
 }
@@ -454,13 +570,15 @@ function generateCodeQualityFeedback(score: number, maxPoints: number): string {
   const percentage = (score / maxPoints) * 100
   
   if (percentage >= 90) {
-    return "Excellent code quality! Your code is well-organized, properly commented, and follows best practices. The file structure is logical and maintainable."
+    return "Exceptional code quality! Your code is excellently organized, well-documented, and follows industry best practices. The file structure is logical and highly maintainable."
   } else if (percentage >= 75) {
-    return "Good code organization with room for improvement in documentation and consistency. The overall structure is solid."
+    return "Good code organization with solid structure. There's room for improvement in documentation and consistency, but the overall approach is sound."
   } else if (percentage >= 60) {
-    return "Basic code structure is present but needs improvement in organization, naming conventions, and documentation."
+    return "Basic code structure is present but needs improvement in organization, naming conventions, and documentation. Consider refactoring for better maintainability."
+  } else if (percentage >= 40) {
+    return "Code organization needs significant improvement. Focus on better file structure, consistent naming, and adding meaningful comments."
   } else {
-    return "Code quality needs significant improvement. Focus on better organization, consistent naming, and proper file structure."
+    return "Code quality is poor with minimal organization. Start by creating a proper file structure, using consistent naming conventions, and adding basic documentation."
   }
 }
 
@@ -470,16 +588,17 @@ function generateCodeQualitySuggestions(score: number, maxPoints: number): strin
   if (percentage >= 90) {
     return [
       "Consider implementing automated testing",
-      "Add JSDoc comments for better documentation",
-      "Explore advanced code organization patterns"
+      "Add comprehensive JSDoc comments",
+      "Explore advanced code organization patterns",
+      "Implement code linting and formatting tools"
     ]
   } else {
     return [
       "Add meaningful comments to explain complex logic",
       "Use consistent naming conventions throughout",
-      "Organize files into logical folders",
+      "Organize files into logical folders and modules",
       "Remove unused code and variables",
-      "Follow language-specific best practices"
+      "Follow language-specific best practices and style guides"
     ]
   }
 }
@@ -488,23 +607,23 @@ function generateResponsivenessFeedback(score: number, maxPoints: number): strin
   const percentage = (score / maxPoints) * 100
   
   if (percentage >= 90) {
-    return "Excellent responsive design! Your application works seamlessly across all device sizes with proper breakpoints and flexible layouts."
+    return "Excellent responsive design! Your application works flawlessly across all device sizes with well-implemented breakpoints and flexible layouts."
   } else if (percentage >= 75) {
-    return "Good responsive implementation with minor issues on some screen sizes. Most breakpoints work correctly."
+    return "Good responsive implementation with minor issues on some screen sizes. Most breakpoints work correctly with room for refinement."
   } else if (percentage >= 60) {
     return "Basic responsive design is present but needs improvement for better mobile experience and cross-device compatibility."
   } else {
-    return "Responsiveness needs major improvement. The design doesn't adapt well to different screen sizes and lacks mobile optimization."
+    return "Responsiveness is inadequate. The design doesn't adapt well to different screen sizes and lacks mobile optimization."
   }
 }
 
 function generateResponsivenessSuggestions(score: number, maxPoints: number): string[] {
   return [
-    "Test on various screen sizes and devices",
+    "Test thoroughly on various screen sizes and devices",
     "Use relative units (rem, em, %) instead of fixed pixels",
     "Implement proper media queries for different breakpoints",
-    "Ensure touch-friendly interface elements",
-    "Optimize images for different screen densities"
+    "Ensure touch-friendly interface elements on mobile",
+    "Optimize images and content for different screen densities"
   ]
 }
 
@@ -512,21 +631,21 @@ function generateAPIFeedback(score: number, maxPoints: number): string {
   const percentage = (score / maxPoints) * 100
   
   if (percentage >= 90) {
-    return "Excellent API implementation! All endpoints work correctly with proper HTTP methods, status codes, and error handling."
+    return "Outstanding API implementation! All endpoints are properly structured with correct HTTP methods, comprehensive error handling, and appropriate status codes."
   } else if (percentage >= 75) {
-    return "Good API structure with most endpoints functioning correctly. Minor improvements needed in error handling or response format."
+    return "Good API structure with most endpoints functioning correctly. Minor improvements needed in error handling or response formatting."
   } else {
-    return "API implementation needs improvement. Some endpoints may be missing or not functioning correctly."
+    return "API implementation needs significant improvement. Several endpoints may be missing or not functioning correctly."
   }
 }
 
 function generateAPISuggestions(score: number, maxPoints: number): string[] {
   return [
     "Implement all CRUD operations (GET, POST, PUT, DELETE)",
-    "Use proper HTTP status codes",
-    "Add comprehensive error handling",
-    "Include input validation for all endpoints",
-    "Document your API endpoints clearly"
+    "Use appropriate HTTP status codes for different scenarios",
+    "Add comprehensive error handling and validation",
+    "Include proper request/response formatting",
+    "Document your API endpoints clearly with examples"
   ]
 }
 
@@ -534,7 +653,7 @@ function generateSecurityFeedback(score: number, maxPoints: number): string {
   const percentage = (score / maxPoints) * 100
   
   if (percentage >= 90) {
-    return "Excellent security implementation! Proper authentication, input validation, and security measures are in place."
+    return "Excellent security implementation! Proper authentication, input validation, and security measures are comprehensively implemented."
   } else {
     return "Security implementation needs improvement. Consider adding authentication, input validation, and other security measures."
   }
@@ -542,11 +661,11 @@ function generateSecurityFeedback(score: number, maxPoints: number): string {
 
 function generateSecuritySuggestions(score: number, maxPoints: number): string[] {
   return [
-    "Implement proper authentication system",
-    "Add input validation and sanitization",
-    "Use security middleware (helmet, cors)",
-    "Hash passwords securely",
-    "Implement rate limiting to prevent abuse"
+    "Implement a robust authentication system",
+    "Add comprehensive input validation and sanitization",
+    "Use security middleware (helmet, cors, rate limiting)",
+    "Hash passwords securely with bcrypt or similar",
+    "Implement proper session management"
   ]
 }
 
@@ -554,7 +673,7 @@ function generateDatabaseFeedback(score: number, maxPoints: number): string {
   const percentage = (score / maxPoints) * 100
   
   if (percentage >= 90) {
-    return "Excellent database integration! Proper schema design, efficient queries, and good data management practices."
+    return "Excellent database integration! Proper schema design, efficient queries, and comprehensive data management practices are implemented."
   } else {
     return "Database implementation needs improvement. Focus on proper schema design and efficient data operations."
   }
@@ -562,11 +681,11 @@ function generateDatabaseFeedback(score: number, maxPoints: number): string {
 
 function generateDatabaseSuggestions(score: number, maxPoints: number): string[] {
   return [
-    "Design proper database schemas",
-    "Implement efficient database queries",
-    "Add data validation at the database level",
-    "Use appropriate indexing for performance",
-    "Handle database errors gracefully"
+    "Design proper database schemas with appropriate relationships",
+    "Implement efficient database queries and operations",
+    "Add data validation at both application and database levels",
+    "Use appropriate indexing for performance optimization",
+    "Handle database errors gracefully with proper error messages"
   ]
 }
 
@@ -574,23 +693,25 @@ function generateGenericFeedback(category: string, score: number, maxPoints: num
   const percentage = (score / maxPoints) * 100
   
   if (percentage >= 90) {
-    return `Excellent work on ${category.toLowerCase()}! Your implementation demonstrates strong understanding and attention to detail.`
+    return `Excellent work on ${category.toLowerCase()}! Your implementation demonstrates strong understanding and attention to detail with professional-level execution.`
   } else if (percentage >= 75) {
-    return `Good implementation of ${category.toLowerCase()}. There are some areas for improvement but overall solid work.`
+    return `Good implementation of ${category.toLowerCase()}. The foundation is solid with some areas for improvement to reach professional standards.`
   } else if (percentage >= 60) {
-    return `Decent attempt at ${category.toLowerCase()}. Several areas need improvement to meet the requirements fully.`
+    return `Decent attempt at ${category.toLowerCase()}. Several areas need improvement to meet the requirements fully and achieve better quality.`
+  } else if (percentage >= 40) {
+    return `Basic implementation of ${category.toLowerCase()} is present but needs significant improvement to meet project requirements.`
   } else {
-    return `${category} needs significant improvement. Please review the requirements and consider refactoring this section.`
+    return `${category} implementation is insufficient. Major improvements needed to meet basic project requirements and standards.`
   }
 }
 
 function generateGenericSuggestions(category: string): string[] {
   return [
-    `Review the project requirements for ${category.toLowerCase()}`,
-    `Consider best practices for ${category.toLowerCase()}`,
-    `Test your implementation thoroughly`,
-    `Seek feedback from peers or mentors`,
-    `Refer to documentation and tutorials`
+    `Review the project requirements for ${category.toLowerCase()} carefully`,
+    `Research and implement best practices for ${category.toLowerCase()}`,
+    `Test your implementation thoroughly across different scenarios`,
+    `Seek feedback from peers or mentors on your approach`,
+    `Refer to official documentation and trusted tutorials for guidance`
   ]
 }
 
