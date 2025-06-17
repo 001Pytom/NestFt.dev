@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
-// import { motion } from 'framer-motion'
-// import { Card } from '@/components/ui/card'
+import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Play, 
   Square, 
@@ -14,15 +14,21 @@ import {
   Save, 
   Github, 
   Eye, 
-  // Terminal,
   Download,
   RefreshCw,
-  X
+  Settings,
+  Terminal as TerminalIcon,
+  Code2,
+  FileText
 } from 'lucide-react'
 import { saveProjectCode } from '@/lib/database'
 import { UserProject } from '@/lib/database'
 import { getFileContent } from '@/lib/fileTemplates'
 import { techStacks } from '@/data/projects'
+import { CodeEditor } from '@/components/ide/CodeEditor'
+import { Terminal } from '@/components/ide/Terminal'
+import { PreviewPanel } from '@/components/ide/PreviewPanel'
+import { GitHubIntegration } from '@/components/ide/GitHubIntegration'
 
 interface FileNode {
   name: string
@@ -30,6 +36,7 @@ interface FileNode {
   content?: string
   children?: FileNode[]
   path: string
+  language?: string
 }
 
 export default function IDEPage() {
@@ -42,11 +49,10 @@ export default function IDEPage() {
   const [selectedFile, setSelectedFile] = useState<FileNode | null>(null)
   const [code, setCode] = useState('')
   const [isRunning, setIsRunning] = useState(false)
-  const [terminalOutput, setTerminalOutput] = useState<string[]>([])
-  const [showTerminal, setShowTerminal] = useState(false)
   const [showPreview, setShowPreview] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
+  const [activeTab, setActiveTab] = useState('editor')
 
   useEffect(() => {
     loadProject()
@@ -66,20 +72,32 @@ export default function IDEPage() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === 's') {
-        e.preventDefault()
-        handleSave(true) // Manual save with feedback
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case 's':
+            e.preventDefault()
+            handleSave(true)
+            break
+          case '`':
+            e.preventDefault()
+            setActiveTab(activeTab === 'terminal' ? 'editor' : 'terminal')
+            break
+          case 'p':
+            if (e.shiftKey) {
+              e.preventDefault()
+              setShowPreview(!showPreview)
+            }
+            break
+        }
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  }, [activeTab, showPreview])
 
   const loadProject = async () => {
     try {
-      // This would typically load from database
-      // For now, we'll simulate loading project data
       const templateId = searchParams.get('template')
       const projectName = searchParams.get('name')
       
@@ -130,7 +148,8 @@ export default function IDEPage() {
           name,
           type: 'file',
           content: getFileContent(path, template, projectName),
-          path
+          path,
+          language: getLanguageFromFile(name)
         }
       } else {
         return {
@@ -141,6 +160,30 @@ export default function IDEPage() {
         }
       }
     })
+  }
+
+  const getLanguageFromFile = (fileName: string): string => {
+    const ext = fileName.split('.').pop()?.toLowerCase()
+    switch (ext) {
+      case 'js':
+      case 'jsx':
+        return 'javascript'
+      case 'ts':
+      case 'tsx':
+        return 'typescript'
+      case 'html':
+        return 'html'
+      case 'css':
+        return 'css'
+      case 'json':
+        return 'json'
+      case 'md':
+        return 'markdown'
+      case 'py':
+        return 'python'
+      default:
+        return 'plaintext'
+    }
   }
 
   const findFirstFile = (nodes: FileNode[]): FileNode | null => {
@@ -200,13 +243,11 @@ export default function IDEPage() {
       setLastSaved(new Date())
       
       if (showFeedback) {
-        setTerminalOutput(prev => [...prev, `✅ Project saved successfully at ${new Date().toLocaleTimeString()}`])
+        // Show save notification
+        console.log('Project saved successfully')
       }
     } catch (error) {
       console.error('Error saving project:', error)
-      if (showFeedback) {
-        setTerminalOutput(prev => [...prev, `❌ Error saving project: ${error}`])
-      }
     } finally {
       setIsSaving(false)
     }
@@ -225,22 +266,16 @@ export default function IDEPage() {
 
   const handleRun = () => {
     setIsRunning(true)
-    setShowTerminal(true)
-    setTerminalOutput(prev => [...prev, `> Running ${userProject?.project_name}...`])
+    setActiveTab('terminal')
     
     // Simulate running the project
     setTimeout(() => {
-      setTerminalOutput(prev => [...prev, 'Starting development server...'])
-      setTimeout(() => {
-        setTerminalOutput(prev => [...prev, '✅ Server running on http://localhost:3000'])
-        setIsRunning(false)
-      }, 2000)
-    }, 1000)
+      setIsRunning(false)
+    }, 3000)
   }
 
   const handleStop = () => {
     setIsRunning(false)
-    setTerminalOutput(prev => [...prev, '🛑 Server stopped.'])
   }
 
   const handleDownload = () => {
@@ -268,29 +303,34 @@ export default function IDEPage() {
 
   const renderFileTree = (nodes: FileNode[], level = 0) => {
     return nodes.map(node => (
-      <div key={node.path} style={{ marginLeft: `${level * 16}px` }}>
+      <motion.div 
+        key={node.path} 
+        style={{ marginLeft: `${level * 16}px` }}
+        whileHover={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
+        className="rounded"
+      >
         <div
-          className={`flex items-center gap-2 p-1 rounded cursor-pointer hover:bg-muted ${
-            selectedFile?.path === node.path ? 'bg-primary/10' : ''
+          className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
+            selectedFile?.path === node.path ? 'bg-primary/20 text-primary' : 'hover:bg-muted/50'
           }`}
           onClick={() => node.type === 'file' && handleFileSelect(node)}
         >
           {node.type === 'folder' ? (
-            <FolderPlus className="h-4 w-4 text-blue-500" />
+            <FolderPlus className="h-4 w-4 text-blue-400" />
           ) : (
-            <FilePlus className="h-4 w-4 text-gray-500" />
+            <FileText className="h-4 w-4 text-gray-400" />
           )}
-          <span className="text-sm">{node.name}</span>
+          <span className="text-sm font-medium">{node.name}</span>
         </div>
         {node.children && renderFileTree(node.children, level + 1)}
-      </div>
+      </motion.div>
     ))
   }
 
   if (!userProject) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#1e1e1e]">
+        <div className="text-center text-white">
           <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
           <p>Loading IDE...</p>
         </div>
@@ -299,73 +339,70 @@ export default function IDEPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-background">
+    <div className="h-screen flex flex-col bg-[#1e1e1e] text-white">
       {/* Header */}
-      <div className="border-b p-4 flex items-center justify-between">
+      <div className="border-b border-gray-700 p-4 flex items-center justify-between bg-[#2d2d30]">
         <div className="flex items-center gap-4">
           <h1 className="text-lg font-semibold">{userProject.project_name}</h1>
-          <Badge variant="outline">{userProject.template_id}</Badge>
-          <Badge className="bg-green-500/10 text-green-700">
+          <Badge variant="outline" className="border-blue-400 text-blue-400">
+            {userProject.template_id}
+          </Badge>
+          <Badge className="bg-green-500/10 text-green-400 border-green-400">
             {userProject.difficulty}
           </Badge>
           {lastSaved && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-gray-400">
               Last saved: {lastSaved.toLocaleTimeString()}
             </span>
           )}
         </div>
         
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => handleSave(true)} disabled={isSaving}>
+          <Button variant="ghost" size="sm" onClick={() => handleSave(true)} disabled={isSaving}>
             <Save className="h-4 w-4 mr-1" />
             {isSaving ? 'Saving...' : 'Save'}
           </Button>
           
-          <Button variant="outline" size="sm" onClick={handleDownload}>
+          <Button variant="ghost" size="sm" onClick={handleDownload}>
             <Download className="h-4 w-4 mr-1" />
             Download
           </Button>
           
           {isRunning ? (
-            <Button variant="outline" size="sm" onClick={handleStop}>
+            <Button variant="ghost" size="sm" onClick={handleStop}>
               <Square className="h-4 w-4 mr-1" />
               Stop
             </Button>
           ) : (
-            <Button variant="outline" size="sm" onClick={handleRun}>
+            <Button variant="ghost" size="sm" onClick={handleRun}>
               <Play className="h-4 w-4 mr-1" />
               Run
             </Button>
           )}
           
-          <Button variant="outline" size="sm">
-            <Github className="h-4 w-4 mr-1" />
-            Push to GitHub
-          </Button>
-          
-          <Button variant="outline" size="sm" onClick={() => setShowPreview(!showPreview)}>
+          <Button variant="ghost" size="sm" onClick={() => setShowPreview(!showPreview)}>
             <Eye className="h-4 w-4 mr-1" />
             Preview
           </Button>
           
-          <Button onClick={handleSubmit}>
+          <Button onClick={handleSubmit} className="bg-blue-600 hover:bg-blue-700">
             Submit Project
           </Button>
         </div>
       </div>
 
       {/* Main IDE Layout */}
-      <div className="flex-1 flex">
+      <div className="flex-1 flex overflow-hidden">
         {/* File Explorer */}
-        <div className="w-64 border-r bg-muted/30 p-4">
+        <div className="w-64 border-r border-gray-700 bg-[#252526] p-4 overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-medium">Files</h3>
+            <h3 className="font-medium text-gray-300">Explorer</h3>
             <div className="flex gap-1">
-              <Button variant="ghost" size="sm">
-                <FolderPlus className="h-4 w-4" />
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <FolderPlus className="h-3 w-3" />
               </Button>
-              <Button variant="ghost" size="sm">
-                <FilePlus className="h-4 w-4" />
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <FilePlus className="h-3 w-3" />
               </Button>
             </div>
           </div>
@@ -374,75 +411,72 @@ export default function IDEPage() {
           </div>
         </div>
 
-        {/* Code Editor */}
+        {/* Main Content Area */}
         <div className="flex-1 flex flex-col">
-          {selectedFile && (
-            <>
-              <div className="border-b p-2 bg-muted/30">
-                <span className="text-sm font-medium">{selectedFile.name}</span>
-              </div>
-              <div className="flex-1">
-                <textarea
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  className="w-full h-full p-4 font-mono text-sm resize-none border-none outline-none bg-background"
-                  placeholder="Start coding..."
-                  style={{ fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace' }}
-                />
-              </div>
-            </>
-          )}
-        </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+            <TabsList className="bg-[#2d2d30] border-b border-gray-700 rounded-none justify-start">
+              <TabsTrigger value="editor" className="flex items-center gap-2">
+                <Code2 className="h-4 w-4" />
+                Editor
+              </TabsTrigger>
+              <TabsTrigger value="terminal" className="flex items-center gap-2">
+                <TerminalIcon className="h-4 w-4" />
+                Terminal
+              </TabsTrigger>
+              <TabsTrigger value="github" className="flex items-center gap-2">
+                <Github className="h-4 w-4" />
+                GitHub
+              </TabsTrigger>
+            </TabsList>
 
-        {/* Preview Panel */}
-        {showPreview && (
-          <div className="w-1/2 border-l">
-            <div className="border-b p-2 bg-muted/30 flex items-center justify-between">
-              <span className="text-sm font-medium">Preview</span>
-              <Button variant="ghost" size="sm">
-                <RefreshCw className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="h-full bg-white">
-              <iframe
-                src="about:blank"
-                className="w-full h-full border-none"
-                title="Preview"
+            <div className="flex-1 flex">
+              <div className="flex-1 flex flex-col">
+                <TabsContent value="editor" className="flex-1 m-0">
+                  {selectedFile && (
+                    <div className="h-full flex flex-col">
+                      <div className="border-b border-gray-700 p-2 bg-[#2d2d30]">
+                        <span className="text-sm font-medium text-gray-300">{selectedFile.name}</span>
+                      </div>
+                      <div className="flex-1">
+                        <CodeEditor
+                          value={code}
+                          onChange={setCode}
+                          language={selectedFile.language || 'javascript'}
+                          fileName={selectedFile.name}
+                          theme="vs-dark"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="terminal" className="flex-1 m-0">
+                  <Terminal
+                    projectId={projectId}
+                    className="h-full"
+                  />
+                </TabsContent>
+
+                <TabsContent value="github" className="flex-1 m-0 p-4 overflow-y-auto">
+                  <GitHubIntegration
+                    projectId={projectId}
+                    projectName={userProject.project_name}
+                    codeFiles={collectAllFiles(fileTree)}
+                  />
+                </TabsContent>
+              </div>
+
+              {/* Preview Panel */}
+              <PreviewPanel
+                code={collectAllFiles(fileTree)}
+                projectId={projectId}
+                isVisible={showPreview}
+                onToggleVisibility={() => setShowPreview(!showPreview)}
               />
             </div>
-          </div>
-        )}
-      </div>
-
-      {/* Terminal */}
-      {showTerminal && (
-        <div className="h-48 border-t bg-black text-green-400 font-mono text-sm">
-          <div className="border-b border-gray-700 p-2 bg-gray-900 flex items-center justify-between">
-            <span className="text-white">Terminal</span>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setShowTerminal(false)}
-              className="text-white hover:bg-gray-700"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="p-4 overflow-y-auto h-full">
-            {terminalOutput.map((line, index) => (
-              <div key={index} className="mb-1">
-                {line}
-              </div>
-            ))}
-            {isRunning && (
-              <div className="flex items-center gap-2">
-                <RefreshCw className="h-3 w-3 animate-spin" />
-                <span>Running...</span>
-              </div>
-            )}
-          </div>
+          </Tabs>
         </div>
-      )}
+      </div>
     </div>
   )
 }
