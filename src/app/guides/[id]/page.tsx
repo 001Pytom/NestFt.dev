@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Clock, Star, CheckCircle, PlayCircle, BookOpen } from 'lucide-react'
+import { ArrowLeft, Clock, Star, CheckCircle, PlayCircle, BookOpen, ArrowRight } from 'lucide-react'
 import { getLearningGuide, LearningGuide } from '@/lib/database'
 import Link from 'next/link'
 

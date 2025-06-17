@@ -32,7 +32,7 @@ export default function DashboardPage() {
 
     try {
       // Get or create user profile
-      let profile = await getUserProfile(user.id)
+      let profile = await getUserProfile(user?.id)
       if (!profile) {
         profile = await createUserProfile({
           user_id: user.id,

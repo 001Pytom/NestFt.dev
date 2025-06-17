@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { Card } from '@/components/ui/card'
+// import { motion } from 'framer-motion'
+// import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
@@ -14,12 +14,12 @@ import {
   Save, 
   Github, 
   Eye, 
-  Terminal,
+  // Terminal,
   Download,
   RefreshCw,
   X
 } from 'lucide-react'
-import { getUserProjects, updateUserProject, saveProjectCode } from '@/lib/database'
+import { saveProjectCode } from '@/lib/database'
 import { UserProject } from '@/lib/database'
 import { getFileContent } from '@/lib/fileTemplates'
 import { techStacks } from '@/data/projects'
