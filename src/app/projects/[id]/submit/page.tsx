@@ -1,423 +1,501 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Textarea } from '@/components/ui/textarea'
-import { 
-  Upload, 
-  Github, 
-  Globe, 
-  CheckCircle, 
-  AlertCircle,
-  Loader2,
-  Trophy,
-  Star
-} from 'lucide-react'
-import { beginnerProjects, intermediateProjects, advancedProjects } from '@/data/projects'
-import { ProjectTemplate, AIFeedback } from '@/types/project'
+import { useState, useEffect } from "react";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Play,
+  Square,
+  FolderPlus,
+  FilePlus,
+  Save,
+  Download,
+  RefreshCw,
+  Settings,
+  Terminal as TerminalIcon,
+  Eye,
+  Code,
+  GitBranch,
+  Send,
+  CheckCircle,
+} from "lucide-react";
+import { CodeEditor } from "@/components/ide/CodeEditor";
+import { Terminal } from "@/components/ide/Terminal";
+import { PreviewPanel } from "@/components/ide/PreviewPanel";
+import { GitHubIntegration } from "@/components/ide/GitHubIntegration";
+import { FileNode } from "@/types/ide";
+import { saveProjectCode, updateUserProject } from "@/lib/database";
+import { UserProject } from "@/lib/database";
+import { getFileContent } from "@/lib/fileTemplates";
+import { techStacks } from "@/data/projects";
+import { useAuthStore } from "@/lib/store";
 
-export default function SubmitProjectPage() {
-  const params = useParams()
-  const router = useRouter()
-  const projectId = params.id as string
-  
-  const [project, setProject] = useState<ProjectTemplate | null>(null)
-  const [repositoryUrl, setRepositoryUrl] = useState('')
-  const [deployedUrl, setDeployedUrl] = useState('')
-  const [description, setDescription] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isGrading, setIsGrading] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-  const [score, setScore] = useState<number | null>(null)
-  const [feedback, setFeedback] = useState<AIFeedback[]>([])
+export default function IDEPage() {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { user } = useAuthStore();
+  const projectId = params.projectId as string;
+
+  const [userProject, setUserProject] = useState<UserProject | null>(null);
+  const [fileTree, setFileTree] = useState<FileNode[]>([]);
+  const [selectedFile, setSelectedFile] = useState<FileNode | null>(null);
+  const [code, setCode] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [activePanel, setActivePanel] = useState<
+    "terminal" | "preview" | "github"
+  >("preview");
+  const [sidebarWidth, setSidebarWidth] = useState(250);
+  const [bottomPanelHeight, setBottomPanelHeight] = useState(300);
 
   useEffect(() => {
-    const allProjects = [...beginnerProjects, ...intermediateProjects, ...advancedProjects]
-    const foundProject = allProjects.find(p => p.id === projectId)
-    
-    if (!foundProject) {
-      router.push('/projects/browse')
-      return
+    loadProject();
+  }, [projectId]);
+
+  // Auto-save functionality
+  useEffect(() => {
+    const autoSaveInterval = setInterval(() => {
+      if (selectedFile && code !== selectedFile.content) {
+        handleSave(false); // Silent save
+      }
+    }, 30000); // Auto-save every 30 seconds
+
+    return () => clearInterval(autoSaveInterval);
+  }, [selectedFile, code]);
+
+  const loadProject = async () => {
+    try {
+      const templateId = searchParams.get("template");
+      const projectName = searchParams.get("name");
+
+      if (!templateId || !projectName) return;
+
+      // Find template
+      const allTemplates = techStacks.flatMap((stack) => stack.templates);
+      const template = allTemplates.find((t) => t.id === templateId);
+
+      if (!template) return;
+
+      // Initialize file tree from template
+      const initialTree = initializeFileTree(
+        template.folderStructure,
+        "",
+        template,
+        projectName
+      );
+      setFileTree(initialTree);
+
+      // Select first file
+      const firstFile = findFirstFile(initialTree);
+      if (firstFile) {
+        setSelectedFile(firstFile);
+        setCode(firstFile.content || "");
+      }
+
+      // Create mock user project
+      setUserProject({
+        id: projectId,
+        user_id: user?.id || "user-id",
+        project_id: "project-id",
+        project_name: projectName,
+        stack: "frontend",
+        difficulty: "beginner",
+        template_id: templateId,
+        status: "in_progress",
+        code_files: {},
+        started_at: new Date().toISOString(),
+        last_saved_at: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("Error loading project:", error);
     }
-    
-    setProject(foundProject)
-  }, [projectId, router])
+  };
+
+  const initializeFileTree = (
+    structure: any,
+    basePath = "",
+    template: any,
+    projectName: string
+  ): FileNode[] => {
+    return Object.entries(structure).map(([name, content]) => {
+      const path = basePath ? `${basePath}/${name}` : name;
+
+      if (typeof content === "string") {
+        return {
+          name,
+          type: "file",
+          content: getFileContent(path, template, projectName),
+          path,
+        };
+      } else {
+        return {
+          name,
+          type: "folder",
+          children: initializeFileTree(content, path, template, projectName),
+          path,
+          isOpen: true,
+        };
+      }
+    });
+  };
+
+  const findFirstFile = (nodes: FileNode[]): FileNode | null => {
+    for (const node of nodes) {
+      if (node.type === "file") {
+        return node;
+      }
+      if (node.children) {
+        const found = findFirstFile(node.children);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  const updateFileContent = (path: string, content: string) => {
+    const updateNode = (nodes: FileNode[]): FileNode[] => {
+      return nodes.map((node) => {
+        if (node.path === path && node.type === "file") {
+          return { ...node, content };
+        }
+        if (node.children) {
+          return { ...node, children: updateNode(node.children) };
+        }
+        return node;
+      });
+    };
+
+    setFileTree(updateNode(fileTree));
+  };
+
+  const handleFileSelect = (file: FileNode) => {
+    if (selectedFile && selectedFile.path !== file.path) {
+      // Save current file content
+      updateFileContent(selectedFile.path, code);
+    }
+
+    setSelectedFile(file);
+    setCode(file.content || "");
+  };
+
+  const handleSave = async (showFeedback = true) => {
+    if (!selectedFile || !userProject) return;
+
+    setIsSaving(true);
+
+    try {
+      // Update file content in tree
+      updateFileContent(selectedFile.path, code);
+
+      // Collect all file contents
+      const allFiles = collectAllFiles(fileTree);
+
+      // Save to database
+      await saveProjectCode(userProject.id, allFiles);
+
+      setLastSaved(new Date());
+
+      if (showFeedback) {
+        // Show save notification
+      }
+    } catch (error) {
+      console.error("Error saving project:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleSubmit = async () => {
-    if (!project || !repositoryUrl.trim()) return
-    
-    setIsSubmitting(true)
-    
+    if (!userProject || !user) return;
+
+    setIsSubmitting(true);
+
     try {
-      // Simulate submission
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      setSubmitted(true)
-      setIsSubmitting(false)
-      setIsGrading(true)
-      
-      // Simulate AI grading
-      await simulateAIGrading()
-      
+      // Save current work first
+      await handleSave(false);
+
+      // Collect all files for submission
+      const allFiles = collectAllFiles(fileTree);
+
+      // Update project status to submitted
+      await updateUserProject(userProject.id, {
+        status: "submitted",
+        code_files: allFiles,
+      });
+
+      // Navigate to submission page for AI grading
+      router.push(
+        `/projects/${userProject.project_id}/submit?userProjectId=${userProject.id}`
+      );
     } catch (error) {
-      console.error('Submission error:', error)
-      setIsSubmitting(false)
+      console.error("Error submitting project:", error);
+      alert("Failed to submit project. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-  }
+  };
 
-  const simulateAIGrading = async () => {
-    // Simulate AI analysis time
-    await new Promise(resolve => setTimeout(resolve, 5000))
-    
-    // Generate mock feedback based on grading criteria
-    const mockFeedback: AIFeedback[] = project!.gradingCriteria.map(criteria => {
-      const score = Math.floor(Math.random() * (criteria.maxPoints * 0.4)) + (criteria.maxPoints * 0.6)
-      
-      return {
-        category: criteria.category,
-        score,
-        maxScore: criteria.maxPoints,
-        feedback: generateMockFeedback(criteria.category, score, criteria.maxPoints),
-        suggestions: generateMockSuggestions(criteria.category)
+  const collectAllFiles = (
+    nodes: FileNode[],
+    files: Record<string, string> = {}
+  ): Record<string, string> => {
+    nodes.forEach((node) => {
+      if (node.type === "file") {
+        files[node.path] = node.content || "";
+      } else if (node.children) {
+        collectAllFiles(node.children, files);
       }
-    })
-    
-    const totalScore = mockFeedback.reduce((sum, f) => sum + f.score, 0)
-    
-    setFeedback(mockFeedback)
-    setScore(totalScore)
-    setIsGrading(false)
-  }
+    });
+    return files;
+  };
 
-  const generateMockFeedback = (category: string, score: number, maxScore: number): string => {
-    const percentage = (score / maxScore) * 100
-    
-    if (percentage >= 90) {
-      return `Excellent work on ${category.toLowerCase()}! Your implementation demonstrates strong understanding and attention to detail.`
-    } else if (percentage >= 75) {
-      return `Good implementation of ${category.toLowerCase()}. There are some areas for improvement but overall solid work.`
-    } else if (percentage >= 60) {
-      return `Decent attempt at ${category.toLowerCase()}. Several areas need improvement to meet the requirements fully.`
-    } else {
-      return `${category} needs significant improvement. Please review the requirements and consider refactoring this section.`
-    }
-  }
+  const handleRun = () => {
+    setIsRunning(true);
+    // The preview panel will handle the actual preview generation
+  };
 
-  const generateMockSuggestions = (category: string): string[] => {
-    const suggestions: Record<string, string[]> = {
-      'Design & UI': [
-        'Consider using a consistent color scheme throughout',
-        'Improve spacing and typography for better readability',
-        'Add hover states and micro-interactions'
-      ],
-      'Functionality': [
-        'Add proper error handling for edge cases',
-        'Implement input validation',
-        'Consider adding loading states'
-      ],
-      'Code Quality': [
-        'Break down large functions into smaller, reusable components',
-        'Add comments for complex logic',
-        'Follow consistent naming conventions'
-      ],
-      'Responsiveness': [
-        'Test on various screen sizes',
-        'Use relative units instead of fixed pixels',
-        'Implement mobile-first design approach'
-      ]
-    }
-    
-    return suggestions[category] || [
-      'Review the project requirements carefully',
-      'Consider best practices for this technology',
-      'Test your implementation thoroughly'
-    ]
-  }
+  const handleStop = () => {
+    setIsRunning(false);
+  };
 
-  const getScoreColor = (score: number, maxScore: number) => {
-    const percentage = (score / maxScore) * 100
-    if (percentage >= 90) return 'text-green-600'
-    if (percentage >= 75) return 'text-blue-600'
-    if (percentage >= 60) return 'text-yellow-600'
-    return 'text-red-600'
-  }
-
-  const getOverallGrade = (totalScore: number, maxScore: number) => {
-    const percentage = (totalScore / maxScore) * 100
-    if (percentage >= 90) return { grade: 'A', color: 'text-green-600', bg: 'bg-green-50' }
-    if (percentage >= 80) return { grade: 'B', color: 'text-blue-600', bg: 'bg-blue-50' }
-    if (percentage >= 70) return { grade: 'C', color: 'text-yellow-600', bg: 'bg-yellow-50' }
-    if (percentage >= 60) return { grade: 'D', color: 'text-orange-600', bg: 'bg-orange-50' }
-    return { grade: 'F', color: 'text-red-600', bg: 'bg-red-50' }
-  }
-
-  if (!project) {
-    return null
-  }
-
-  return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
+  const renderFileTree = (nodes: FileNode[], level = 0) => {
+    return nodes.map((node) => (
+      <div key={node.path}>
+        <div
+          className={`flex items-center gap-2 p-1 rounded cursor-pointer hover:bg-gray-100 ${
+            selectedFile?.path === node.path ? "bg-blue-100 text-blue-700" : ""
+          }`}
+          style={{ marginLeft: `${level * 16}px` }}
+          onClick={() => {
+            if (node.type === "file") {
+              handleFileSelect(node);
+            } else {
+              // Toggle folder
+              const updateTree = (nodes: FileNode[]): FileNode[] => {
+                return nodes.map((n) =>
+                  n.path === node.path
+                    ? { ...n, isOpen: !n.isOpen }
+                    : n.children
+                    ? { ...n, children: updateTree(n.children) }
+                    : n
+                );
+              };
+              setFileTree(updateTree(fileTree));
+            }
+          }}
         >
-          <h1 className="text-3xl font-bold mb-4">Submit Your Project</h1>
-          <p className="text-lg text-muted-foreground">
-            {project.name} - Ready for AI evaluation
-          </p>
-        </motion.div>
+          {node.type === "folder" ? (
+            <>
+              <span className="text-gray-500">{node.isOpen ? "📂" : "📁"}</span>
+              <span className="text-sm font-medium">{node.name}</span>
+            </>
+          ) : (
+            <>
+              <span className="text-gray-500">📄</span>
+              <span className="text-sm">{node.name}</span>
+              {selectedFile?.path === node.path && code !== node.content && (
+                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full ml-auto"></div>
+              )}
+            </>
+          )}
+        </div>
+        {node.type === "folder" &&
+          node.isOpen &&
+          node.children &&
+          renderFileTree(node.children, level + 1)}
+      </div>
+    ));
+  };
 
-        {!submitted ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+  if (!userProject) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p>Loading IDE..bx.</p>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="h-screen flex flex-col bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h1 className="text-lg font-semibold text-gray-800">
+            {userProject.project_name}
+          </h1>
+          <Badge variant="outline" className="text-xs">
+            {userProject.template_id}
+          </Badge>
+          <Badge className="bg-green-500/10 text-green-700 text-xs">
+            {userProject.difficulty}
+          </Badge>
+          {lastSaved && (
+            <span className="text-xs text-gray-500">
+              Saved {lastSaved.toLocaleTimeString()}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleSave(true)}
+            disabled={isSaving}
           >
-            <Card>
-              <CardHeader>
-                <CardTitle>Project Submission</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    GitHub Repository URL *
-                  </label>
-                  <div className="relative">
-                    <Github className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      value={repositoryUrl}
-                      onChange={(e) => setRepositoryUrl(e.target.value)}
-                      placeholder="https://github.com/username/repository"
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
+            <Save className="h-4 w-4 mr-1" />
+            {isSaving ? "Saving..." : "Save"}
+          </Button>
 
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Deployed URL (Optional)
-                  </label>
-                  <div className="relative">
-                    <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      value={deployedUrl}
-                      onChange={(e) => setDeployedUrl(e.target.value)}
-                      placeholder="https://your-project.netlify.app"
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
+          {isRunning ? (
+            <Button variant="outline" size="sm" onClick={handleStop}>
+              <Square className="h-4 w-4 mr-1" />
+              Stop
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" onClick={handleRun}>
+              <Play className="h-4 w-4 mr-1" />
+              Run
+            </Button>
+          )}
 
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Project Description
-                  </label>
-                  <Textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Describe your implementation, challenges faced, and any additional features you added..."
-                    rows={4}
-                  />
-                </div>
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            {isSubmitting ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              <>
+                <Send className="h-4 w-4 mr-1" />
+                Submit for Grading
+              </>
+            )}
+          </Button>
 
-                <Button
-                  onClick={handleSubmit}
-                  disabled={!repositoryUrl.trim() || isSubmitting}
-                  className="w-full"
-                  size="lg"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="h-4 w-4 mr-2" />
-                      Submit for Grading
-                    </>
-                  )}
+          <Button variant="outline" size="sm">
+            <Settings className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Main IDE Layout - Fixed height */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar - File Explorer */}
+        <div
+          className="bg-gray-50 border-r border-gray-200 flex flex-col"
+          style={{ width: `${sidebarWidth}px` }}
+        >
+          <div className="p-3 border-b border-gray-200">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-medium text-sm text-gray-700">Explorer</h3>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                  <FolderPlus className="h-3 w-3" />
                 </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ) : (
-          <div className="space-y-6">
-            {/* Submission Confirmation */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1 }}
-            >
-              <Card className="border-green-200 bg-green-50">
-                <CardContent className="p-6 text-center">
-                  <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
-                  <h2 className="text-xl font-semibold text-green-800 mb-2">
-                    Project Submitted Successfully!
-                  </h2>
-                  <p className="text-green-700">
-                    Your project is now being evaluated by our AI grading system.
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Grading Progress */}
-            {isGrading && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <Card>
-                  <CardContent className="p-6 text-center">
-                    <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-                    <h3 className="text-lg font-semibold mb-2">AI Grading in Progress</h3>
-                    <p className="text-muted-foreground">
-                      Our AI is analyzing your code, checking requirements, and evaluating your implementation...
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-
-            {/* Results */}
-            {score !== null && feedback.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="space-y-6"
-              >
-                {/* Overall Score */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Trophy className="h-5 w-5" />
-                      Your Results
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center">
-                      <div className={`text-6xl font-bold mb-2 ${getOverallGrade(score, project.maxPoints).color}`}>
-                        {getOverallGrade(score, project.maxPoints).grade}
-                      </div>
-                      <div className="text-2xl font-semibold mb-2">
-                        {score} / {project.maxPoints} points
-                      </div>
-                      <div className="text-lg text-muted-foreground">
-                        {Math.round((score / project.maxPoints) * 100)}% Score
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Detailed Feedback */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Detailed Feedback</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      {feedback.map((item, index) => (
-                        <div key={index} className="border rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <h4 className="font-semibold">{item.category}</h4>
-                            <div className="flex items-center gap-2">
-                              <span className={`font-bold ${getScoreColor(item.score, item.maxScore)}`}>
-                                {item.score}/{item.maxScore}
-                              </span>
-                              <div className="flex">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    className={`h-4 w-4 ${
-                                      i < Math.round((item.score / item.maxScore) * 5)
-                                        ? 'text-yellow-400 fill-current'
-                                        : 'text-gray-300'
-                                    }`}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <p className="text-muted-foreground mb-4">{item.feedback}</p>
-                          
-                          <div>
-                            <h5 className="font-medium mb-2">Suggestions for Improvement:</h5>
-                            <ul className="space-y-1">
-                              {item.suggestions.map((suggestion, i) => (
-                                <li key={i} className="flex items-start gap-2 text-sm">
-                                  <AlertCircle className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                                  <span>{suggestion}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Next Steps */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Next Steps</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <p className="text-muted-foreground">
-                        Great work on completing this project! Here's what you can do next:
-                      </p>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Button variant="outline" className="justify-start">
-                          <Github className="h-4 w-4 mr-2" />
-                          View on GitHub
-                        </Button>
-                        
-                        {deployedUrl && (
-                          <Button variant="outline" className="justify-start">
-                            <Globe className="h-4 w-4 mr-2" />
-                            View Live Project
-                          </Button>
-                        )}
-                        
-                        <Button 
-                          variant="outline" 
-                          className="justify-start"
-                          onClick={() => router.push('/projects/browse')}
-                        >
-                          <Trophy className="h-4 w-4 mr-2" />
-                          Try Another Project
-                        </Button>
-                        
-                        <Button 
-                          variant="outline" 
-                          className="justify-start"
-                          onClick={() => router.push('/portfolio')}
-                        >
-                          <Star className="h-4 w-4 mr-2" />
-                          View Portfolio
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                  <FilePlus className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
           </div>
-        )}
+
+          <div className="flex-1 overflow-y-auto p-2">
+            {renderFileTree(fileTree)}
+          </div>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Editor and Preview */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Code Editor */}
+            <div className="flex-1 flex flex-col">
+              <CodeEditor
+                file={selectedFile}
+                code={code}
+                onChange={setCode}
+                onSave={() => handleSave(true)}
+              />
+            </div>
+
+            {/* Right Panel */}
+            <div className="w-1/2 border-l border-gray-200 flex flex-col">
+              <Tabs
+                value={activePanel}
+                onValueChange={(value) => setActivePanel(value as any)}
+              >
+                <TabsList className="w-full rounded-none border-b">
+                  <TabsTrigger
+                    value="preview"
+                    className="flex items-center gap-2"
+                  >
+                    <Eye className="h-4 w-4" />
+                    Preview
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="terminal"
+                    className="flex items-center gap-2"
+                  >
+                    <TerminalIcon className="h-4 w-4" />
+                    Terminal
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="github"
+                    className="flex items-center gap-2"
+                  >
+                    <GitBranch className="h-4 w-4" />
+                    GitHub
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent
+                  value="preview"
+                  className="flex-1 m-0 overflow-hidden"
+                >
+                  <PreviewPanel
+                    projectId={projectId}
+                    files={collectAllFiles(fileTree)}
+                    isRunning={isRunning}
+                  />
+                </TabsContent>
+
+                <TabsContent
+                  value="terminal"
+                  className="flex-1 m-0 overflow-hidden"
+                >
+                  <Terminal projectId={projectId} />
+                </TabsContent>
+
+                <TabsContent
+                  value="github"
+                  className="flex-1 m-0 overflow-hidden"
+                >
+                  <div className="p-4 h-full overflow-y-auto">
+                    <GitHubIntegration
+                      projectId={projectId}
+                      projectName={userProject.project_name}
+                      files={collectAllFiles(fileTree)}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  )
+  );
 }

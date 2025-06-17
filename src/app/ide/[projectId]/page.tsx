@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,21 +18,26 @@ import {
   Terminal as TerminalIcon,
   Eye,
   Code,
-  GitBranch
+  GitBranch,
+  Send,
+  CheckCircle
 } from 'lucide-react'
 import { CodeEditor } from '@/components/ide/CodeEditor'
 import { Terminal } from '@/components/ide/Terminal'
 import { PreviewPanel } from '@/components/ide/PreviewPanel'
 import { GitHubIntegration } from '@/components/ide/GitHubIntegration'
 import { FileNode } from '@/types/ide'
-import { saveProjectCode } from '@/lib/database'
+import { saveProjectCode, updateUserProject } from '@/lib/database'
 import { UserProject } from '@/lib/database'
 import { getFileContent } from '@/lib/fileTemplates'
 import { techStacks } from '@/data/projects'
+import { useAuthStore } from '@/lib/store'
 
 export default function IDEPage() {
   const params = useParams()
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const { user } = useAuthStore()
   const projectId = params.projectId as string
   
   const [userProject, setUserProject] = useState<UserProject | null>(null)
@@ -41,6 +46,7 @@ export default function IDEPage() {
   const [code, setCode] = useState('')
   const [isRunning, setIsRunning] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [activePanel, setActivePanel] = useState<'terminal' | 'preview' | 'github'>('preview')
   const [sidebarWidth, setSidebarWidth] = useState(250)
@@ -88,7 +94,7 @@ export default function IDEPage() {
       // Create mock user project
       setUserProject({
         id: projectId,
-        user_id: 'user-id',
+        user_id: user?.id || 'user-id',
         project_id: 'project-id',
         project_name: projectName,
         stack: 'frontend',
@@ -193,6 +199,35 @@ export default function IDEPage() {
     }
   }
 
+  const handleSubmit = async () => {
+    if (!userProject || !user) return
+
+    setIsSubmitting(true)
+    
+    try {
+      // Save current work first
+      await handleSave(false)
+      
+      // Collect all files for submission
+      const allFiles = collectAllFiles(fileTree)
+      
+      // Update project status to submitted
+      await updateUserProject(userProject.id, {
+        status: 'submitted',
+        code_files: allFiles
+      })
+      
+      // Navigate to submission page for AI grading
+      router.push(`/projects/${userProject.project_id}/submit?userProjectId=${userProject.id}`)
+      
+    } catch (error) {
+      console.error('Error submitting project:', error)
+      alert('Failed to submit project. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   const collectAllFiles = (nodes: FileNode[], files: Record<string, string> = {}): Record<string, string> => {
     nodes.forEach(node => {
       if (node.type === 'file') {
@@ -273,6 +308,7 @@ export default function IDEPage() {
       </div>
     )
   }
+  
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
@@ -311,14 +347,32 @@ export default function IDEPage() {
             </Button>
           )}
           
+          <Button 
+            onClick={handleSubmit} 
+            disabled={isSubmitting}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            {isSubmitting ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              <>
+                <Send className="h-4 w-4 mr-1" />
+                Submit for Grading
+              </>
+            )}
+          </Button>
+          
           <Button variant="outline" size="sm">
             <Settings className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* Main IDE Layout */}
-      <div className="flex-1 flex">
+      {/* Main IDE Layout - Fixed height */}
+      <div className="flex-1 flex overflow-hidden">
         {/* Sidebar - File Explorer */}
         <div 
           className="bg-gray-50 border-r border-gray-200 flex flex-col"
@@ -344,11 +398,11 @@ export default function IDEPage() {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col overflow-hidden">
           {/* Editor and Preview */}
-          <div className="flex-1 flex">
+          <div className="flex-1 flex overflow-hidden">
             {/* Code Editor */}
-            <div className="flex-1">
+            <div className="flex-1 flex flex-col">
               <CodeEditor
                 file={selectedFile}
                 code={code}
@@ -358,7 +412,7 @@ export default function IDEPage() {
             </div>
 
             {/* Right Panel */}
-            <div className="w-1/2 border-l border-gray-200">
+            <div className="w-1/2 border-l border-gray-200 flex flex-col">
               <Tabs value={activePanel} onValueChange={(value) => setActivePanel(value as any)}>
                 <TabsList className="w-full rounded-none border-b">
                   <TabsTrigger value="preview" className="flex items-center gap-2">
@@ -375,7 +429,7 @@ export default function IDEPage() {
                   </TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="preview" className="h-full m-0">
+                <TabsContent value="preview" className="flex-1 m-0 overflow-hidden">
                   <PreviewPanel
                     projectId={projectId}
                     files={collectAllFiles(fileTree)}
@@ -383,16 +437,18 @@ export default function IDEPage() {
                   />
                 </TabsContent>
                 
-                <TabsContent value="terminal" className="h-full m-0">
+                <TabsContent value="terminal" className="flex-1 m-0 overflow-hidden">
                   <Terminal projectId={projectId} />
                 </TabsContent>
                 
-                <TabsContent value="github" className="h-full m-0 p-4">
-                  <GitHubIntegration
-                    projectId={projectId}
-                    projectName={userProject.project_name}
-                    files={collectAllFiles(fileTree)}
-                  />
+                <TabsContent value="github" className="flex-1 m-0 overflow-hidden">
+                  <div className="p-4 h-full overflow-y-auto">
+                    <GitHubIntegration
+                      projectId={projectId}
+                      projectName={userProject.project_name}
+                      files={collectAllFiles(fileTree)}
+                    />
+                  </div>
                 </TabsContent>
               </Tabs>
             </div>
