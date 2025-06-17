@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { 
   Play, 
@@ -16,15 +15,14 @@ import {
   Github, 
   Eye, 
   Terminal,
-  Settings,
-  Upload,
   Download,
-  Trash2,
   RefreshCw,
   X
 } from 'lucide-react'
-import { beginnerProjects, intermediateProjects, advancedProjects, techStacks } from '@/data/projects'
-import { ProjectTemplate, TechTemplate } from '@/types/project'
+import { getUserProjects, updateUserProject, saveProjectCode } from '@/lib/database'
+import { UserProject } from '@/lib/database'
+import { getFileContent } from '@/lib/fileTemplates'
+import { techStacks } from '@/data/projects'
 
 interface FileNode {
   name: string
@@ -38,11 +36,8 @@ export default function IDEPage() {
   const params = useParams()
   const searchParams = useSearchParams()
   const projectId = params.projectId as string
-  const templateId = searchParams.get('template')
-  const projectName = searchParams.get('name')
   
-  const [project, setProject] = useState<ProjectTemplate | null>(null)
-  const [template, setTemplate] = useState<TechTemplate | null>(null)
+  const [userProject, setUserProject] = useState<UserProject | null>(null)
   const [fileTree, setFileTree] = useState<FileNode[]>([])
   const [selectedFile, setSelectedFile] = useState<FileNode | null>(null)
   const [code, setCode] = useState('')
@@ -50,130 +45,102 @@ export default function IDEPage() {
   const [terminalOutput, setTerminalOutput] = useState<string[]>([])
   const [showTerminal, setShowTerminal] = useState(false)
   const [showPreview, setShowPreview] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [lastSaved, setLastSaved] = useState<Date | null>(null)
 
   useEffect(() => {
-    // Find project and template
-    const allProjects = [...beginnerProjects, ...intermediateProjects, ...advancedProjects]
-    const foundProject = allProjects.find(p => p.id === projectId)
-    
-    if (!foundProject) return
-    
-    setProject(foundProject)
-    
-    // Find template
-    const allTemplates = techStacks.flatMap(stack => stack.templates)
-    const foundTemplate = allTemplates.find(t => t.id === templateId)
-    
-    if (!foundTemplate) return
-    
-    setTemplate(foundTemplate)
-    
-    // Initialize file tree from template
-    const initializeFileTree = (structure: any, basePath = ''): FileNode[] => {
-      return Object.entries(structure).map(([name, content]) => {
-        const path = basePath ? `${basePath}/${name}` : name
-        
-        if (typeof content === 'string') {
-          return {
-            name,
-            type: 'file',
-            content: getDefaultFileContent(name, foundTemplate),
-            path
-          }
-        } else {
-          return {
-            name,
-            type: 'folder',
-            children: initializeFileTree(content, path),
-            path
-          }
-        }
+    loadProject()
+  }, [projectId])
+
+  // Auto-save functionality
+  useEffect(() => {
+    const autoSaveInterval = setInterval(() => {
+      if (selectedFile && code !== selectedFile.content) {
+        handleSave(false) // Silent save
+      }
+    }, 30000) // Auto-save every 30 seconds
+
+    return () => clearInterval(autoSaveInterval)
+  }, [selectedFile, code])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault()
+        handleSave(true) // Manual save with feedback
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  const loadProject = async () => {
+    try {
+      // This would typically load from database
+      // For now, we'll simulate loading project data
+      const templateId = searchParams.get('template')
+      const projectName = searchParams.get('name')
+      
+      if (!templateId || !projectName) return
+
+      // Find template
+      const allTemplates = techStacks.flatMap(stack => stack.templates)
+      const template = allTemplates.find(t => t.id === templateId)
+      
+      if (!template) return
+
+      // Initialize file tree from template
+      const initialTree = initializeFileTree(template.folderStructure, '', template, projectName)
+      setFileTree(initialTree)
+      
+      // Select first file
+      const firstFile = findFirstFile(initialTree)
+      if (firstFile) {
+        setSelectedFile(firstFile)
+        setCode(firstFile.content || '')
+      }
+
+      // Create mock user project
+      setUserProject({
+        id: projectId,
+        user_id: 'user-id',
+        project_id: 'project-id',
+        project_name: projectName,
+        stack: 'frontend',
+        difficulty: 'beginner',
+        template_id: templateId,
+        status: 'in_progress',
+        code_files: {},
+        started_at: new Date().toISOString(),
+        last_saved_at: new Date().toISOString()
       })
+    } catch (error) {
+      console.error('Error loading project:', error)
     }
-    
-    const initialTree = initializeFileTree(foundTemplate.folderStructure)
-    setFileTree(initialTree)
-    
-    // Select first file
-    const firstFile = findFirstFile(initialTree)
-    if (firstFile) {
-      setSelectedFile(firstFile)
-      setCode(firstFile.content || '')
-    }
-  }, [projectId, templateId])
+  }
 
-  const getDefaultFileContent = (fileName: string, template: TechTemplate): string => {
-    // Return default content based on file type and template
-    if (fileName === 'README.md') {
-      return `# ${projectName || 'Project'}\n\nBuilt with ${template.name}\n\n## Getting Started\n\n${template.startCommand}\n`
-    }
-    
-    if (fileName === 'package.json' && template.dependencies.length > 0) {
-      return JSON.stringify({
-        name: projectName?.toLowerCase().replace(/\s+/g, '-') || 'project',
-        version: '1.0.0',
-        dependencies: template.dependencies.reduce((acc, dep) => {
-          acc[dep] = 'latest'
-          return acc
-        }, {} as Record<string, string>),
-        scripts: {
-          start: template.startCommand,
-          dev: template.startCommand,
-          build: 'echo "Build script not configured"'
+  const initializeFileTree = (structure: any, basePath = '', template: any, projectName: string): FileNode[] => {
+    return Object.entries(structure).map(([name, content]) => {
+      const path = basePath ? `${basePath}/${name}` : name
+      
+      if (typeof content === 'string') {
+        return {
+          name,
+          type: 'file',
+          content: getFileContent(path, template, projectName),
+          path
         }
-      }, null, 2)
-    }
-    
-    if (fileName === 'index.html') {
-      return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${projectName || 'Project'}</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-    <h1>Welcome to ${projectName || 'Your Project'}</h1>
-    <p>Start building your project here!</p>
-    
-    <script src="js/main.js"></script>
-</body>
-</html>`
-    }
-    
-    if (fileName.endsWith('.css')) {
-      return `/* ${projectName || 'Project'} Styles */
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    line-height: 1.6;
-    color: #333;
-}
-
-h1 {
-    color: #2c3e50;
-    margin-bottom: 1rem;
-}
-`
-    }
-    
-    if (fileName.endsWith('.js')) {
-      return `// ${projectName || 'Project'} JavaScript
-
-console.log('Welcome to ${projectName || 'your project'}!');
-
-// Your code here
-`
-    }
-    
-    return ''
+      } else {
+        return {
+          name,
+          type: 'folder',
+          children: initializeFileTree(content, path, template, projectName),
+          path
+        }
+      }
+    })
   }
 
   const findFirstFile = (nodes: FileNode[]): FileNode | null => {
@@ -215,24 +182,57 @@ console.log('Welcome to ${projectName || 'your project'}!');
     setCode(file.content || '')
   }
 
-  const handleSave = () => {
-    if (selectedFile) {
+  const handleSave = async (showFeedback = true) => {
+    if (!selectedFile || !userProject) return
+
+    setIsSaving(true)
+    
+    try {
+      // Update file content in tree
       updateFileContent(selectedFile.path, code)
-      // Here you would typically save to a backend
-      console.log('File saved:', selectedFile.path)
+      
+      // Collect all file contents
+      const allFiles = collectAllFiles(fileTree)
+      
+      // Save to database
+      await saveProjectCode(userProject.id, allFiles)
+      
+      setLastSaved(new Date())
+      
+      if (showFeedback) {
+        setTerminalOutput(prev => [...prev, `✅ Project saved successfully at ${new Date().toLocaleTimeString()}`])
+      }
+    } catch (error) {
+      console.error('Error saving project:', error)
+      if (showFeedback) {
+        setTerminalOutput(prev => [...prev, `❌ Error saving project: ${error}`])
+      }
+    } finally {
+      setIsSaving(false)
     }
+  }
+
+  const collectAllFiles = (nodes: FileNode[], files: Record<string, string> = {}): Record<string, string> => {
+    nodes.forEach(node => {
+      if (node.type === 'file') {
+        files[node.path] = node.content || ''
+      } else if (node.children) {
+        collectAllFiles(node.children, files)
+      }
+    })
+    return files
   }
 
   const handleRun = () => {
     setIsRunning(true)
     setShowTerminal(true)
-    setTerminalOutput(prev => [...prev, `> ${template?.startCommand || 'npm start'}`])
+    setTerminalOutput(prev => [...prev, `> Running ${userProject?.project_name}...`])
     
     // Simulate running the project
     setTimeout(() => {
       setTerminalOutput(prev => [...prev, 'Starting development server...'])
       setTimeout(() => {
-        setTerminalOutput(prev => [...prev, 'Server running on http://localhost:3000'])
+        setTerminalOutput(prev => [...prev, '✅ Server running on http://localhost:3000'])
         setIsRunning(false)
       }, 2000)
     }, 1000)
@@ -240,12 +240,30 @@ console.log('Welcome to ${projectName || 'your project'}!');
 
   const handleStop = () => {
     setIsRunning(false)
-    setTerminalOutput(prev => [...prev, 'Server stopped.'])
+    setTerminalOutput(prev => [...prev, '🛑 Server stopped.'])
+  }
+
+  const handleDownload = () => {
+    // Create a zip file with all project files
+    const allFiles = collectAllFiles(fileTree)
+    
+    // For now, just download the current file
+    if (selectedFile) {
+      const blob = new Blob([code], { type: 'text/plain' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = selectedFile.name
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }
   }
 
   const handleSubmit = () => {
     // Navigate to submission page
-    window.location.href = `/projects/${projectId}/submit`
+    window.location.href = `/projects/${userProject?.project_id}/submit`
   }
 
   const renderFileTree = (nodes: FileNode[], level = 0) => {
@@ -269,7 +287,7 @@ console.log('Welcome to ${projectName || 'your project'}!');
     ))
   }
 
-  if (!project || !template) {
+  if (!userProject) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -285,17 +303,27 @@ console.log('Welcome to ${projectName || 'your project'}!');
       {/* Header */}
       <div className="border-b p-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h1 className="text-lg font-semibold">{projectName}</h1>
-          <Badge variant="outline">{template.name}</Badge>
+          <h1 className="text-lg font-semibold">{userProject.project_name}</h1>
+          <Badge variant="outline">{userProject.template_id}</Badge>
           <Badge className="bg-green-500/10 text-green-700">
-            {project.difficulty}
+            {userProject.difficulty}
           </Badge>
+          {lastSaved && (
+            <span className="text-xs text-muted-foreground">
+              Last saved: {lastSaved.toLocaleTimeString()}
+            </span>
+          )}
         </div>
         
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleSave}>
+          <Button variant="outline" size="sm" onClick={() => handleSave(true)} disabled={isSaving}>
             <Save className="h-4 w-4 mr-1" />
-            Save
+            {isSaving ? 'Saving...' : 'Save'}
+          </Button>
+          
+          <Button variant="outline" size="sm" onClick={handleDownload}>
+            <Download className="h-4 w-4 mr-1" />
+            Download
           </Button>
           
           {isRunning ? (
@@ -359,6 +387,7 @@ console.log('Welcome to ${projectName || 'your project'}!');
                   onChange={(e) => setCode(e.target.value)}
                   className="w-full h-full p-4 font-mono text-sm resize-none border-none outline-none bg-background"
                   placeholder="Start coding..."
+                  style={{ fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace' }}
                 />
               </div>
             </>

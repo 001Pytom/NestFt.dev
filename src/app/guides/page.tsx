@@ -1,98 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BookOpen, ArrowRight, Clock, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-
-interface Guide {
-  id: string;
-  title: string;
-  description: string;
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
-  duration: string;
-  category: string;
-  steps: number;
-  rating: number;
-  image: string;
-}
-
-const guides: Guide[] = [
-  {
-    id: "1",
-    title: "Complete Beginner's Guide to Web Development",
-    description:
-      "Start your web development journey from scratch. Learn HTML, CSS, and JavaScript fundamentals.",
-    difficulty: "Beginner",
-    duration: "4 weeks",
-    category: "Web Development",
-    steps: 12,
-    rating: 4.9,
-    image: "https://images.pexels.com/photos/1181677/pexels-photo-1181677.jpeg",
-  },
-  {
-    id: "2",
-    title: "Mastering React: From Basics to Advanced Patterns",
-    description:
-      "Comprehensive guide to React development including hooks, context, and performance optimization.",
-    difficulty: "Intermediate",
-    duration: "6 weeks",
-    category: "Frontend",
-    steps: 18,
-    rating: 4.8,
-    image: "https://images.pexels.com/photos/3861958/pexels-photo-3861958.jpeg",
-  },
-  {
-    id: "3",
-    title: "Building RESTful APIs with Node.js and Express",
-    description:
-      "Learn to create robust backend APIs with authentication, validation, and database integration.",
-    difficulty: "Intermediate",
-    duration: "5 weeks",
-    category: "Backend",
-    steps: 15,
-    rating: 4.7,
-    image: "https://images.pexels.com/photos/4164418/pexels-photo-4164418.jpeg",
-  },
-  {
-    id: "4",
-    title: "Full-Stack Development with MERN Stack",
-    description:
-      "Build complete web applications using MongoDB, Express, React, and Node.js.",
-    difficulty: "Advanced",
-    duration: "8 weeks",
-    category: "Full-Stack",
-    steps: 24,
-    rating: 4.9,
-    image: "https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg",
-  },
-  {
-    id: "5",
-    title: "Git and GitHub Collaboration Workflow",
-    description:
-      "Master version control and collaborative development with Git and GitHub.",
-    difficulty: "Beginner",
-    duration: "2 weeks",
-    category: "Tools",
-    steps: 8,
-    rating: 4.6,
-    image: "https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg",
-  },
-  {
-    id: "6",
-    title: "Deployment and DevOps for Developers",
-    description:
-      "Learn to deploy applications using modern DevOps practices and cloud platforms.",
-    difficulty: "Advanced",
-    duration: "6 weeks",
-    category: "DevOps",
-    steps: 20,
-    rating: 4.5,
-    image: "https://images.pexels.com/photos/1181675/pexels-photo-1181675.jpeg",
-  },
-];
+import { getLearningGuides, LearningGuide } from "@/lib/database";
 
 const categories = [
   "All",
@@ -105,7 +19,24 @@ const categories = [
 ];
 
 function GuidesPage() {
-  const [selectedCategory, setSelectedCategory] = React.useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [guides, setGuides] = useState<LearningGuide[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadGuides();
+  }, []);
+
+  const loadGuides = async () => {
+    try {
+      const data = await getLearningGuides();
+      setGuides(data);
+    } catch (error) {
+      console.error('Error loading guides:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredGuides =
     selectedCategory === "All"
@@ -113,17 +44,25 @@ function GuidesPage() {
       : guides.filter((guide) => guide.category === selectedCategory);
 
   const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "Beginner":
+    switch (difficulty.toLowerCase()) {
+      case "beginner":
         return "bg-success/10 text-success";
-      case "Intermediate":
+      case "intermediate":
         return "bg-warning/10 text-warning";
-      case "Advanced":
+      case "advanced":
         return "bg-destructive/10 text-destructive";
       default:
         return "bg-muted text-muted-foreground";
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen px-24">
@@ -170,65 +109,80 @@ function GuidesPage() {
       {/* Guides Grid */}
       <section className="py-16">
         <div className="container px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredGuides.map((guide) => (
-              <Card
-                key={guide.id}
-                className="overflow-hidden h-full flex flex-col hover:shadow-lg transition-shadow"
-              >
-                <div className="aspect-video overflow-hidden">
-                  <img
-                    src={guide.image}
-                    alt={guide.title}
-                    className="w-full h-full object-cover transition-transform hover:scale-105"
-                  />
-                </div>
-                <CardContent className="p-6 flex-1 flex flex-col">
-                  <div className="flex items-center justify-between mb-3">
-                    <Badge variant="outline" className="text-xs">
-                      {guide.category}
-                    </Badge>
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-warning text-warning" />
-                      <span className="text-sm font-medium">
-                        {guide.rating}
-                      </span>
-                    </div>
+          {filteredGuides.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredGuides.map((guide) => (
+                <Card
+                  key={guide.id}
+                  className="overflow-hidden h-full flex flex-col hover:shadow-lg transition-shadow"
+                >
+                  <div className="aspect-video overflow-hidden">
+                    <img
+                      src={guide.image_url || 'https://images.pexels.com/photos/1181677/pexels-photo-1181677.jpeg'}
+                      alt={guide.title}
+                      className="w-full h-full object-cover transition-transform hover:scale-105"
+                    />
                   </div>
-
-                  <h3 className="font-semibold text-lg mb-3 line-clamp-2">
-                    {guide.title}
-                  </h3>
-
-                  <p className="text-muted-foreground text-sm mb-4 flex-1">
-                    {guide.description}
-                  </p>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>{guide.duration}</span>
-                      </div>
-                      <span className="text-muted-foreground">
-                        {guide.steps} steps
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <Badge className={getDifficultyColor(guide.difficulty)}>
-                        {guide.difficulty}
+                  <CardContent className="p-6 flex-1 flex flex-col">
+                    <div className="flex items-center justify-between mb-3">
+                      <Badge variant="outline" className="text-xs">
+                        {guide.category}
                       </Badge>
-                      <Button size="sm">
-                        Start Guide
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Star className="h-4 w-4 fill-warning text-warning" />
+                        <span className="text-sm font-medium">
+                          {guide.rating}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+
+                    <h3 className="font-semibold text-lg mb-3 line-clamp-2">
+                      {guide.title}
+                    </h3>
+
+                    <p className="text-muted-foreground text-sm mb-4 flex-1">
+                      {guide.description}
+                    </p>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span>{guide.duration}</span>
+                        </div>
+                        <span className="text-muted-foreground">
+                          {guide.steps.length} steps
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <Badge className={getDifficultyColor(guide.difficulty)}>
+                          {guide.difficulty}
+                        </Badge>
+                        <Link href={`/guides/${guide.id}`}>
+                          <Button size="sm">
+                            Start Guide
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No Guides Found</h3>
+              <p className="text-muted-foreground">
+                {selectedCategory === "All" 
+                  ? "No learning guides available at the moment."
+                  : `No guides found in the ${selectedCategory} category.`
+                }
+              </p>
+            </div>
+          )}
         </div>
       </section>
 

@@ -829,3 +829,29 @@ console.log('Welcome to ${projectName}!');
 
 // Export other template functions
 export { getVanillaFileContent, getReactFileContent, getNodeExpressFileContent };
+
+// Additional template functions for other frameworks
+const getNextJSFileContent = (fileName: string, projectName: string): string => {
+  // Implementation for Next.js templates
+  return getDefaultFileContent(fileName, projectName);
+};
+
+const getVueFileContent = (fileName: string, projectName: string): string => {
+  // Implementation for Vue.js templates
+  return getDefaultFileContent(fileName, projectName);
+};
+
+const getPythonFlaskFileContent = (fileName: string, projectName: string): string => {
+  // Implementation for Python Flask templates
+  return getDefaultFileContent(fileName, projectName);
+};
+
+const getPythonDjangoFileContent = (fileName: string, projectName: string): string => {
+  // Implementation for Python Django templates
+  return getDefaultFileContent(fileName, projectName);
+};
+
+const getMERNFileContent = (fileName: string, projectName: string): string => {
+  // Implementation for MERN stack templates
+  return getDefaultFileContent(fileName, projectName);
+};

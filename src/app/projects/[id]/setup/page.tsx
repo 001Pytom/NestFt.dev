@@ -5,22 +5,24 @@ import { useParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Code, Clock, Trophy, CheckCircle } from 'lucide-react'
 import { beginnerProjects, intermediateProjects, advancedProjects, techStacks } from '@/data/projects'
 import { ProjectTemplate, TechTemplate } from '@/types/project'
+import { useAuthStore } from '@/lib/store'
+import { createUserProject } from '@/lib/database'
 import Link from 'next/link'
 
 export default function ProjectSetupPage() {
   const params = useParams()
   const router = useRouter()
+  const { user } = useAuthStore()
   const projectId = params.id as string
   
   const [project, setProject] = useState<ProjectTemplate | null>(null)
   const [selectedTemplate, setSelectedTemplate] = useState<TechTemplate | null>(null)
-  const [projectName, setProjectName] = useState('')
   const [availableTemplates, setAvailableTemplates] = useState<TechTemplate[]>([])
+  const [isCreating, setIsCreating] = useState(false)
 
   useEffect(() => {
     const allProjects = [...beginnerProjects, ...intermediateProjects, ...advancedProjects]
@@ -32,7 +34,6 @@ export default function ProjectSetupPage() {
     }
     
     setProject(foundProject)
-    setProjectName(foundProject.name.replace(/\s+/g, '-').toLowerCase())
     
     // Get available templates based on project stack
     const relevantStacks = techStacks.filter(stack => 
@@ -48,13 +49,40 @@ export default function ProjectSetupPage() {
     }
   }, [projectId, router])
 
-  const handleCreateProject = () => {
-    if (!project || !selectedTemplate || !projectName.trim()) {
+  const handleCreateProject = async () => {
+    if (!project || !selectedTemplate || !user) {
       return
     }
     
-    // Navigate to IDE with project setup
-    router.push(`/ide/${projectId}?template=${selectedTemplate.id}&name=${encodeURIComponent(projectName)}`)
+    setIsCreating(true)
+    
+    try {
+      // Create user project in database
+      const userProject = await createUserProject({
+        user_id: user.id,
+        project_id: project.id,
+        project_name: project.name,
+        stack: project.stack,
+        difficulty: project.difficulty,
+        template_id: selectedTemplate.id,
+        status: 'in_progress',
+        code_files: {},
+        started_at: new Date().toISOString(),
+        last_saved_at: new Date().toISOString()
+      })
+
+      if (userProject) {
+        // Navigate to IDE with project setup
+        router.push(`/ide/${userProject.id}?template=${selectedTemplate.id}&name=${encodeURIComponent(project.name)}`)
+      } else {
+        throw new Error('Failed to create project')
+      }
+    } catch (error) {
+      console.error('Error creating project:', error)
+      alert('Failed to create project. Please try again.')
+    } finally {
+      setIsCreating(false)
+    }
   }
 
   const getDifficultyColor = (difficulty: string) => {
@@ -172,14 +200,14 @@ export default function ProjectSetupPage() {
               <CardContent className="space-y-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">
-                    Project Name
+                    Project Name (Auto-generated)
                   </label>
-                  <Input
-                    value={projectName}
-                    onChange={(e) => setProjectName(e.target.value)}
-                    placeholder="Enter project name"
-                    className="mb-4"
-                  />
+                  <div className="p-3 bg-muted rounded-md text-sm text-muted-foreground">
+                    {project.name}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Project names are automatically generated and cannot be edited
+                  </p>
                 </div>
                 
                 <div>
@@ -220,11 +248,11 @@ export default function ProjectSetupPage() {
                 
                 <Button
                   onClick={handleCreateProject}
-                  disabled={!selectedTemplate || !projectName.trim()}
+                  disabled={!selectedTemplate || isCreating}
                   className="w-full"
                   size="lg"
                 >
-                  Create Project
+                  {isCreating ? 'Creating Project...' : 'Start Building'}
                 </Button>
               </CardContent>
             </Card>
