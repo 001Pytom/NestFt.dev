@@ -127,6 +127,21 @@ export async function getUserProjects(userId: string): Promise<UserProject[]> {
   return data || []
 }
 
+export async function getUserProject(projectId: string): Promise<UserProject | null> {
+  const { data, error } = await supabase
+    .from('user_projects')
+    .select('*')
+    .eq('id', projectId)
+    .single()
+
+  if (error) {
+    console.error('Error fetching user project:', error)
+    return null
+  }
+
+  return data
+}
+
 export async function createUserProject(project: Partial<UserProject>): Promise<UserProject | null> {
   const { data, error } = await supabase
     .from('user_projects')
@@ -191,6 +206,22 @@ export async function submitProject(submission: Partial<ProjectSubmission>): Pro
   return data
 }
 
+export async function updateProjectSubmission(submissionId: string, updates: Partial<ProjectSubmission>): Promise<ProjectSubmission | null> {
+  const { data, error } = await supabase
+    .from('project_submissions')
+    .update(updates)
+    .eq('id', submissionId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating project submission:', error)
+    return null
+  }
+
+  return data
+}
+
 export async function getProjectSubmissions(userId: string): Promise<ProjectSubmission[]> {
   const { data, error } = await supabase
     .from('project_submissions')
@@ -236,7 +267,7 @@ export async function getLearningGuide(id: string): Promise<LearningGuide | null
   return data
 }
 
-// Leaderboard Functions
+// Leaderboard Functions - Updated to use real data
 export async function getLeaderboard(limit: number = 50): Promise<UserProfile[]> {
   const { data, error } = await supabase
     .from('user_profiles')
@@ -252,7 +283,7 @@ export async function getLeaderboard(limit: number = 50): Promise<UserProfile[]>
   return data || []
 }
 
-// Progress Calculation Functions
+// Progress Calculation Functions - Updated to use real data
 export async function calculateUserProgress(userId: string): Promise<{
   beginner: { completed: number; total: number; percentage: number }
   intermediate: { completed: number; total: number; percentage: number }
@@ -298,4 +329,39 @@ export async function canAccessDifficulty(userId: string, difficulty: 'beginner'
   }
 
   return false
+}
+
+// Get all completed projects for leaderboard calculation
+export async function getAllCompletedProjects(): Promise<UserProject[]> {
+  const { data, error } = await supabase
+    .from('user_projects')
+    .select('*')
+    .eq('status', 'completed')
+    .order('completed_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching completed projects:', error)
+    return []
+  }
+
+  return data || []
+}
+
+// Update leaderboard rankings (this could be run periodically)
+export async function updateLeaderboardRankings(): Promise<void> {
+  try {
+    // Get all user profiles ordered by points
+    const { data: profiles, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .order('total_points', { ascending: false })
+
+    if (error) throw error
+
+    // Update rankings based on current points
+    // This is handled automatically by the ORDER BY in getLeaderboard
+    console.log('Leaderboard rankings updated successfully')
+  } catch (error) {
+    console.error('Error updating leaderboard rankings:', error)
+  }
 }

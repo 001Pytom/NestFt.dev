@@ -3,498 +3,466 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Play,
-  Square,
-  FolderPlus,
-  FilePlus,
-  Save,
-  Download,
+import { 
+  CheckCircle, 
+  AlertCircle, 
+  Clock, 
+  Trophy, 
+  Star,
   RefreshCw,
-  Settings,
-  Terminal as TerminalIcon,
-  Eye,
-  Code,
-  GitBranch,
-  Send,
-  CheckCircle,
+  ExternalLink,
+  Github
 } from "lucide-react";
-import { CodeEditor } from "@/components/ide/CodeEditor";
-import { Terminal } from "@/components/ide/Terminal";
-import { PreviewPanel } from "@/components/ide/PreviewPanel";
-import { GitHubIntegration } from "@/components/ide/GitHubIntegration";
-import { FileNode } from "@/types/ide";
-import { saveProjectCode, updateUserProject } from "@/lib/database";
-import { UserProject } from "@/lib/database";
-import { getFileContent } from "@/lib/fileTemplates";
-import { techStacks } from "@/data/projects";
+import { beginnerProjects, intermediateProjects, advancedProjects } from "@/data/projects";
+import { ProjectTemplate } from "@/types/project";
 import { useAuthStore } from "@/lib/store";
+import { 
+  getUserProject, 
+  updateUserProject, 
+  submitProject, 
+  updateUserProfile,
+  getUserProfile 
+} from "@/lib/database";
+import { gradeProject } from "@/lib/aiGrading";
+import Link from "next/link";
 
-export default function IDEPage() {
+export default function ProjectSubmitPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuthStore();
-  const projectId = params.projectId as string;
-
-  const [userProject, setUserProject] = useState<UserProject | null>(null);
-  const [fileTree, setFileTree] = useState<FileNode[]>([]);
-  const [selectedFile, setSelectedFile] = useState<FileNode | null>(null);
-  const [code, setCode] = useState("");
-  const [isRunning, setIsRunning] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const projectId = params.id as string;
+  const userProjectId = searchParams.get('userProjectId');
+  
+  const [project, setProject] = useState<ProjectTemplate | null>(null);
+  const [userProject, setUserProject] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [activePanel, setActivePanel] = useState<
-    "terminal" | "preview" | "github"
-  >("preview");
-  const [sidebarWidth, setSidebarWidth] = useState(250);
-  const [bottomPanelHeight, setBottomPanelHeight] = useState(300);
+  const [gradingStatus, setGradingStatus] = useState<'idle' | 'submitting' | 'grading' | 'completed' | 'error'>('idle');
+  const [gradingResults, setGradingResults] = useState<any>(null);
+  const [repositoryUrl, setRepositoryUrl] = useState('');
+  const [deployedUrl, setDeployedUrl] = useState('');
 
   useEffect(() => {
-    loadProject();
-  }, [projectId]);
+    loadProjectData();
+  }, [projectId, userProjectId]);
 
-  // Auto-save functionality
-  useEffect(() => {
-    const autoSaveInterval = setInterval(() => {
-      if (selectedFile && code !== selectedFile.content) {
-        handleSave(false); // Silent save
-      }
-    }, 30000); // Auto-save every 30 seconds
-
-    return () => clearInterval(autoSaveInterval);
-  }, [selectedFile, code]);
-
-  const loadProject = async () => {
+  const loadProjectData = async () => {
     try {
-      const templateId = searchParams.get("template");
-      const projectName = searchParams.get("name");
-
-      if (!templateId || !projectName) return;
-
-      // Find template
-      const allTemplates = techStacks.flatMap((stack) => stack.templates);
-      const template = allTemplates.find((t) => t.id === templateId);
-
-      if (!template) return;
-
-      // Initialize file tree from template
-      const initialTree = initializeFileTree(
-        template.folderStructure,
-        "",
-        template,
-        projectName
-      );
-      setFileTree(initialTree);
-
-      // Select first file
-      const firstFile = findFirstFile(initialTree);
-      if (firstFile) {
-        setSelectedFile(firstFile);
-        setCode(firstFile.content || "");
+      // Find the project template
+      const allProjects = [...beginnerProjects, ...intermediateProjects, ...advancedProjects];
+      const foundProject = allProjects.find(p => p.id === projectId);
+      
+      if (!foundProject) {
+        router.push('/projects/browse');
+        return;
       }
+      
+      setProject(foundProject);
 
-      // Create mock user project
-      setUserProject({
-        id: projectId,
-        user_id: user?.id || "user-id",
-        project_id: "project-id",
-        project_name: projectName,
-        stack: "frontend",
-        difficulty: "beginner",
-        template_id: templateId,
-        status: "in_progress",
-        code_files: {},
-        started_at: new Date().toISOString(),
-        last_saved_at: new Date().toISOString(),
-      });
-    } catch (error) {
-      console.error("Error loading project:", error);
-    }
-  };
-
-  const initializeFileTree = (
-    structure: any,
-    basePath = "",
-    template: any,
-    projectName: string
-  ): FileNode[] => {
-    return Object.entries(structure).map(([name, content]) => {
-      const path = basePath ? `${basePath}/${name}` : name;
-
-      if (typeof content === "string") {
-        return {
-          name,
-          type: "file",
-          content: getFileContent(path, template, projectName),
-          path,
-        };
-      } else {
-        return {
-          name,
-          type: "folder",
-          children: initializeFileTree(content, path, template, projectName),
-          path,
-          isOpen: true,
-        };
-      }
-    });
-  };
-
-  const findFirstFile = (nodes: FileNode[]): FileNode | null => {
-    for (const node of nodes) {
-      if (node.type === "file") {
-        return node;
-      }
-      if (node.children) {
-        const found = findFirstFile(node.children);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  const updateFileContent = (path: string, content: string) => {
-    const updateNode = (nodes: FileNode[]): FileNode[] => {
-      return nodes.map((node) => {
-        if (node.path === path && node.type === "file") {
-          return { ...node, content };
+      // Load user project if ID provided
+      if (userProjectId && user) {
+        const userProj = await getUserProject(userProjectId);
+        if (userProj) {
+          setUserProject(userProj);
+          setRepositoryUrl(userProj.repository_url || '');
+          setDeployedUrl(userProj.deployed_url || '');
         }
-        if (node.children) {
-          return { ...node, children: updateNode(node.children) };
-        }
-        return node;
-      });
-    };
-
-    setFileTree(updateNode(fileTree));
-  };
-
-  const handleFileSelect = (file: FileNode) => {
-    if (selectedFile && selectedFile.path !== file.path) {
-      // Save current file content
-      updateFileContent(selectedFile.path, code);
-    }
-
-    setSelectedFile(file);
-    setCode(file.content || "");
-  };
-
-  const handleSave = async (showFeedback = true) => {
-    if (!selectedFile || !userProject) return;
-
-    setIsSaving(true);
-
-    try {
-      // Update file content in tree
-      updateFileContent(selectedFile.path, code);
-
-      // Collect all file contents
-      const allFiles = collectAllFiles(fileTree);
-
-      // Save to database
-      await saveProjectCode(userProject.id, allFiles);
-
-      setLastSaved(new Date());
-
-      if (showFeedback) {
-        // Show save notification
       }
     } catch (error) {
-      console.error("Error saving project:", error);
-    } finally {
-      setIsSaving(false);
+      console.error('Error loading project data:', error);
     }
   };
 
-  const handleSubmit = async () => {
-    if (!userProject || !user) return;
+  const handleSubmitForGrading = async () => {
+    if (!project || !userProject || !user) {
+      alert('Missing required data for submission');
+      return;
+    }
 
     setIsSubmitting(true);
+    setGradingStatus('submitting');
 
     try {
-      // Save current work first
-      await handleSave(false);
+      // Validate that we have code files
+      if (!userProject.code_files || Object.keys(userProject.code_files).length === 0) {
+        throw new Error('No code files found. Please save your work in the IDE first.');
+      }
 
-      // Collect all files for submission
-      const allFiles = collectAllFiles(fileTree);
+      // Create submission record
+      const submissionData = {
+        user_project_id: userProject.id,
+        user_id: user.id,
+        project_id: project.id,
+        submission_data: {
+          code_files: userProject.code_files,
+          repository_url: repositoryUrl,
+          deployed_url: deployedUrl,
+          submitted_at: new Date().toISOString()
+        },
+        repository_url: repositoryUrl || null,
+        deployed_url: deployedUrl || null,
+        grading_status: 'grading'
+      };
 
-      // Update project status to submitted
-      await updateUserProject(userProject.id, {
-        status: "submitted",
-        code_files: allFiles,
+      const submission = await submitProject(submissionData);
+      if (!submission) {
+        throw new Error('Failed to create submission record');
+      }
+
+      setGradingStatus('grading');
+
+      // Perform AI grading
+      const codeAnalysis = {
+        files: userProject.code_files,
+        repositoryUrl: repositoryUrl || undefined,
+        deployedUrl: deployedUrl || undefined
+      };
+
+      const gradingResult = await gradeProject(project, codeAnalysis);
+      
+      // Update submission with grading results
+      const updatedSubmission = await updateSubmission(submission.id, {
+        ai_score: gradingResult.totalScore,
+        ai_feedback: gradingResult.feedback,
+        grading_status: 'completed',
+        graded_at: new Date().toISOString()
       });
 
-      // Navigate to submission page for AI grading
-      router.push(
-        `/projects/${userProject.project_id}/submit?userProjectId=${userProject.id}`
-      );
+      // Update user project with completion data
+      await updateUserProject(userProject.id, {
+        status: 'completed',
+        score: gradingResult.totalScore,
+        ai_feedback: gradingResult.feedback,
+        completed_at: new Date().toISOString()
+      });
+
+      // Update user profile with points and progress
+      await updateUserProgress(user.id, gradingResult.totalScore, project.difficulty);
+
+      setGradingResults(gradingResult);
+      setGradingStatus('completed');
+
     } catch (error) {
-      console.error("Error submitting project:", error);
-      alert("Failed to submit project. Please try again.");
+      console.error('Error during submission and grading:', error);
+      setGradingStatus('error');
+      alert('Error during submission: ' + error.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const collectAllFiles = (
-    nodes: FileNode[],
-    files: Record<string, string> = {}
-  ): Record<string, string> => {
-    nodes.forEach((node) => {
-      if (node.type === "file") {
-        files[node.path] = node.content || "";
-      } else if (node.children) {
-        collectAllFiles(node.children, files);
-      }
-    });
-    return files;
+  const updateSubmission = async (submissionId: string, updates: any) => {
+    // This would be implemented in the database module
+    // For now, we'll simulate it
+    return { id: submissionId, ...updates };
   };
 
-  const handleRun = () => {
-    setIsRunning(true);
-    // The preview panel will handle the actual preview generation
+  const updateUserProgress = async (userId: string, points: number, difficulty: string) => {
+    try {
+      const userProfile = await getUserProfile(userId);
+      if (!userProfile) return;
+
+      const newTotalPoints = userProfile.total_points + points;
+      const newStreakDays = userProfile.streak_days + 1; // Simplified streak logic
+
+      await updateUserProfile(userId, {
+        total_points: newTotalPoints,
+        streak_days: newStreakDays,
+        last_activity_date: new Date().toISOString().split('T')[0]
+      });
+    } catch (error) {
+      console.error('Error updating user progress:', error);
+    }
   };
 
-  const handleStop = () => {
-    setIsRunning(false);
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'beginner':
+        return 'bg-green-500/10 text-green-700 border-green-200';
+      case 'intermediate':
+        return 'bg-yellow-500/10 text-yellow-700 border-yellow-200';
+      case 'advanced':
+        return 'bg-red-500/10 text-red-700 border-red-200';
+      default:
+        return 'bg-gray-500/10 text-gray-700 border-gray-200';
+    }
   };
 
-  const renderFileTree = (nodes: FileNode[], level = 0) => {
-    return nodes.map((node) => (
-      <div key={node.path}>
-        <div
-          className={`flex items-center gap-2 p-1 rounded cursor-pointer hover:bg-gray-100 ${
-            selectedFile?.path === node.path ? "bg-blue-100 text-blue-700" : ""
-          }`}
-          style={{ marginLeft: `${level * 16}px` }}
-          onClick={() => {
-            if (node.type === "file") {
-              handleFileSelect(node);
-            } else {
-              // Toggle folder
-              const updateTree = (nodes: FileNode[]): FileNode[] => {
-                return nodes.map((n) =>
-                  n.path === node.path
-                    ? { ...n, isOpen: !n.isOpen }
-                    : n.children
-                    ? { ...n, children: updateTree(n.children) }
-                    : n
-                );
-              };
-              setFileTree(updateTree(fileTree));
-            }
-          }}
-        >
-          {node.type === "folder" ? (
-            <>
-              <span className="text-gray-500">{node.isOpen ? "📂" : "📁"}</span>
-              <span className="text-sm font-medium">{node.name}</span>
-            </>
-          ) : (
-            <>
-              <span className="text-gray-500">📄</span>
-              <span className="text-sm">{node.name}</span>
-              {selectedFile?.path === node.path && code !== node.content && (
-                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full ml-auto"></div>
-              )}
-            </>
-          )}
-        </div>
-        {node.type === "folder" &&
-          node.isOpen &&
-          node.children &&
-          renderFileTree(node.children, level + 1)}
-      </div>
-    ));
+  const getGradeColor = (grade: string) => {
+    switch (grade) {
+      case 'A':
+        return 'text-green-600';
+      case 'B':
+        return 'text-blue-600';
+      case 'C':
+        return 'text-yellow-600';
+      case 'D':
+        return 'text-orange-600';
+      case 'F':
+        return 'text-red-600';
+      default:
+        return 'text-gray-600';
+    }
   };
 
-  if (!userProject) {
+  if (!project) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p>Loading IDE..bx.</p>
-        </div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
   }
+
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="text-lg font-semibold text-gray-800">
-            {userProject.project_name}
-          </h1>
-          <Badge variant="outline" className="text-xs">
-            {userProject.template_id}
-          </Badge>
-          <Badge className="bg-green-500/10 text-green-700 text-xs">
-            {userProject.difficulty}
-          </Badge>
-          {lastSaved && (
-            <span className="text-xs text-gray-500">
-              Saved {lastSaved.toLocaleTimeString()}
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleSave(true)}
-            disabled={isSaving}
-          >
-            <Save className="h-4 w-4 mr-1" />
-            {isSaving ? "Saving..." : "Save"}
-          </Button>
-
-          {isRunning ? (
-            <Button variant="outline" size="sm" onClick={handleStop}>
-              <Square className="h-4 w-4 mr-1" />
-              Stop
-            </Button>
-          ) : (
-            <Button variant="outline" size="sm" onClick={handleRun}>
-              <Play className="h-4 w-4 mr-1" />
-              Run
-            </Button>
-          )}
-
-          <Button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            {isSubmitting ? (
-              <>
-                <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
-                Submitting...
-              </>
-            ) : (
-              <>
-                <Send className="h-4 w-4 mr-1" />
-                Submit for Grading
-              </>
-            )}
-          </Button>
-
-          <Button variant="outline" size="sm">
-            <Settings className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Main IDE Layout - Fixed height */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar - File Explorer */}
-        <div
-          className="bg-gray-50 border-r border-gray-200 flex flex-col"
-          style={{ width: `${sidebarWidth}px` }}
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
         >
-          <div className="p-3 border-b border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-medium text-sm text-gray-700">Explorer</h3>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                  <FolderPlus className="h-3 w-3" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                  <FilePlus className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
+          <div className="text-center">
+            <Badge className={getDifficultyColor(project.difficulty)} variant="outline">
+              {project.difficulty}
+            </Badge>
+            <h1 className="text-3xl font-bold mt-2 mb-4">Submit {project.name}</h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Submit your project for AI grading and receive detailed feedback on your implementation.
+            </p>
           </div>
+        </motion.div>
 
-          <div className="flex-1 overflow-y-auto p-2">
-            {renderFileTree(fileTree)}
-          </div>
-        </div>
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Editor and Preview */}
-          <div className="flex-1 flex overflow-hidden">
-            {/* Code Editor */}
-            <div className="flex-1 flex flex-col">
-              <CodeEditor
-                file={selectedFile}
-                code={code}
-                onChange={setCode}
-                onSave={() => handleSave(true)}
-              />
-            </div>
-
-            {/* Right Panel */}
-            <div className="w-1/2 border-l border-gray-200 flex flex-col">
-              <Tabs
-                value={activePanel}
-                onValueChange={(value) => setActivePanel(value as any)}
-              >
-                <TabsList className="w-full rounded-none border-b">
-                  <TabsTrigger
-                    value="preview"
-                    className="flex items-center gap-2"
-                  >
-                    <Eye className="h-4 w-4" />
-                    Preview
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="terminal"
-                    className="flex items-center gap-2"
-                  >
-                    <TerminalIcon className="h-4 w-4" />
-                    Terminal
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="github"
-                    className="flex items-center gap-2"
-                  >
-                    <GitBranch className="h-4 w-4" />
-                    GitHub
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent
-                  value="preview"
-                  className="flex-1 m-0 overflow-hidden"
-                >
-                  <PreviewPanel
-                    projectId={projectId}
-                    files={collectAllFiles(fileTree)}
-                    isRunning={isRunning}
+        {/* Submission Form */}
+        {gradingStatus === 'idle' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>Project Submission</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    GitHub Repository URL (Optional)
+                  </label>
+                  <input
+                    type="url"
+                    value={repositoryUrl}
+                    onChange={(e) => setRepositoryUrl(e.target.value)}
+                    placeholder="https://github.com/username/repository"
+                    className="w-full h-11 px-3 rounded-md border border-input bg-background text-sm"
                   />
-                </TabsContent>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Provide your GitHub repository URL for additional context
+                  </p>
+                </div>
 
-                <TabsContent
-                  value="terminal"
-                  className="flex-1 m-0 overflow-hidden"
-                >
-                  <Terminal projectId={projectId} />
-                </TabsContent>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Deployed URL (Optional)
+                  </label>
+                  <input
+                    type="url"
+                    value={deployedUrl}
+                    onChange={(e) => setDeployedUrl(e.target.value)}
+                    placeholder="https://your-project.netlify.app"
+                    className="w-full h-11 px-3 rounded-md border border-input bg-background text-sm"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Provide the live URL if you've deployed your project
+                  </p>
+                </div>
 
-                <TabsContent
-                  value="github"
-                  className="flex-1 m-0 overflow-hidden"
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <h4 className="font-medium mb-2">What will be graded:</h4>
+                  <ul className="space-y-1 text-sm text-muted-foreground">
+                    {project.gradingCriteria.map((criteria) => (
+                      <li key={criteria.id} className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span>{criteria.category} ({criteria.maxPoints} points)</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <Button
+                  onClick={handleSubmitForGrading}
+                  disabled={isSubmitting}
+                  className="w-full"
+                  size="lg"
                 >
-                  <div className="p-4 h-full overflow-y-auto">
-                    <GitHubIntegration
-                      projectId={projectId}
-                      projectName={userProject.project_name}
-                      files={collectAllFiles(fileTree)}
-                    />
+                  {isSubmitting ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Submitting for Grading...
+                    </>
+                  ) : (
+                    <>
+                      <Trophy className="h-4 w-4 mr-2" />
+                      Submit for AI Grading
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Grading Progress */}
+        {(gradingStatus === 'submitting' || gradingStatus === 'grading') && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+          >
+            <Card>
+              <CardContent className="p-12">
+                <RefreshCw className="h-16 w-16 animate-spin mx-auto mb-6 text-primary" />
+                <h3 className="text-xl font-semibold mb-2">
+                  {gradingStatus === 'submitting' ? 'Submitting Project...' : 'AI Grading in Progress...'}
+                </h3>
+                <p className="text-muted-foreground">
+                  {gradingStatus === 'submitting' 
+                    ? 'Preparing your submission for grading'
+                    : 'Our AI is analyzing your code and checking requirements. This may take a few moments.'
+                  }
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Grading Results */}
+        {gradingStatus === 'completed' && gradingResults && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            {/* Overall Score */}
+            <Card className="border-primary">
+              <CardHeader className="text-center">
+                <div className="flex items-center justify-center gap-4 mb-4">
+                  <Trophy className="h-12 w-12 text-primary" />
+                  <div>
+                    <div className={`text-4xl font-bold ${getGradeColor(gradingResults.overallGrade)}`}>
+                      {gradingResults.overallGrade}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Overall Grade</div>
                   </div>
-                </TabsContent>
-              </Tabs>
+                </div>
+                <CardTitle>
+                  {gradingResults.totalScore} / {gradingResults.maxScore} Points
+                </CardTitle>
+                <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
+                  <div 
+                    className="bg-primary h-3 rounded-full transition-all duration-1000"
+                    style={{ width: `${(gradingResults.totalScore / gradingResults.maxScore) * 100}%` }}
+                  />
+                </div>
+              </CardHeader>
+            </Card>
+
+            {/* Detailed Feedback */}
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold">Detailed Feedback</h3>
+              {gradingResults.feedback.map((item: any, index: number) => (
+                <Card key={index}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">{item.category}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold">{item.score} / {item.maxScore}</span>
+                        {item.score === item.maxScore ? (
+                          <CheckCircle className="h-5 w-5 text-green-500" />
+                        ) : item.score >= item.maxScore * 0.7 ? (
+                          <Star className="h-5 w-5 text-yellow-500" />
+                        ) : (
+                          <AlertCircle className="h-5 w-5 text-red-500" />
+                        )}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground mb-4">{item.feedback}</p>
+                    {item.suggestions && item.suggestions.length > 0 && (
+                      <div>
+                        <h5 className="font-medium mb-2">Suggestions for Improvement:</h5>
+                        <ul className="space-y-1">
+                          {item.suggestions.map((suggestion: string, suggestionIndex: number) => (
+                            <li key={suggestionIndex} className="text-sm text-muted-foreground flex items-start gap-2">
+                              <span className="text-primary">•</span>
+                              <span>{suggestion}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          </div>
-        </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/dashboard">
+                <Button size="lg">
+                  View Dashboard
+                </Button>
+              </Link>
+              <Link href="/projects/browse">
+                <Button size="lg" variant="outline">
+                  Browse More Projects
+                </Button>
+              </Link>
+              {repositoryUrl && (
+                <a href={repositoryUrl} target="_blank" rel="noopener noreferrer">
+                  <Button size="lg" variant="outline">
+                    <Github className="h-4 w-4 mr-2" />
+                    View Repository
+                  </Button>
+                </a>
+              )}
+              {deployedUrl && (
+                <a href={deployedUrl} target="_blank" rel="noopener noreferrer">
+                  <Button size="lg" variant="outline">
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    View Live Project
+                  </Button>
+                </a>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Error State */}
+        {gradingStatus === 'error' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+          >
+            <Card className="border-destructive">
+              <CardContent className="p-12">
+                <AlertCircle className="h-16 w-16 mx-auto mb-6 text-destructive" />
+                <h3 className="text-xl font-semibold mb-2">Grading Failed</h3>
+                <p className="text-muted-foreground mb-6">
+                  There was an error processing your submission. Please try again.
+                </p>
+                <Button onClick={() => setGradingStatus('idle')}>
+                  Try Again
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
       </div>
     </div>
   );
