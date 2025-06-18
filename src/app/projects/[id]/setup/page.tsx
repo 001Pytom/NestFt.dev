@@ -73,7 +73,7 @@ export default function ProjectSetupPage() {
 
       if (userProject) {
         // Navigate to IDE with project setup
-        router.push(`/ide/${userProject.id}?template=${selectedTemplate.id}&name=${encodeURIComponent(project.name)}`)
+        router.push(`/ide/${userProject.id}?template=${selectedTemplate.id}&name=${encodeURIComponent(project.name)}&project_id=${projectId}`)
       } else {
         throw new Error('Failed to create project')
       }

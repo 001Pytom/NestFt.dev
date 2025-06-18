@@ -6,25 +6,29 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  CheckCircle, 
-  AlertCircle, 
-  Clock, 
-  Trophy, 
+import {
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  Trophy,
   Star,
   RefreshCw,
   ExternalLink,
-  Github
+  Github,
 } from "lucide-react";
-import { beginnerProjects, intermediateProjects, advancedProjects } from "@/data/projects";
+import {
+  beginnerProjects,
+  intermediateProjects,
+  advancedProjects,
+} from "@/data/projects";
 import { ProjectTemplate } from "@/types/project";
 import { useAuthStore } from "@/lib/store";
-import { 
-  getUserProject, 
-  updateUserProject, 
-  submitProject, 
+import {
+  getUserProject,
+  updateUserProject,
+  submitProject,
   updateUserProfile,
-  getUserProfile 
+  getUserProfile,
 } from "@/lib/database";
 import { gradeProject } from "@/lib/aiGrading";
 import Link from "next/link";
@@ -35,15 +39,17 @@ export default function ProjectSubmitPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const projectId = params.id as string;
-  const userProjectId = searchParams.get('userProjectId');
-  
+  const userProjectId = searchParams.get("userProjectId");
+
   const [project, setProject] = useState<ProjectTemplate | null>(null);
   const [userProject, setUserProject] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [gradingStatus, setGradingStatus] = useState<'idle' | 'submitting' | 'grading' | 'completed' | 'error'>('idle');
+  const [gradingStatus, setGradingStatus] = useState<
+    "idle" | "submitting" | "grading" | "completed" | "error"
+  >("idle");
   const [gradingResults, setGradingResults] = useState<any>(null);
-  const [repositoryUrl, setRepositoryUrl] = useState('');
-  const [deployedUrl, setDeployedUrl] = useState('');
+  const [repositoryUrl, setRepositoryUrl] = useState("");
+  const [deployedUrl, setDeployedUrl] = useState("");
 
   useEffect(() => {
     loadProjectData();
@@ -52,43 +58,58 @@ export default function ProjectSubmitPage() {
   const loadProjectData = async () => {
     try {
       // Find the project template
-      const allProjects = [...beginnerProjects, ...intermediateProjects, ...advancedProjects];
-      const foundProject = allProjects.find(p => p.id === projectId);
-      
-      if (!foundProject) {
-        router.push('/projects/browse');
-        return;
+      const allProjects = [
+        ...beginnerProjects,
+        ...intermediateProjects,
+        ...advancedProjects,
+      ];
+      if (!allProjects.length) {
+        return <div>Loading...</div>; // or your spinner
       }
-      
-      setProject(foundProject);
 
+      const foundProject = allProjects.find((p) => p.id === projectId);
+
+      if (!foundProject) {
+        return <div>Project not found.</div>;
+      }
+
+      setProject(foundProject);
+      // console.log(foundProject, projectId);
+      // console.log(allProjects);
+      // console.log(userProjectId);
       // Load user project if ID provided
       if (userProjectId && user) {
         const userProj = await getUserProject(userProjectId);
         if (userProj) {
           setUserProject(userProj);
-          setRepositoryUrl(userProj.repository_url || '');
-          setDeployedUrl(userProj.deployed_url || '');
+          setRepositoryUrl(userProj.repository_url || "");
+          setDeployedUrl(userProj.deployed_url || "");
         }
       }
     } catch (error) {
-      console.error('Error loading project data:', error);
+      console.error("Error loading project data:", error);
     }
   };
 
   const handleSubmitForGrading = async () => {
+    // console.log("grading started");
     if (!project || !userProject || !user) {
-      alert('Missing required data for submission');
+      alert("Missing required data for submission");
       return;
     }
 
     setIsSubmitting(true);
-    setGradingStatus('submitting');
+    setGradingStatus("submitting");
 
     try {
       // Validate that we have code files
-      if (!userProject.code_files || Object.keys(userProject.code_files).length === 0) {
-        throw new Error('No code files found. Please save your work in the IDE first.');
+      if (
+        !userProject.code_files ||
+        Object.keys(userProject.code_files).length === 0
+      ) {
+        throw new Error(
+          "No code files found. Please save your work in the IDE first."
+        );
       }
 
       // Create submission record
@@ -100,55 +121,58 @@ export default function ProjectSubmitPage() {
           code_files: userProject.code_files,
           repository_url: repositoryUrl,
           deployed_url: deployedUrl,
-          submitted_at: new Date().toISOString()
+          submitted_at: new Date().toISOString(),
         },
         repository_url: repositoryUrl || null,
         deployed_url: deployedUrl || null,
-        grading_status: 'grading'
+        grading_status: "grading",
       };
 
       const submission = await submitProject(submissionData);
       if (!submission) {
-        throw new Error('Failed to create submission record');
+        throw new Error("Failed to create submission record");
       }
 
-      setGradingStatus('grading');
+      setGradingStatus("grading");
 
       // Perform AI grading
       const codeAnalysis = {
         files: userProject.code_files,
         repositoryUrl: repositoryUrl || undefined,
-        deployedUrl: deployedUrl || undefined
+        deployedUrl: deployedUrl || undefined,
       };
 
       const gradingResult = await gradeProject(project, codeAnalysis);
-      
+
       // Update submission with grading results
       const updatedSubmission = await updateSubmission(submission.id, {
         ai_score: gradingResult.totalScore,
         ai_feedback: gradingResult.feedback,
-        grading_status: 'completed',
-        graded_at: new Date().toISOString()
+        grading_status: "completed",
+        graded_at: new Date().toISOString(),
       });
 
       // Update user project with completion data
       await updateUserProject(userProject.id, {
-        status: 'completed',
+        status: "completed",
         score: gradingResult.totalScore,
         ai_feedback: gradingResult.feedback,
-        completed_at: new Date().toISOString()
+        completed_at: new Date().toISOString(),
       });
 
       // Update user profile with points and progress
-      await updateUserProgress(user.id, gradingResult.totalScore, project.difficulty);
+      await updateUserProgress(
+        user.id,
+        gradingResult.totalScore,
+        project.difficulty
+      );
 
       setGradingResults(gradingResult);
-      setGradingStatus('completed');
-
+      setGradingStatus("completed");
     } catch (error) {
-      console.error('Error during submission and grading:', error);
-      setGradingStatus('error');
-      alert('Error during submission: ' + error.message);
+      console.error("Error during submission and grading:", error);
+      setGradingStatus("error");
+      alert("Error during submission: " + error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -160,7 +184,11 @@ export default function ProjectSubmitPage() {
     return { id: submissionId, ...updates };
   };
 
-  const updateUserProgress = async (userId: string, points: number, difficulty: string) => {
+  const updateUserProgress = async (
+    userId: string,
+    points: number,
+    difficulty: string
+  ) => {
     try {
       const userProfile = await getUserProfile(userId);
       if (!userProfile) return;
@@ -171,40 +199,40 @@ export default function ProjectSubmitPage() {
       await updateUserProfile(userId, {
         total_points: newTotalPoints,
         streak_days: newStreakDays,
-        last_activity_date: new Date().toISOString().split('T')[0]
+        last_activity_date: new Date().toISOString().split("T")[0],
       });
     } catch (error) {
-      console.error('Error updating user progress:', error);
+      console.error("Error updating user progress:", error);
     }
   };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'beginner':
-        return 'bg-green-500/10 text-green-700 border-green-200';
-      case 'intermediate':
-        return 'bg-yellow-500/10 text-yellow-700 border-yellow-200';
-      case 'advanced':
-        return 'bg-red-500/10 text-red-700 border-red-200';
+      case "beginner":
+        return "bg-green-500/10 text-green-700 border-green-200";
+      case "intermediate":
+        return "bg-yellow-500/10 text-yellow-700 border-yellow-200";
+      case "advanced":
+        return "bg-red-500/10 text-red-700 border-red-200";
       default:
-        return 'bg-gray-500/10 text-gray-700 border-gray-200';
+        return "bg-gray-500/10 text-gray-700 border-gray-200";
     }
   };
 
   const getGradeColor = (grade: string) => {
     switch (grade) {
-      case 'A':
-        return 'text-green-600';
-      case 'B':
-        return 'text-blue-600';
-      case 'C':
-        return 'text-yellow-600';
-      case 'D':
-        return 'text-orange-600';
-      case 'F':
-        return 'text-red-600';
+      case "A":
+        return "text-green-600";
+      case "B":
+        return "text-blue-600";
+      case "C":
+        return "text-yellow-600";
+      case "D":
+        return "text-orange-600";
+      case "F":
+        return "text-red-600";
       default:
-        return 'text-gray-600';
+        return "text-gray-600";
     }
   };
 
@@ -226,18 +254,24 @@ export default function ProjectSubmitPage() {
           className="mb-8"
         >
           <div className="text-center">
-            <Badge className={getDifficultyColor(project.difficulty)} variant="outline">
+            <Badge
+              className={getDifficultyColor(project.difficulty)}
+              variant="outline"
+            >
               {project.difficulty}
             </Badge>
-            <h1 className="text-3xl font-bold mt-2 mb-4">Submit {project.name}</h1>
+            <h1 className="text-3xl font-bold mt-2 mb-4">
+              Submit {project.name}
+            </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Submit your project for AI grading and receive detailed feedback on your implementation.
+              Submit your project for AI grading and receive detailed feedback
+              on your implementation.
             </p>
           </div>
         </motion.div>
 
         {/* Submission Form */}
-        {gradingStatus === 'idle' && (
+        {gradingStatus === "idle" && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -286,13 +320,16 @@ export default function ProjectSubmitPage() {
                     {project.gradingCriteria.map((criteria) => (
                       <li key={criteria.id} className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span>{criteria.category} ({criteria.maxPoints} points)</span>
+                        <span>
+                          {criteria.category} ({criteria.maxPoints} points)
+                        </span>
                       </li>
                     ))}
                   </ul>
                 </div>
 
                 <Button
+                  type="button"
                   onClick={handleSubmitForGrading}
                   disabled={isSubmitting}
                   className="w-full"
@@ -316,7 +353,7 @@ export default function ProjectSubmitPage() {
         )}
 
         {/* Grading Progress */}
-        {(gradingStatus === 'submitting' || gradingStatus === 'grading') && (
+        {(gradingStatus === "submitting" || gradingStatus === "grading") && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -326,13 +363,14 @@ export default function ProjectSubmitPage() {
               <CardContent className="p-12">
                 <RefreshCw className="h-16 w-16 animate-spin mx-auto mb-6 text-primary" />
                 <h3 className="text-xl font-semibold mb-2">
-                  {gradingStatus === 'submitting' ? 'Submitting Project...' : 'AI Grading in Progress...'}
+                  {gradingStatus === "submitting"
+                    ? "Submitting Project..."
+                    : "AI Grading in Progress..."}
                 </h3>
                 <p className="text-muted-foreground">
-                  {gradingStatus === 'submitting' 
-                    ? 'Preparing your submission for grading'
-                    : 'Our AI is analyzing your code and checking requirements. This may take a few moments.'
-                  }
+                  {gradingStatus === "submitting"
+                    ? "Preparing your submission for grading"
+                    : "Our AI is analyzing your code and checking requirements. This may take a few moments."}
                 </p>
               </CardContent>
             </Card>
@@ -340,7 +378,7 @@ export default function ProjectSubmitPage() {
         )}
 
         {/* Grading Results */}
-        {gradingStatus === 'completed' && gradingResults && (
+        {gradingStatus === "completed" && gradingResults && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -352,19 +390,30 @@ export default function ProjectSubmitPage() {
                 <div className="flex items-center justify-center gap-4 mb-4">
                   <Trophy className="h-12 w-12 text-primary" />
                   <div>
-                    <div className={`text-4xl font-bold ${getGradeColor(gradingResults.overallGrade)}`}>
+                    <div
+                      className={`text-4xl font-bold ${getGradeColor(
+                        gradingResults.overallGrade
+                      )}`}
+                    >
                       {gradingResults.overallGrade}
                     </div>
-                    <div className="text-sm text-muted-foreground">Overall Grade</div>
+                    <div className="text-sm text-muted-foreground">
+                      Overall Grade
+                    </div>
                   </div>
                 </div>
                 <CardTitle>
                   {gradingResults.totalScore} / {gradingResults.maxScore} Points
                 </CardTitle>
                 <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
-                  <div 
+                  <div
                     className="bg-primary h-3 rounded-full transition-all duration-1000"
-                    style={{ width: `${(gradingResults.totalScore / gradingResults.maxScore) * 100}%` }}
+                    style={{
+                      width: `${
+                        (gradingResults.totalScore / gradingResults.maxScore) *
+                        100
+                      }%`,
+                    }}
                   />
                 </div>
               </CardHeader>
@@ -379,7 +428,9 @@ export default function ProjectSubmitPage() {
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">{item.category}</CardTitle>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold">{item.score} / {item.maxScore}</span>
+                        <span className="font-bold">
+                          {item.score} / {item.maxScore}
+                        </span>
                         {item.score === item.maxScore ? (
                           <CheckCircle className="h-5 w-5 text-green-500" />
                         ) : item.score >= item.maxScore * 0.7 ? (
@@ -391,17 +442,26 @@ export default function ProjectSubmitPage() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground mb-4">{item.feedback}</p>
+                    <p className="text-muted-foreground mb-4">
+                      {item.feedback}
+                    </p>
                     {item.suggestions && item.suggestions.length > 0 && (
                       <div>
-                        <h5 className="font-medium mb-2">Suggestions for Improvement:</h5>
+                        <h5 className="font-medium mb-2">
+                          Suggestions for Improvement:
+                        </h5>
                         <ul className="space-y-1">
-                          {item.suggestions.map((suggestion: string, suggestionIndex: number) => (
-                            <li key={suggestionIndex} className="text-sm text-muted-foreground flex items-start gap-2">
-                              <span className="text-primary">•</span>
-                              <span>{suggestion}</span>
-                            </li>
-                          ))}
+                          {item.suggestions.map(
+                            (suggestion: string, suggestionIndex: number) => (
+                              <li
+                                key={suggestionIndex}
+                                className="text-sm text-muted-foreground flex items-start gap-2"
+                              >
+                                <span className="text-primary">•</span>
+                                <span>{suggestion}</span>
+                              </li>
+                            )
+                          )}
                         </ul>
                       </div>
                     )}
@@ -413,9 +473,7 @@ export default function ProjectSubmitPage() {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/dashboard">
-                <Button size="lg">
-                  View Dashboard
-                </Button>
+                <Button size="lg">View Dashboard</Button>
               </Link>
               <Link href="/projects/browse">
                 <Button size="lg" variant="outline">
@@ -423,7 +481,11 @@ export default function ProjectSubmitPage() {
                 </Button>
               </Link>
               {repositoryUrl && (
-                <a href={repositoryUrl} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={repositoryUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <Button size="lg" variant="outline">
                     <Github className="h-4 w-4 mr-2" />
                     View Repository
@@ -443,7 +505,7 @@ export default function ProjectSubmitPage() {
         )}
 
         {/* Error State */}
-        {gradingStatus === 'error' && (
+        {gradingStatus === "error" && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -454,9 +516,10 @@ export default function ProjectSubmitPage() {
                 <AlertCircle className="h-16 w-16 mx-auto mb-6 text-destructive" />
                 <h3 className="text-xl font-semibold mb-2">Grading Failed</h3>
                 <p className="text-muted-foreground mb-6">
-                  There was an error processing your submission. Please try again.
+                  There was an error processing your submission. Please try
+                  again.
                 </p>
-                <Button onClick={() => setGradingStatus('idle')}>
+                <Button onClick={() => setGradingStatus("idle")}>
                   Try Again
                 </Button>
               </CardContent>
