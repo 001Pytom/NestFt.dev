@@ -1,17 +1,17 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useParams, useSearchParams, useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  Play, 
-  Square, 
-  FolderPlus, 
-  FilePlus, 
-  Save, 
+import { useState, useEffect } from "react";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Play,
+  Square,
+  FolderPlus,
+  FilePlus,
+  Save,
   Download,
   RefreshCw,
   Settings,
@@ -20,265 +20,284 @@ import {
   Code,
   GitBranch,
   Send,
-  CheckCircle
-} from 'lucide-react'
-import { CodeEditor } from '@/components/ide/CodeEditor'
-import { Terminal } from '@/components/ide/Terminal'
-import { PreviewPanel } from '@/components/ide/PreviewPanel'
-import { GitHubIntegration } from '@/components/ide/GitHubIntegration'
-import { FileNode } from '@/types/ide'
-import { saveProjectCode, updateUserProject } from '@/lib/database'
-import { UserProject } from '@/lib/database'
-import { getFileContent } from '@/lib/fileTemplates'
-import { techStacks } from '@/data/projects'
-import { useAuthStore } from '@/lib/store'
+  CheckCircle,
+} from "lucide-react";
+import { CodeEditor } from "@/components/ide/CodeEditor";
+import { Terminal } from "@/components/ide/Terminal";
+import { PreviewPanel } from "@/components/ide/PreviewPanel";
+import { GitHubIntegration } from "@/components/ide/GitHubIntegration";
+import { FileNode } from "@/types/ide";
+import { saveProjectCode, updateUserProject } from "@/lib/database";
+import { UserProject } from "@/lib/database";
+import { getFileContent } from "@/lib/fileTemplates";
+import { techStacks } from "@/data/projects";
+import { useAuthStore } from "@/lib/store";
 
 export default function IDEPage() {
-  const params = useParams()
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const { user } = useAuthStore()
-  const projectId = params.projectId as string
-  
-  const [userProject, setUserProject] = useState<UserProject | null>(null)
-  const [fileTree, setFileTree] = useState<FileNode[]>([])
-  const [selectedFile, setSelectedFile] = useState<FileNode | null>(null)
-  const [code, setCode] = useState('')
-  const [isRunning, setIsRunning] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [lastSaved, setLastSaved] = useState<Date | null>(null)
-  const [activePanel, setActivePanel] = useState<'terminal' | 'preview' | 'github'>('preview')
-  const [sidebarWidth, setSidebarWidth] = useState(250)
-  const [bottomPanelHeight, setBottomPanelHeight] = useState(300)
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { user } = useAuthStore();
+ const projectId = params.projectId as string;
+const userProjectId = searchParams.get("project_id") as string;
+
+  const [userProject, setUserProject] = useState<UserProject | null>(null);
+  const [fileTree, setFileTree] = useState<FileNode[]>([]);
+  const [selectedFile, setSelectedFile] = useState<FileNode | null>(null);
+  const [code, setCode] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [activePanel, setActivePanel] = useState<
+    "terminal" | "preview" | "github"
+  >("preview");
+  const [sidebarWidth, setSidebarWidth] = useState(250);
+  const [bottomPanelHeight, setBottomPanelHeight] = useState(300);
 
   useEffect(() => {
-    loadProject()
-  }, [projectId])
+    loadProject();
+  }, [projectId]);
 
   // Auto-save functionality
   useEffect(() => {
     const autoSaveInterval = setInterval(() => {
       if (selectedFile && code !== selectedFile.content) {
-        handleSave(false) // Silent save
+        handleSave(false); // Silent save
       }
-    }, 30000) // Auto-save every 30 seconds
+    }, 30000); // Auto-save every 30 seconds
 
-    return () => clearInterval(autoSaveInterval)
-  }, [selectedFile, code])
+    return () => clearInterval(autoSaveInterval);
+  }, [selectedFile, code]);
 
   const loadProject = async () => {
     try {
-      const templateId = searchParams.get('template')
-      const projectName = searchParams.get('name')
-      
-      if (!templateId || !projectName) return
+      const templateId = searchParams.get("template");
+      const projectName = searchParams.get("name");
+
+      if (!templateId || !projectName) return;
 
       // Find template
-      const allTemplates = techStacks.flatMap(stack => stack.templates)
-      const template = allTemplates.find(t => t.id === templateId)
-      
-      if (!template) return
+      const allTemplates = techStacks.flatMap((stack) => stack.templates);
+      const template = allTemplates.find((t) => t.id === templateId);
+
+      if (!template) return;
 
       // Initialize file tree from template
-      const initialTree = initializeFileTree(template.folderStructure, '', template, projectName)
-      setFileTree(initialTree)
-      
+      const initialTree = initializeFileTree(
+        template.folderStructure,
+        "",
+        template,
+        projectName
+      );
+      setFileTree(initialTree);
+
       // Select first file
-      const firstFile = findFirstFile(initialTree)
+      const firstFile = findFirstFile(initialTree);
       if (firstFile) {
-        setSelectedFile(firstFile)
-        setCode(firstFile.content || '')
+        setSelectedFile(firstFile);
+        setCode(firstFile.content || "");
       }
 
       // Create mock user project
       setUserProject({
         id: projectId,
-        user_id: user?.id || 'user-id',
-        project_id: 'project-id',
+        user_id: user?.id || "user-id",
+        project_id: userProjectId,
         project_name: projectName,
-        stack: 'frontend',
-        difficulty: 'beginner',
+        stack: "frontend",
+        difficulty: "beginner",
         template_id: templateId,
-        status: 'in_progress',
+        status: "in_progress",
         code_files: {},
         started_at: new Date().toISOString(),
-        last_saved_at: new Date().toISOString()
-      })
+        last_saved_at: new Date().toISOString(),
+      });
     } catch (error) {
-      console.error('Error loading project:', error)
+      console.error("Error loading project:", error);
     }
-  }
+  };
 
-  const initializeFileTree = (structure: any, basePath = '', template: any, projectName: string): FileNode[] => {
+  const initializeFileTree = (
+    structure: any,
+    basePath = "",
+    template: any,
+    projectName: string
+  ): FileNode[] => {
     return Object.entries(structure).map(([name, content]) => {
-      const path = basePath ? `${basePath}/${name}` : name
-      
-      if (typeof content === 'string') {
+      const path = basePath ? `${basePath}/${name}` : name;
+
+      if (typeof content === "string") {
         return {
           name,
-          type: 'file',
+          type: "file",
           content: getFileContent(path, template, projectName),
-          path
-        }
+          path,
+        };
       } else {
         return {
           name,
-          type: 'folder',
+          type: "folder",
           children: initializeFileTree(content, path, template, projectName),
           path,
-          isOpen: true
-        }
+          isOpen: true,
+        };
       }
-    })
-  }
+    });
+  };
 
   const findFirstFile = (nodes: FileNode[]): FileNode | null => {
     for (const node of nodes) {
-      if (node.type === 'file') {
-        return node
+      if (node.type === "file") {
+        return node;
       }
       if (node.children) {
-        const found = findFirstFile(node.children)
-        if (found) return found
+        const found = findFirstFile(node.children);
+        if (found) return found;
       }
     }
-    return null
-  }
+    return null;
+  };
 
   const updateFileContent = (path: string, content: string) => {
     const updateNode = (nodes: FileNode[]): FileNode[] => {
-      return nodes.map(node => {
-        if (node.path === path && node.type === 'file') {
-          return { ...node, content }
+      return nodes.map((node) => {
+        if (node.path === path && node.type === "file") {
+          return { ...node, content };
         }
         if (node.children) {
-          return { ...node, children: updateNode(node.children) }
+          return { ...node, children: updateNode(node.children) };
         }
-        return node
-      })
-    }
-    
-    setFileTree(updateNode(fileTree))
-  }
+        return node;
+      });
+    };
+
+    setFileTree(updateNode(fileTree));
+  };
 
   const handleFileSelect = (file: FileNode) => {
     if (selectedFile && selectedFile.path !== file.path) {
       // Save current file content
-      updateFileContent(selectedFile.path, code)
+      updateFileContent(selectedFile.path, code);
     }
-    
-    setSelectedFile(file)
-    setCode(file.content || '')
-  }
+
+    setSelectedFile(file);
+    setCode(file.content || "");
+  };
 
   const handleSave = async (showFeedback = true) => {
-    if (!selectedFile || !userProject) return
+    if (!selectedFile || !userProject) return;
 
-    setIsSaving(true)
-    
+    setIsSaving(true);
+
     try {
       // Update file content in tree
-      updateFileContent(selectedFile.path, code)
-      
+      updateFileContent(selectedFile.path, code);
+
       // Collect all file contents
-      const allFiles = collectAllFiles(fileTree)
-      
+      const allFiles = collectAllFiles(fileTree);
+
       // Save to database
-      await saveProjectCode(userProject.id, allFiles)
-      
-      setLastSaved(new Date())
-      
+      await saveProjectCode(userProject.id, allFiles);
+
+      setLastSaved(new Date());
+
       if (showFeedback) {
         // Show save notification
       }
     } catch (error) {
-      console.error('Error saving project:', error)
+      console.error("Error saving project:", error);
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleSubmit = async () => {
-    if (!userProject || !user) return
+    // console.log("submitting");
 
-    setIsSubmitting(true)
-    
+    if (!userProject || !user) return;
+
+    setIsSubmitting(true);
+
     try {
       // Save current work first
-      await handleSave(false)
-      
+      await handleSave(false);
+
       // Collect all files for submission
-      const allFiles = collectAllFiles(fileTree)
-      
+      const allFiles = collectAllFiles(fileTree);
+
       // Update project status to submitted
       await updateUserProject(userProject.id, {
-        status: 'submitted',
-        code_files: allFiles
-      })
-      
-      // Navigate to submission page for AI grading
-      router.push(`/projects/${userProject.project_id}/submit?userProjectId=${userProject.id}`)
-      
-    } catch (error) {
-      console.error('Error submitting project:', error)
-      alert('Failed to submit project. Please try again.')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+        status: "submitted",
+        code_files: allFiles,
+      });
 
-  const collectAllFiles = (nodes: FileNode[], files: Record<string, string> = {}): Record<string, string> => {
-    nodes.forEach(node => {
-      if (node.type === 'file') {
-        files[node.path] = node.content || ''
+      // console.log(projectId,userProjectId);
+
+      // Navigate to submission page for AI grading
+      router.push(
+        `/projects/${userProject.project_id}/submit?userProjectId=${userProject.id}`
+      );
+    } catch (error) {
+      console.error("Error submitting project:", error);
+      alert("Failed to submit project. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const collectAllFiles = (
+    nodes: FileNode[],
+    files: Record<string, string> = {}
+  ): Record<string, string> => {
+    nodes.forEach((node) => {
+      if (node.type === "file") {
+        files[node.path] = node.content || "";
       } else if (node.children) {
-        collectAllFiles(node.children, files)
+        collectAllFiles(node.children, files);
       }
-    })
-    return files
-  }
+    });
+    return files;
+  };
 
   const handleRun = () => {
-    setIsRunning(true)
+    setIsRunning(true);
     // The preview panel will handle the actual preview generation
-  }
+  };
 
   const handleStop = () => {
-    setIsRunning(false)
-  }
+    setIsRunning(false);
+  };
 
   const renderFileTree = (nodes: FileNode[], level = 0) => {
-    return nodes.map(node => (
+    return nodes.map((node) => (
       <div key={node.path}>
         <div
           className={`flex items-center gap-2 p-1 rounded cursor-pointer hover:bg-gray-100 ${
-            selectedFile?.path === node.path ? 'bg-blue-100 text-blue-700' : ''
+            selectedFile?.path === node.path ? "bg-blue-100 text-blue-700" : ""
           }`}
           style={{ marginLeft: `${level * 16}px` }}
           onClick={() => {
-            if (node.type === 'file') {
-              handleFileSelect(node)
+            if (node.type === "file") {
+              handleFileSelect(node);
             } else {
               // Toggle folder
               const updateTree = (nodes: FileNode[]): FileNode[] => {
-                return nodes.map(n => 
-                  n.path === node.path 
+                return nodes.map((n) =>
+                  n.path === node.path
                     ? { ...n, isOpen: !n.isOpen }
-                    : n.children 
-                      ? { ...n, children: updateTree(n.children) }
-                      : n
-                )
-              }
-              setFileTree(updateTree(fileTree))
+                    : n.children
+                    ? { ...n, children: updateTree(n.children) }
+                    : n
+                );
+              };
+              setFileTree(updateTree(fileTree));
             }
           }}
         >
-          {node.type === 'folder' ? (
+          {node.type === "folder" ? (
             <>
-              <span className="text-gray-500">
-                {node.isOpen ? '📂' : '📁'}
-              </span>
+              <span className="text-gray-500">{node.isOpen ? "📂" : "📁"}</span>
               <span className="text-sm font-medium">{node.name}</span>
             </>
           ) : (
@@ -291,12 +310,13 @@ export default function IDEPage() {
             </>
           )}
         </div>
-        {node.type === 'folder' && node.isOpen && node.children && 
-          renderFileTree(node.children, level + 1)
-        }
+        {node.type === "folder" &&
+          node.isOpen &&
+          node.children &&
+          renderFileTree(node.children, level + 1)}
       </div>
-    ))
-  }
+    ));
+  };
 
   if (!userProject) {
     return (
@@ -306,16 +326,17 @@ export default function IDEPage() {
           <p>Loading IDE...</p>
         </div>
       </div>
-    )
+    );
   }
-  
 
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h1 className="text-lg font-semibold text-gray-800">{userProject.project_name}</h1>
+          <h1 className="text-lg font-semibold text-gray-800">
+            {userProject.project_name}
+          </h1>
           <Badge variant="outline" className="text-xs">
             {userProject.template_id}
           </Badge>
@@ -328,13 +349,18 @@ export default function IDEPage() {
             </span>
           )}
         </div>
-        
+
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => handleSave(true)} disabled={isSaving}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleSave(true)}
+            disabled={isSaving}
+          >
             <Save className="h-4 w-4 mr-1" />
-            {isSaving ? 'Saving...' : 'Save'}
+            {isSaving ? "Saving..." : "Save"}
           </Button>
-          
+
           {isRunning ? (
             <Button variant="outline" size="sm" onClick={handleStop}>
               <Square className="h-4 w-4 mr-1" />
@@ -346,9 +372,10 @@ export default function IDEPage() {
               Run
             </Button>
           )}
-          
-          <Button 
-            onClick={handleSubmit} 
+
+          <Button
+            type="button"
+            onClick={handleSubmit}
             disabled={isSubmitting}
             className="bg-green-600 hover:bg-green-700"
           >
@@ -360,11 +387,11 @@ export default function IDEPage() {
             ) : (
               <>
                 <Send className="h-4 w-4 mr-1" />
-                Submit for Grading
+                Submit for Gradingg
               </>
             )}
           </Button>
-          
+
           <Button variant="outline" size="sm">
             <Settings className="h-4 w-4" />
           </Button>
@@ -374,7 +401,7 @@ export default function IDEPage() {
       {/* Main IDE Layout - Fixed height */}
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar - File Explorer */}
-        <div 
+        <div
           className="bg-gray-50 border-r border-gray-200 flex flex-col"
           style={{ width: `${sidebarWidth}px` }}
         >
@@ -391,7 +418,7 @@ export default function IDEPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="flex-1 overflow-y-auto p-2">
             {renderFileTree(fileTree)}
           </div>
@@ -413,35 +440,56 @@ export default function IDEPage() {
 
             {/* Right Panel */}
             <div className="w-1/2 border-l border-gray-200 flex flex-col">
-              <Tabs value={activePanel} onValueChange={(value) => setActivePanel(value as any)}>
+              <Tabs
+                value={activePanel}
+                onValueChange={(value) => setActivePanel(value as any)}
+              >
                 <TabsList className="w-full rounded-none border-b">
-                  <TabsTrigger value="preview" className="flex items-center gap-2">
+                  <TabsTrigger
+                    value="preview"
+                    className="flex items-center gap-2"
+                  >
                     <Eye className="h-4 w-4" />
                     Preview
                   </TabsTrigger>
-                  <TabsTrigger value="terminal" className="flex items-center gap-2">
+                  <TabsTrigger
+                    value="terminal"
+                    className="flex items-center gap-2"
+                  >
                     <TerminalIcon className="h-4 w-4" />
                     Terminal
                   </TabsTrigger>
-                  <TabsTrigger value="github" className="flex items-center gap-2">
+                  <TabsTrigger
+                    value="github"
+                    className="flex items-center gap-2"
+                  >
                     <GitBranch className="h-4 w-4" />
                     GitHub
                   </TabsTrigger>
                 </TabsList>
-                
-                <TabsContent value="preview" className="flex-1 m-0 overflow-hidden">
+
+                <TabsContent
+                  value="preview"
+                  className="flex-1 m-0 overflow-hidden"
+                >
                   <PreviewPanel
                     projectId={projectId}
                     files={collectAllFiles(fileTree)}
                     isRunning={isRunning}
                   />
                 </TabsContent>
-                
-                <TabsContent value="terminal" className="flex-1 m-0 overflow-hidden">
+
+                <TabsContent
+                  value="terminal"
+                  className="flex-1 m-0 overflow-hidden"
+                >
                   <Terminal projectId={projectId} />
                 </TabsContent>
-                
-                <TabsContent value="github" className="flex-1 m-0 overflow-hidden">
+
+                <TabsContent
+                  value="github"
+                  className="flex-1 m-0 overflow-hidden"
+                >
                   <div className="p-4 h-full overflow-y-auto">
                     <GitHubIntegration
                       projectId={projectId}
@@ -456,5 +504,5 @@ export default function IDEPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
