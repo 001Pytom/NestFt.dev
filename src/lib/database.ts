@@ -501,7 +501,7 @@ export async function getLeaderboard(limit: number = 50): Promise<UserProfile[]>
     .order('total_points', { ascending: false })
     .order('created_at', { ascending: true })  // Secondary sort by join date for ties
     .limit(limit)
-
+ 
   if (error) {
     console.error('Error fetching leaderboard:', error)
     return []
