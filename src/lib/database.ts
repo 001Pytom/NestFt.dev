@@ -495,7 +495,7 @@ export async function getLeaderboard(limit: number = 50): Promise<UserProfile[]>
   const { data, error } = await supabase
     .from('user_profiles')
     .select('*')
-    .not('total_points', 'is', null)  // Exclude profiles with null points
+    .gte('total_points', 0)  // Include all profiles with points >= 0
     .order('total_points', { ascending: false })
     .order('created_at', { ascending: true })  // Secondary sort by join date for ties
     .limit(limit)
@@ -505,14 +505,7 @@ export async function getLeaderboard(limit: number = 50): Promise<UserProfile[]>
     return []
   }
 
-  // Filter out any profiles that might have invalid data
-  const validProfiles = (data || []).filter(profile => 
-    profile.user_id && 
-    profile.total_points >= 0 &&
-    profile.full_name
-  )
-
-  return validProfiles
+  return data || []
 }
 
 // Get leaderboard with user rankings
@@ -529,11 +522,11 @@ export async function getLeaderboardWithRankings(limit: number = 50): Promise<(U
 // Get user's position in leaderboard
 export async function getUserLeaderboardPosition(userId: string): Promise<{ rank: number; totalUsers: number } | null> {
   try {
-    // Get all users ordered by points
+    // Get all users ordered by points (same query as leaderboard)
     const { data: allUsers, error } = await supabase
       .from('user_profiles')
-      .select('user_id, total_points')
-      .not('total_points', 'is', null)
+      .select('user_id, total_points, created_at')
+      .gte('total_points', 0)
       .order('total_points', { ascending: false })
       .order('created_at', { ascending: true })
 

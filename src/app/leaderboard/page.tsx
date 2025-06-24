@@ -30,7 +30,8 @@ export default function LeaderboardPage() {
 
   const loadLeaderboard = async () => {
     try {
-      const data = await getLeaderboardWithRankings(50)
+      const data = await getLeaderboardWithRankings(100) // Get more users
+      console.log('Leaderboard data:', data) // Debug log
       setLeaderboardData(data)
     } catch (error) {
       console.error('Error loading leaderboard:', error)
@@ -44,6 +45,7 @@ export default function LeaderboardPage() {
     
     try {
       const position = await getUserLeaderboardPosition(user.id)
+      console.log('User position:', position) // Debug log
       setUserPosition(position)
     } catch (error) {
       console.error('Error loading user position:', error)
@@ -89,6 +91,10 @@ export default function LeaderboardPage() {
     }
   }
 
+  const isCurrentUser = (profileUserId: string) => {
+    return user && user.id === profileUserId
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -99,23 +105,24 @@ export default function LeaderboardPage() {
 
   return (
     <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              🏆 Leaderboard
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              🏆 Developer Leaderboard
             </h1>
             <div className="space-y-2">
               <span className="text-muted-foreground text-lg block">
-                See how you rank against other developers in the community
+                Compete with developers worldwide and climb the rankings!
               </span>
               {userPosition && user && (
-                <div className="text-sm text-muted-foreground">
-                  Your current rank: <span className="font-semibold text-primary">#{userPosition.rank}</span> out of {userPosition.totalUsers} developers
+                <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
+                  <Trophy className="h-4 w-4" />
+                  Your Rank: #{userPosition.rank} out of {userPosition.totalUsers} developers
                 </div>
               )}
             </div>
@@ -130,23 +137,23 @@ export default function LeaderboardPage() {
             transition={{ delay: 0.1 }}
             className="mb-12"
           >
-            <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
+            <div className="grid grid-cols-3 gap-4 max-w-3xl mx-auto">
               {/* 2nd Place */}
               <div className="flex flex-col items-center pt-8">
                 <div className="relative">
-                  <Avatar className="h-16 w-16 border-4 border-gray-300">
+                  <Avatar className="h-16 w-16 border-4 border-gray-300 shadow-lg">
                     <AvatarImage src={leaderboardData[1]?.avatar_url || ''} alt={leaderboardData[1]?.full_name || 'User'} />
-                    <AvatarFallback className="text-lg font-bold">
+                    <AvatarFallback className="text-lg font-bold bg-gray-100">
                       {leaderboardData[1]?.full_name?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="absolute -top-2 -right-2 bg-gray-400 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                  <div className="absolute -top-2 -right-2 bg-gray-400 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold shadow-md">
                     2
                   </div>
                 </div>
-                <h3 className="font-semibold mt-2 text-center">{leaderboardData[1]?.full_name || 'Anonymous User'}</h3>
-                <p className="text-2xl font-bold text-gray-600">{leaderboardData[1]?.total_points?.toLocaleString() || 0}</p>
-                <Badge className={getStageColor(leaderboardData[1]?.current_stage)}>
+                <h3 className="font-semibold mt-3 text-center text-sm">{leaderboardData[1]?.full_name || 'Anonymous User'}</h3>
+                <p className="text-2xl font-bold text-gray-600 mt-1">{leaderboardData[1]?.total_points?.toLocaleString() || 0}</p>
+                <Badge className={`${getStageColor(leaderboardData[1]?.current_stage)} mt-2`} variant="outline">
                   {leaderboardData[1]?.current_stage?.charAt(0).toUpperCase() + leaderboardData[1]?.current_stage?.slice(1) || 'Beginner'}
                 </Badge>
               </div>
@@ -154,19 +161,19 @@ export default function LeaderboardPage() {
               {/* 1st Place */}
               <div className="flex flex-col items-center">
                 <div className="relative">
-                  <Avatar className="h-20 w-20 border-4 border-yellow-400">
+                  <Avatar className="h-24 w-24 border-4 border-yellow-400 shadow-xl">
                     <AvatarImage src={leaderboardData[0]?.avatar_url || ''} alt={leaderboardData[0]?.full_name || 'User'} />
-                    <AvatarFallback className="text-xl font-bold">
+                    <AvatarFallback className="text-2xl font-bold bg-yellow-50">
                       {leaderboardData[0]?.full_name?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="absolute -top-3 -right-3 bg-yellow-500 text-white rounded-full w-10 h-10 flex items-center justify-center">
-                    <Crown className="h-5 w-5" />
+                  <div className="absolute -top-4 -right-4 bg-yellow-500 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg">
+                    <Crown className="h-6 w-6" />
                   </div>
                 </div>
-                <h3 className="font-semibold mt-2 text-center">{leaderboardData[0]?.full_name || 'Anonymous User'}</h3>
-                <p className="text-3xl font-bold text-yellow-600">{leaderboardData[0]?.total_points?.toLocaleString() || 0}</p>
-                <Badge className={getStageColor(leaderboardData[0]?.current_stage)}>
+                <h3 className="font-bold mt-3 text-center">{leaderboardData[0]?.full_name || 'Anonymous User'}</h3>
+                <p className="text-3xl font-bold text-yellow-600 mt-1">{leaderboardData[0]?.total_points?.toLocaleString() || 0}</p>
+                <Badge className={`${getStageColor(leaderboardData[0]?.current_stage)} mt-2`} variant="outline">
                   {leaderboardData[0]?.current_stage?.charAt(0).toUpperCase() + leaderboardData[0]?.current_stage?.slice(1) || 'Beginner'}
                 </Badge>
               </div>
@@ -174,19 +181,19 @@ export default function LeaderboardPage() {
               {/* 3rd Place */}
               <div className="flex flex-col items-center pt-12">
                 <div className="relative">
-                  <Avatar className="h-14 w-14 border-4 border-amber-400">
+                  <Avatar className="h-14 w-14 border-4 border-amber-400 shadow-lg">
                     <AvatarImage src={leaderboardData[2]?.avatar_url || ''} alt={leaderboardData[2]?.full_name || 'User'} />
-                    <AvatarFallback className="text-base font-bold">
+                    <AvatarFallback className="text-base font-bold bg-amber-50">
                       {leaderboardData[2]?.full_name?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="absolute -top-2 -right-2 bg-amber-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold">
+                  <div className="absolute -top-2 -right-2 bg-amber-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold shadow-md">
                     3
                   </div>
                 </div>
-                <h3 className="font-semibold mt-2 text-center">{leaderboardData[2]?.full_name || 'Anonymous User'}</h3>
-                <p className="text-xl font-bold text-amber-600">{leaderboardData[2]?.total_points?.toLocaleString() || 0}</p>
-                <Badge className={getStageColor(leaderboardData[2]?.current_stage)}>
+                <h3 className="font-semibold mt-3 text-center text-sm">{leaderboardData[2]?.full_name || 'Anonymous User'}</h3>
+                <p className="text-xl font-bold text-amber-600 mt-1">{leaderboardData[2]?.total_points?.toLocaleString() || 0}</p>
+                <Badge className={`${getStageColor(leaderboardData[2]?.current_stage)} mt-2`} variant="outline">
                   {leaderboardData[2]?.current_stage?.charAt(0).toUpperCase() + leaderboardData[2]?.current_stage?.slice(1) || 'Beginner'}
                 </Badge>
               </div>
@@ -199,44 +206,63 @@ export default function LeaderboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="space-y-4"
+          className="space-y-3"
         >
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold">All Developers</h2>
+            <div className="text-sm text-muted-foreground">
+              {leaderboardData.length} developers competing
+            </div>
+          </div>
+
           {leaderboardData.length > 0 ? (
-            leaderboardData.map((user, index) => (
+            leaderboardData.map((userProfile, index) => (
               <motion.div
-                key={user.id}
+                key={userProfile.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 * index }}
+                transition={{ delay: 0.05 * index }}
               >
-                <Card className={`hover:shadow-md transition-all duration-300 ${
+                <Card className={`hover:shadow-lg transition-all duration-300 ${
                   index < 3 ? 'border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent' : ''
                 } ${
-                  user && user.id === user.user_id ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                  isCurrentUser(userProfile.user_id) ? 'ring-2 ring-blue-500 bg-blue-50 border-blue-200' : ''
                 }`}>
-                  <CardContent className="p-6">
+                  <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className={`flex items-center justify-center w-12 h-12 rounded-full ${getRankBadgeColor(user.rank)}`}>
-                          {getRankIcon(user.rank)}
+                        {/* Rank Badge */}
+                        <div className={`flex items-center justify-center w-12 h-12 rounded-full ${getRankBadgeColor(userProfile.rank)} shadow-md`}>
+                          {getRankIcon(userProfile.rank)}
                         </div>
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={user.avatar_url || ''} alt={user.full_name || 'User'} />
-                          <AvatarFallback>
-                            {user.full_name?.charAt(0) || 'U'}
+                        
+                        {/* User Avatar */}
+                        <Avatar className="h-12 w-12 shadow-sm">
+                          <AvatarImage src={userProfile.avatar_url || ''} alt={userProfile.full_name || 'User'} />
+                          <AvatarFallback className="font-semibold">
+                            {userProfile.full_name?.charAt(0) || 'U'}
                           </AvatarFallback>
                         </Avatar>
-                        <div>
-                          <h3 className="font-semibold text-lg">{user.full_name || 'Anonymous User'}</h3>
+                        
+                        {/* User Info */}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-lg">
+                              {userProfile.full_name || 'Anonymous User'}
+                            </h3>
+                            {isCurrentUser(userProfile.user_id) && (
+                              <Badge variant="secondary" className="text-xs">You</Badge>
+                            )}
+                          </div>
                           <div className="flex items-center gap-3 mt-1">
-                            <Badge className={getStageColor(user.current_stage)} variant="outline">
-                              {user.current_stage?.charAt(0).toUpperCase() + user.current_stage?.slice(1) || 'Beginner'} Level
+                            <Badge className={getStageColor(userProfile.current_stage)} variant="outline">
+                              {userProfile.current_stage?.charAt(0).toUpperCase() + userProfile.current_stage?.slice(1) || 'Beginner'}
                             </Badge>
                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
                               <TrendingUp className="h-3 w-3" />
-                              <span>{user.streak_days} day streak</span>
+                              <span>{userProfile.streak_days || 0} day streak</span>
                             </div>
-                            {user.github_connected && (
+                            {userProfile.github_connected && (
                               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                 <Star className="h-3 w-3" />
                                 <span>GitHub</span>
@@ -245,13 +271,15 @@ export default function LeaderboardPage() {
                           </div>
                         </div>
                       </div>
+                      
+                      {/* Points and Stats */}
                       <div className="text-right">
-                        <div className="text-3xl font-bold text-primary">
-                          {user.total_points?.toLocaleString() || 0}
+                        <div className="text-2xl font-bold text-primary">
+                          {userProfile.total_points?.toLocaleString() || 0}
                         </div>
                         <div className="text-sm text-muted-foreground">points</div>
                         <div className="text-xs text-muted-foreground mt-1">
-                          Joined {new Date(user.created_at || '').toLocaleDateString()}
+                          Rank #{userProfile.rank}
                         </div>
                       </div>
                     </div>
@@ -284,7 +312,7 @@ export default function LeaderboardPage() {
               <CardTitle className="text-center">Community Stats</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
                 <div>
                   <div className="text-2xl font-bold text-primary">{leaderboardData.length}</div>
                   <div className="text-sm text-muted-foreground">Active Developers</div>
@@ -300,6 +328,12 @@ export default function LeaderboardPage() {
                     {leaderboardData.reduce((sum, user) => sum + (user.streak_days || 0), 0)}
                   </div>
                   <div className="text-sm text-muted-foreground">Combined Streak Days</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-success">
+                    {leaderboardData.length > 0 ? Math.round(leaderboardData.reduce((sum, user) => sum + (user.total_points || 0), 0) / leaderboardData.length) : 0}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Average Points</div>
                 </div>
               </div>
             </CardContent>
