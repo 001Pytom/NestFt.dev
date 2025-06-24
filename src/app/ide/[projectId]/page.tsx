@@ -38,8 +38,8 @@ export default function IDEPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuthStore();
- const projectId = params.projectId as string;
-const userProjectId = searchParams.get("project_id") as string;
+  const projectId = params.projectId as string;
+  const userProjectId = searchParams.get("project_id") as string;
 
   const [userProject, setUserProject] = useState<UserProject | null>(null);
   const [fileTree, setFileTree] = useState<FileNode[]>([]);
@@ -233,7 +233,6 @@ const userProjectId = searchParams.get("project_id") as string;
       });
 
       // console.log(projectId,userProjectId);
-
       // Navigate to submission page for AI grading
       router.push(
         `/projects/${userProject.project_id}/submit?userProjectId=${userProject.id}`

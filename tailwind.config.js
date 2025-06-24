@@ -53,6 +53,7 @@ module.exports = {
       fontFamily: {
         sans: ["var(--font-inter)"],
         display: ["var(--font-space-grotesk)"],
+        // didot: ["GFS Didot", serif],
       },
     },
   },

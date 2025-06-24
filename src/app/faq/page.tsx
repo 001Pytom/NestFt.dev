@@ -212,7 +212,7 @@ const categories = ['All', 'General', 'Getting Started', 'Projects', 'Collaborat
                 Start Building Now
               </Button>
             </Link>
-            <Link href="/projects">
+            <Link href="//projects/browse">
               <Button size="lg" variant="outline">
                 Browse Projects
               </Button>
