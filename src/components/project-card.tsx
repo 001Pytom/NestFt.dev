@@ -59,9 +59,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <span>~{project.estimated_hours} hours</span>
           </div>
         </div>
-        <Link href={`/projects/${project.id}`} className="w-full">
+        {/* <Link href={`/projects/${project.id}`} className="w-full">
           <Button className="w-full">View Project</Button>
-        </Link>
+        </Link> */} 
       </CardFooter>
     </Card>
   );
