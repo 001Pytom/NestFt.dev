@@ -13,6 +13,8 @@ import { ProjectTemplate } from '@/types/project'
 import { useAuthStore } from '@/lib/store'
 import { canAccessDifficulty, calculateUserProgress, getUserSubmittedProjects } from '@/lib/database'
 import Link from 'next/link'
+import { CheckCircle } from "lucide-react";
+
 
 export default function StackProjectsPage() {
   const params = useParams()
