@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { BarChart3, BookOpen, Trophy, Users, ArrowRight, Target, Clock, Star, Award } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { getUserProfile, getUserProjects, calculateUserProgress, createUserProfile, getUserSubmittedProjects } from '@/lib/database'
+import { getUserProfile, getUserProjects, calculateUserProgress, createUserProfile, getUserSubmittedProjects, checkAndUpdateUserStage } from '@/lib/database'
 import { UserProfile, UserProject } from '@/lib/database'
 
 export default function DashboardPage() {
@@ -59,6 +59,16 @@ export default function DashboardPage() {
       // Calculate progress
       const userProgress = await calculateUserProgress(user.id)
       setProgress(userProgress)
+      
+      // Check if user stage needs updating (in case they completed projects but stage wasn't updated)
+      if (profile) {
+        await checkAndUpdateUserStage(user.id, profile.current_stage)
+        // Reload profile to get updated stage
+        const updatedProfile = await getUserProfile(user.id)
+        if (updatedProfile) {
+          setUserProfile(updatedProfile)
+        }
+      }
 
     } catch (error) {
       console.error('Error loading user data:', error)
@@ -161,12 +171,12 @@ export default function DashboardPage() {
                 <p className="text-sm">
                   {canAdvanceToNext() ? (
                     <span className="text-green-600 font-medium">
-                      🎉 Congratulations! You can advance to {getNextStage()} level!
+                      🎉 Congratulations! You can now access {getNextStage()} level projects!
                     </span>
                   ) : (
                     <>
                       Complete {Math.ceil(currentStageProgress.total * 0.7) - currentStageProgress.completed} more projects 
-                      to unlock the {getNextStage() || 'next'} stage!
+                      to unlock {getNextStage() || 'next'} level projects!
                     </>
                   )}
                 </p>
@@ -290,6 +300,11 @@ export default function DashboardPage() {
                     )}
                   </div>
                 </div>
+                {userProfile?.current_stage && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Current skill level
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}

@@ -55,7 +55,10 @@ export default function ProfilePage() {
                   </span>
                 </div>
                 <Badge variant="secondary" className="w-full justify-center">
-                  Beginner Level
+                  {user?.user_metadata?.current_stage ? 
+                    `${user.user_metadata.current_stage.charAt(0).toUpperCase() + user.user_metadata.current_stage.slice(1)} Level` : 
+                    'Beginner Level'
+                  }
                 </Badge>
                 <Button variant="outline" className="w-full" onClick={logout}>
                   Sign Out

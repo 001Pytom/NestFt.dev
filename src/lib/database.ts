@@ -111,6 +111,45 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
   return data
 }
 
+// Check and update user stage based on their progress
+export async function checkAndUpdateUserStage(userId: string, projectDifficulty: string): Promise<void> {
+  try {
+    const userProfile = await getUserProfile(userId)
+    if (!userProfile) return
+
+    const progress = await calculateUserProgress(userId)
+    let shouldUpdateStage = false
+    let newStage: 'beginner' | 'intermediate' | 'advanced' = userProfile.current_stage
+
+    // Check if user should advance to intermediate
+    if (userProfile.current_stage === 'beginner' && 
+        projectDifficulty === 'intermediate' && 
+        progress.beginner.percentage >= 70) {
+      newStage = 'intermediate'
+      shouldUpdateStage = true
+    }
+    
+    // Check if user should advance to advanced
+    if (userProfile.current_stage === 'intermediate' && 
+        projectDifficulty === 'advanced' && 
+        progress.intermediate.percentage >= 70) {
+      newStage = 'advanced'
+      shouldUpdateStage = true
+    }
+
+    if (shouldUpdateStage) {
+      await updateUserProfile(userId, {
+        current_stage: newStage,
+        updated_at: new Date().toISOString()
+      })
+      
+      console.log(`User ${userId} advanced to ${newStage} stage`)
+    }
+  } catch (error) {
+    console.error('Error checking/updating user stage:', error)
+  }
+}
+
 // User Projects Functions
 export async function getUserProjects(userId: string): Promise<UserProject[]> {
   const { data, error } = await supabase

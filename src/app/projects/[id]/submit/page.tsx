@@ -30,6 +30,7 @@ import {
   updateUserProfile,
   getUserProfile,
   hasUserSubmittedProject,
+  checkAndUpdateUserStage,
 } from "@/lib/database";
 import { gradeProject } from "@/lib/aiGrading";
 import Link from "next/link";
@@ -177,7 +178,8 @@ export default function ProjectSubmitPage() {
       await updateUserProgress(
         user.id,
         gradingResult.totalScore,
-        project.difficulty
+        project.difficulty,
+        project.id
       );
 
       setGradingResults(gradingResult);
@@ -201,7 +203,8 @@ export default function ProjectSubmitPage() {
   const updateUserProgress = async (
     userId: string,
     points: number,
-    difficulty: string
+    difficulty: string,
+    projectId: string
   ) => {
     try {
       const userProfile = await getUserProfile(userId);
@@ -215,6 +218,9 @@ export default function ProjectSubmitPage() {
         streak_days: newStreakDays,
         last_activity_date: new Date().toISOString().split("T")[0],
       });
+      
+      // Check if user should advance to next stage
+      await checkAndUpdateUserStage(userId, difficulty)
     } catch (error) {
       console.error("Error updating user progress:", error);
     }

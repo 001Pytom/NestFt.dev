@@ -197,8 +197,8 @@ export default function LeaderboardPage() {
                         <div>
                           <h3 className="font-semibold text-lg">{user.full_name || 'Anonymous User'}</h3>
                           <div className="flex items-center gap-3 mt-1">
-                            <Badge className={getStageColor(user.current_stage)}>
-                              {user.current_stage}
+                            <Badge className={getStageColor(user.current_stage)} variant="outline">
+                              {user.current_stage.charAt(0).toUpperCase() + user.current_stage.slice(1)} Level
                             </Badge>
                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
                               <TrendingUp className="h-3 w-3" />
