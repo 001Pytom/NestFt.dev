@@ -98,7 +98,7 @@ export default function Home() {
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
-          <Link href="/projects">
+          <Link href="/projects/browse">
             <Button size="lg" variant="outline" className="font-medium ">
               Browse Projects
             </Button>
@@ -237,7 +237,7 @@ export default function Home() {
                 building right now.
               </p>
             </div>
-            <Link href="/projects" className="mt-4 md:mt-0">
+            <Link href="/projects/browse" className="mt-4 md:mt-0">
               <Button variant="outline">
                 View All Projects
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -306,7 +306,7 @@ export default function Home() {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link href="/projects">
+            <Link href="/projects/browse">
               <Button size="lg" variant="outline" className="font-medium">
                 Explore Projects
               </Button>

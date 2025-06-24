@@ -115,7 +115,7 @@ export default function DashboardPage() {
             Welcome back, {userProfile?.full_name || user?.email}!
           </h1>
           <p className="text-muted-foreground">
-            Ready to continue building amazing projects? Let's level up your skills!
+            Ready to continue building amazing projects? Let`&#39;` s level up your skills!
           </p>
         </motion.div>
 

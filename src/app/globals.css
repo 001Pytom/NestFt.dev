@@ -1,9 +1,15 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap");
 @import "tailwindcss";
+
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* font */
+  /* --font-didot: "GFS Didot", serif; */
+  /* --font-poppins: "Poppins", sans-serif; */
+  --font-noto: "Noto Sans", sans-serif;
   /* test */
   --background: hsl(222.2 84% 4.9%);
   --foreground: hsl(210 40% 98%);
@@ -17,7 +23,7 @@
   --primary: hsl(265 89% 66%);
   --primary-foreground: hsl(222.2 47.4% 11.2%);
 
-  --secondary: hsl(199 89% 48%);
+  --secondary: hsla(247, 76%, 51%, 0.8);
   --secondary-foreground: hsl(210 40% 98%);
 
   --accent: hsl(24 95% 53%);
@@ -88,10 +94,10 @@
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(222.2 84% 4.9%);
 
-  --primary: hsl(246, 61%, 42%);
+  --primary: hsla(247, 76%, 51%, 0.4);
   --primary-foreground: hsl(210 40% 98%);
 
-  --secondary: hsl(199 89% 48%);
+  --secondary: hsla(247, 76%, 51%, 0.8);
   --secondary-foreground: hsl(222.2 47.4% 11.2%);
 
   --accent: hsl(24 95% 53%);
@@ -162,10 +168,10 @@
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(222.2 84% 4.9%);
 
-  --primary: hsl(246, 61%, 42%);
+  --primary: hsla(247, 76%, 51%, 0.4);
   --primary-foreground: hsl(210 40% 98%);
 
-  --secondary: hsl(199 89% 48%);
+  --secondary: hsla(247, 76%, 51%, 0.8);
   --secondary-foreground: hsl(222.2 47.4% 11.2%);
 
   --accent: hsl(24 95% 53%);
@@ -236,10 +242,10 @@
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(222.2 84% 4.9%);
 
-  --primary: hsl(246, 61%, 42%);
+  --primary: hsla(247, 76%, 51%, 0.4);
   --primary-foreground: hsl(210 40% 98%);
 
-  --secondary: hsl(199 89% 48%);
+  --secondary: hsla(247, 76%, 51%, 0.8);
   --secondary-foreground: hsl(222.2 47.4% 11.2%);
 
   --accent: hsl(24 95% 53%);
@@ -276,7 +282,7 @@
   --primary: hsl(265 89% 66%);
   --primary-foreground: hsl(222.2 47.4% 11.2%);
 
-  --secondary: hsl(199 89% 48%);
+  --secondary: hsla(247, 76%, 51%, 0.8);
   --secondary-foreground: hsl(210 40% 98%);
 
   --accent: hsl(24 95% 53%);

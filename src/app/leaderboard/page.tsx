@@ -86,9 +86,9 @@ export default function LeaderboardPage() {
             <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               🏆 Leaderboard
             </h1>
-            <p className="text-muted-foreground text-lg">
+            <span className="text-muted-foreground text-lg">
               See how you rank against other developers in the community
-            </p>
+            </span>
           </div>
         </motion.div>
 

@@ -221,7 +221,7 @@ function FeaturesPage() {
             <Link href="/signup">
               <Button size="lg">Get Started Free</Button>
             </Link>
-            <Link href="/projects">
+            <Link href="/projects/browse">
               <Button size="lg" variant="outline">
                 Browse Projects
               </Button>

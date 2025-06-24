@@ -27,14 +27,14 @@ export function Navbar() {
 
   const isActive = (path: string) => pathname === path;
 
-  //   const handleLogin = async (provider: "github" | "google") => {
-  //     try {
-  //       await login(provider);
-  //       router.push("/dashboard");
-  //     } catch (error) {
-  //       console.error("Login error:", error);
-  //     }
-  //   };
+  // const handleLogin = async (provider: "github" | "google") => {
+  //   try {
+  //     await login(provider);
+  //     router.push("/dashboard");
+  //   } catch (error) {
+  //     console.error("Login error:", error);
+  //   }
+  // };
 
   const handleLogout = async () => {
     try {
@@ -53,15 +53,18 @@ export function Navbar() {
           <Link
             href="/"
             onClick={closeMenu}
-            className="flex items-center gap-2 font-semibold text-xl text-black"
+            className="flex items-center gap-2 group"
           >
             <Image
               src="/logo.png"
               alt="NestFT.dev Logo"
-              width={45}
-              height={45}
+              width={42}
+              height={42}
+              className="transition-transform group-hover:rotate-6"
             />
-            <span>NestFT.dev</span>
+            <p className="text-[1.6rem] font-bold text-gray-900 font-noto tracking-tight group-hover:text-primary">
+              NestFT<span className="text-primary">.dev</span>
+            </p>
           </Link>
         </div>
 
@@ -78,9 +81,9 @@ export function Navbar() {
                 Dashboard
               </Link>
               <Link
-                href="/projects"
+                href="/projects/browse"
                 className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive("/projects") ? "text-primary" : "text-black"
+                  isActive("/projects/browse") ? "text-primary" : "text-black"
                 }`}
               >
                 Projects
@@ -103,9 +106,14 @@ export function Navbar() {
               </Link>
               <Link href="/profile" className="ml-4">
                 <Avatar>
-                  <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.name} />
+                  <AvatarImage
+                    src={user?.user_metadata?.avatar_url}
+                    alt={user?.user_metadata?.name}
+                  />
                   <AvatarFallback>
-                    {user?.user_metadata?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                    {user?.user_metadata?.name?.charAt(0) ||
+                      user?.email?.charAt(0) ||
+                      "U"}
                   </AvatarFallback>
                 </Avatar>
               </Link>
@@ -174,9 +182,14 @@ export function Navbar() {
             <>
               <div className="flex items-center gap-3 pb-3 mb-2 border-b">
                 <Avatar>
-                  <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.name} />
+                  <AvatarImage
+                    src={user?.user_metadata?.avatar_url}
+                    alt={user?.user_metadata?.name}
+                  />
                   <AvatarFallback>
-                    {user?.user_metadata?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                    {user?.user_metadata?.name?.charAt(0) ||
+                      user?.email?.charAt(0) ||
+                      "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div>

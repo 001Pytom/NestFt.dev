@@ -210,7 +210,7 @@ function GuidesPage() {
               </Card>
 
               <Card className="p-6 text-center">
-                <div className="h-12 w-12 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center mx-auto mb-4 text-xl font-bold">
+                <div className="h-12 w-12 rounded-full bg-secondary text-slate-50 flex items-center justify-center mx-auto mb-4 text-xl font-bold">
                   2
                 </div>
                 <h3 className="font-semibold mb-2">Frontend</h3>
