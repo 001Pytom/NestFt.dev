@@ -81,6 +81,13 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
 }
 
 export async function createUserProfile(profile: Partial<UserProfile>): Promise<UserProfile | null> {
+  // Check if profile already exists to prevent duplicates
+  const existingProfile = await getUserProfile(profile.user_id!)
+  if (existingProfile) {
+    console.log('User profile already exists, returning existing profile')
+    return existingProfile
+  }
+
   const { data, error } = await supabase
     .from('user_profiles')
     .insert(profile)
@@ -114,10 +121,40 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
   return data
 }
 
+// Get or create user profile (prevents duplicates)
+export async function getOrCreateUserProfile(userId: string, userData?: any): Promise<UserProfile | null> {
+  try {
+    // First try to get existing profile
+    let profile = await getUserProfile(userId)
+    
+    if (!profile) {
+      // Create new profile if it doesn't exist
+      const newProfile = {
+        user_id: userId,
+        full_name: userData?.user_metadata?.name || userData?.user_metadata?.full_name || userData?.email?.split('@')[0] || 'User',
+        avatar_url: userData?.user_metadata?.avatar_url,
+        current_stage: 'beginner' as const,
+        total_points: 0,
+        streak_days: 0,
+        last_activity_date: new Date().toISOString().split('T')[0],
+        github_connected: false
+      }
+      
+      profile = await createUserProfile(newProfile)
+    }
+    
+    return profile
+  } catch (error) {
+    console.error('Error getting or creating user profile:', error)
+    return null
+  }
+}
+
 // Update user streak based on daily activity (login + project submission)
 export async function updateUserStreak(userId: string): Promise<void> {
   try {
-    const userProfile = await getUserProfile(userId)
+    // Use getOrCreateUserProfile to ensure profile exists
+    const userProfile = await getOrCreateUserProfile(userId)
     if (!userProfile) return
 
     const today = new Date().toISOString().split('T')[0]
@@ -458,7 +495,9 @@ export async function getLeaderboard(limit: number = 50): Promise<UserProfile[]>
   const { data, error } = await supabase
     .from('user_profiles')
     .select('*')
+    .not('total_points', 'is', null)  // Exclude profiles with null points
     .order('total_points', { ascending: false })
+    .order('created_at', { ascending: true })  // Secondary sort by join date for ties
     .limit(limit)
 
   if (error) {
@@ -466,7 +505,57 @@ export async function getLeaderboard(limit: number = 50): Promise<UserProfile[]>
     return []
   }
 
-  return data || []
+  // Filter out any profiles that might have invalid data
+  const validProfiles = (data || []).filter(profile => 
+    profile.user_id && 
+    profile.total_points >= 0 &&
+    profile.full_name
+  )
+
+  return validProfiles
+}
+
+// Get leaderboard with user rankings
+export async function getLeaderboardWithRankings(limit: number = 50): Promise<(UserProfile & { rank: number })[]> {
+  const profiles = await getLeaderboard(limit)
+  
+  // Add rank to each profile
+  return profiles.map((profile, index) => ({
+    ...profile,
+    rank: index + 1
+  }))
+}
+
+// Get user's position in leaderboard
+export async function getUserLeaderboardPosition(userId: string): Promise<{ rank: number; totalUsers: number } | null> {
+  try {
+    // Get all users ordered by points
+    const { data: allUsers, error } = await supabase
+      .from('user_profiles')
+      .select('user_id, total_points')
+      .not('total_points', 'is', null)
+      .order('total_points', { ascending: false })
+      .order('created_at', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching leaderboard position:', error)
+      return null
+    }
+
+    const userIndex = allUsers?.findIndex(user => user.user_id === userId)
+    
+    if (userIndex === -1 || userIndex === undefined) {
+      return null
+    }
+
+    return {
+      rank: userIndex + 1,
+      totalUsers: allUsers?.length || 0
+    }
+  } catch (error) {
+    console.error('Error getting user leaderboard position:', error)
+    return null
+  }
 }
 
 // Progress Calculation Functions - Updated to use real data

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { BarChart3, BookOpen, Trophy, Users, ArrowRight, Target, Clock, Star, Award } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { getUserProfile, getUserProjects, calculateUserProgress, createUserProfile, getUserSubmittedProjects, checkAndUpdateUserStage, updateUserStreak } from '@/lib/database'
+import { getOrCreateUserProfile, getUserProjects, calculateUserProgress, getUserSubmittedProjects, checkAndUpdateUserStage, updateUserStreak } from '@/lib/database'
 import { UserProfile, UserProject } from '@/lib/database'
 
 export default function DashboardPage() {
@@ -35,18 +35,10 @@ export default function DashboardPage() {
 
     try {
       // Get or create user profile
-      let profile = await getUserProfile(user?.id)
+      const profile = await getOrCreateUserProfile(user.id, user)
       if (!profile) {
-        profile = await createUserProfile({
-          user_id: user.id,
-          full_name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
-          avatar_url: user.user_metadata?.avatar_url,
-          current_stage: 'beginner',
-          total_points: 0,
-          streak_days: 0,
-          last_activity_date: new Date().toISOString().split('T')[0],
-          github_connected: false
-        })
+        console.error('Failed to get or create user profile')
+        return
       }
       setUserProfile(profile)
 
@@ -66,7 +58,7 @@ export default function DashboardPage() {
       if (profile) {
         await checkAndUpdateUserStage(user.id, profile.current_stage)
         // Reload profile to get updated stage
-        const updatedProfile = await getUserProfile(user.id)
+        const updatedProfile = await getOrCreateUserProfile(user.id, user)
         if (updatedProfile) {
           setUserProfile(updatedProfile)
         }

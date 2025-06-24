@@ -6,24 +6,47 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Medal, Award, Crown, Star, TrendingUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { getLeaderboard, UserProfile } from '@/lib/database'
+import { getLeaderboardWithRankings, getUserLeaderboardPosition, UserProfile } from '@/lib/database'
+import { useAuthStore } from '@/lib/store'
 
 export default function LeaderboardPage() {
-  const [leaderboardData, setLeaderboardData] = useState<UserProfile[]>([])
+  const { user } = useAuthStore()
+  const [leaderboardData, setLeaderboardData] = useState<(UserProfile & { rank: number })[]>([])
+  const [userPosition, setUserPosition] = useState<{ rank: number; totalUsers: number } | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     loadLeaderboard()
+    if (user) {
+      loadUserPosition()
+    }
   }, [])
+  
+  useEffect(() => {
+    if (user) {
+      loadUserPosition()
+    }
+  }, [user])
 
   const loadLeaderboard = async () => {
     try {
-      const data = await getLeaderboard(50)
+      const data = await getLeaderboardWithRankings(50)
       setLeaderboardData(data)
     } catch (error) {
       console.error('Error loading leaderboard:', error)
     } finally {
       setLoading(false)
+    }
+  }
+  
+  const loadUserPosition = async () => {
+    if (!user) return
+    
+    try {
+      const position = await getUserLeaderboardPosition(user.id)
+      setUserPosition(position)
+    } catch (error) {
+      console.error('Error loading user position:', error)
     }
   }
 
@@ -86,9 +109,16 @@ export default function LeaderboardPage() {
             <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               🏆 Leaderboard
             </h1>
-            <span className="text-muted-foreground text-lg">
-              See how you rank against other developers in the community
-            </span>
+            <div className="space-y-2">
+              <span className="text-muted-foreground text-lg block">
+                See how you rank against other developers in the community
+              </span>
+              {userPosition && user && (
+                <div className="text-sm text-muted-foreground">
+                  Your current rank: <span className="font-semibold text-primary">#{userPosition.rank}</span> out of {userPosition.totalUsers} developers
+                </div>
+              )}
+            </div>
           </div>
         </motion.div>
 
@@ -105,19 +135,19 @@ export default function LeaderboardPage() {
               <div className="flex flex-col items-center pt-8">
                 <div className="relative">
                   <Avatar className="h-16 w-16 border-4 border-gray-300">
-                    <AvatarImage src={leaderboardData[1]?.avatar_url} alt={leaderboardData[1]?.full_name} />
+                    <AvatarImage src={leaderboardData[1]?.avatar_url || ''} alt={leaderboardData[1]?.full_name || 'User'} />
                     <AvatarFallback className="text-lg font-bold">
-                      {leaderboardData[1]?.full_name?.charAt(0) || '2'}
+                      {leaderboardData[1]?.full_name?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="absolute -top-2 -right-2 bg-gray-400 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
                     2
                   </div>
                 </div>
-                <h3 className="font-semibold mt-2 text-center">{leaderboardData[1]?.full_name}</h3>
-                <p className="text-2xl font-bold text-gray-600">{leaderboardData[1]?.total_points}</p>
+                <h3 className="font-semibold mt-2 text-center">{leaderboardData[1]?.full_name || 'Anonymous User'}</h3>
+                <p className="text-2xl font-bold text-gray-600">{leaderboardData[1]?.total_points?.toLocaleString() || 0}</p>
                 <Badge className={getStageColor(leaderboardData[1]?.current_stage)}>
-                  {leaderboardData[1]?.current_stage}
+                  {leaderboardData[1]?.current_stage?.charAt(0).toUpperCase() + leaderboardData[1]?.current_stage?.slice(1) || 'Beginner'}
                 </Badge>
               </div>
 
@@ -125,19 +155,19 @@ export default function LeaderboardPage() {
               <div className="flex flex-col items-center">
                 <div className="relative">
                   <Avatar className="h-20 w-20 border-4 border-yellow-400">
-                    <AvatarImage src={leaderboardData[0]?.avatar_url} alt={leaderboardData[0]?.full_name} />
+                    <AvatarImage src={leaderboardData[0]?.avatar_url || ''} alt={leaderboardData[0]?.full_name || 'User'} />
                     <AvatarFallback className="text-xl font-bold">
-                      {leaderboardData[0]?.full_name?.charAt(0) || '1'}
+                      {leaderboardData[0]?.full_name?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="absolute -top-3 -right-3 bg-yellow-500 text-white rounded-full w-10 h-10 flex items-center justify-center">
                     <Crown className="h-5 w-5" />
                   </div>
                 </div>
-                <h3 className="font-semibold mt-2 text-center">{leaderboardData[0]?.full_name}</h3>
-                <p className="text-3xl font-bold text-yellow-600">{leaderboardData[0]?.total_points}</p>
+                <h3 className="font-semibold mt-2 text-center">{leaderboardData[0]?.full_name || 'Anonymous User'}</h3>
+                <p className="text-3xl font-bold text-yellow-600">{leaderboardData[0]?.total_points?.toLocaleString() || 0}</p>
                 <Badge className={getStageColor(leaderboardData[0]?.current_stage)}>
-                  {leaderboardData[0]?.current_stage}
+                  {leaderboardData[0]?.current_stage?.charAt(0).toUpperCase() + leaderboardData[0]?.current_stage?.slice(1) || 'Beginner'}
                 </Badge>
               </div>
 
@@ -145,19 +175,19 @@ export default function LeaderboardPage() {
               <div className="flex flex-col items-center pt-12">
                 <div className="relative">
                   <Avatar className="h-14 w-14 border-4 border-amber-400">
-                    <AvatarImage src={leaderboardData[2]?.avatar_url} alt={leaderboardData[2]?.full_name} />
+                    <AvatarImage src={leaderboardData[2]?.avatar_url || ''} alt={leaderboardData[2]?.full_name || 'User'} />
                     <AvatarFallback className="text-base font-bold">
-                      {leaderboardData[2]?.full_name?.charAt(0) || '3'}
+                      {leaderboardData[2]?.full_name?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="absolute -top-2 -right-2 bg-amber-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold">
                     3
                   </div>
                 </div>
-                <h3 className="font-semibold mt-2 text-center">{leaderboardData[2]?.full_name}</h3>
-                <p className="text-xl font-bold text-amber-600">{leaderboardData[2]?.total_points}</p>
+                <h3 className="font-semibold mt-2 text-center">{leaderboardData[2]?.full_name || 'Anonymous User'}</h3>
+                <p className="text-xl font-bold text-amber-600">{leaderboardData[2]?.total_points?.toLocaleString() || 0}</p>
                 <Badge className={getStageColor(leaderboardData[2]?.current_stage)}>
-                  {leaderboardData[2]?.current_stage}
+                  {leaderboardData[2]?.current_stage?.charAt(0).toUpperCase() + leaderboardData[2]?.current_stage?.slice(1) || 'Beginner'}
                 </Badge>
               </div>
             </div>
@@ -181,24 +211,26 @@ export default function LeaderboardPage() {
               >
                 <Card className={`hover:shadow-md transition-all duration-300 ${
                   index < 3 ? 'border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent' : ''
+                } ${
+                  user && user.id === user.user_id ? 'ring-2 ring-blue-500 bg-blue-50' : ''
                 }`}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className={`flex items-center justify-center w-12 h-12 rounded-full ${getRankBadgeColor(index + 1)}`}>
-                          {getRankIcon(index + 1)}
+                        <div className={`flex items-center justify-center w-12 h-12 rounded-full ${getRankBadgeColor(user.rank)}`}>
+                          {getRankIcon(user.rank)}
                         </div>
                         <Avatar className="h-12 w-12">
-                          <AvatarImage src={user.avatar_url} alt={user.full_name} />
+                          <AvatarImage src={user.avatar_url || ''} alt={user.full_name || 'User'} />
                           <AvatarFallback>
-                            {user.full_name?.charAt(0) || user.user_id?.charAt(0) || 'U'}
+                            {user.full_name?.charAt(0) || 'U'}
                           </AvatarFallback>
                         </Avatar>
                         <div>
                           <h3 className="font-semibold text-lg">{user.full_name || 'Anonymous User'}</h3>
                           <div className="flex items-center gap-3 mt-1">
                             <Badge className={getStageColor(user.current_stage)} variant="outline">
-                              {user.current_stage.charAt(0).toUpperCase() + user.current_stage.slice(1)} Level
+                              {user.current_stage?.charAt(0).toUpperCase() + user.current_stage?.slice(1) || 'Beginner'} Level
                             </Badge>
                             <div className="flex items-center gap-1 text-sm text-muted-foreground">
                               <TrendingUp className="h-3 w-3" />
@@ -215,11 +247,11 @@ export default function LeaderboardPage() {
                       </div>
                       <div className="text-right">
                         <div className="text-3xl font-bold text-primary">
-                          {user.total_points.toLocaleString()}
+                          {user.total_points?.toLocaleString() || 0}
                         </div>
                         <div className="text-sm text-muted-foreground">points</div>
                         <div className="text-xs text-muted-foreground mt-1">
-                          Joined {new Date(user.created_at).toLocaleDateString()}
+                          Joined {new Date(user.created_at || '').toLocaleDateString()}
                         </div>
                       </div>
                     </div>
@@ -259,13 +291,13 @@ export default function LeaderboardPage() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-secondary">
-                    {leaderboardData.reduce((sum, user) => sum + user.total_points, 0).toLocaleString()}
+                    {leaderboardData.reduce((sum, user) => sum + (user.total_points || 0), 0).toLocaleString()}
                   </div>
                   <div className="text-sm text-muted-foreground">Total Points Earned</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-accent">
-                    {leaderboardData.reduce((sum, user) => sum + user.streak_days, 0)}
+                    {leaderboardData.reduce((sum, user) => sum + (user.streak_days || 0), 0)}
                   </div>
                   <div className="text-sm text-muted-foreground">Combined Streak Days</div>
                 </div>

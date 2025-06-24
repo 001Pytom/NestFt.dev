@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useAuthStore } from "../lib/store";
 import Image from "next/image";
 import { useEffect} from "react";
-import { getUserProfile, UserProfile } from "@/lib/database";
+import { getOrCreateUserProfile, UserProfile } from "@/lib/database";
 
 export function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
@@ -37,7 +37,7 @@ export function Navbar() {
   const loadUserProfile = async () => {
     if (!user) return;
     try {
-      const profile = await getUserProfile(user.id);
+      const profile = await getOrCreateUserProfile(user.id, user);
       setUserProfile(profile);
     } catch (error) {
       console.error('Error loading user profile:', error);

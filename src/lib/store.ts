@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { supabase } from "./supabase";
 import { User, Session } from "@supabase/supabase-js";
+import { getOrCreateUserProfile } from "./database";
 
 interface AuthState {
   user: User | null;
@@ -131,6 +132,11 @@ export const useAuthStore = create<AuthState>()(
               isAuthenticated: !!session?.user,
               isLoading: false,
             });
+            
+            // Create user profile if user just signed in and doesn't have one
+            if (event === 'SIGNED_IN' && session?.user) {
+              getOrCreateUserProfile(session.user.id, session.user);
+            }
           });
         } catch (error) {
           console.error("Auth initialization error:", error);

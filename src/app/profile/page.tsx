@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Mail, Github, ExternalLink, Settings, Trophy, Users, Star, Clock } from 'lucide-react'
-import { getUserStats, getUserRecentActivity } from '@/lib/database'
+import { getUserStats, getUserRecentActivity, getOrCreateUserProfile } from '@/lib/database'
 
 export default function ProfilePage() {
   const { user, logout } = useAuthStore()
@@ -31,6 +31,9 @@ export default function ProfilePage() {
     if (!user) return
     
     try {
+      // Ensure user profile exists
+      await getOrCreateUserProfile(user.id, user)
+      
       const [userStats, activity] = await Promise.all([
         getUserStats(user.id),
         getUserRecentActivity(user.id, 5)
