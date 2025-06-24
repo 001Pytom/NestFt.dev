@@ -8,7 +8,7 @@ import {
   GitBranch,
   LayoutDashboard,
   User,
-  Menu,
+  Menu, 
   X,
 } from "lucide-react";
 import { Button } from "./ui/button";
