@@ -495,7 +495,7 @@ export async function getLearningGuide(id: string): Promise<LearningGuide | null
 // Leaderboard Functions - Updated to use real data
 export async function getLeaderboard(limit: number = 50): Promise<UserProfile[]> {
   const { data, error } = await supabase
-  .from('leaderboard_view') // or 'user_profiles' with appropriate filters
+  .from('leaderboard_view') // or 'user_profiles' with appropriate filters -my adjustment
     .select('*')
     .gte('total_points', 0)  // Include all profiles with points >= 0
     .order('total_points', { ascending: false })
