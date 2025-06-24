@@ -191,7 +191,45 @@ export async function saveProjectCode(projectId: string, codeFiles: Record<strin
 }
 
 // Project Submissions Functions
+export async function hasUserSubmittedProject(userId: string, projectId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('project_submissions')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('project_id', projectId)
+    .limit(1)
+
+  if (error) {
+    console.error('Error checking project submission:', error)
+    return false
+  }
+
+  return data && data.length > 0
+}
+
+export async function getUserSubmittedProjects(userId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('project_submissions')
+    .select('project_id')
+    .eq('user_id', userId)
+
+  if (error) {
+    console.error('Error fetching submitted projects:', error)
+    return []
+  }
+
+  return data?.map(item => item.project_id) || []
+}
+
 export async function submitProject(submission: Partial<ProjectSubmission>): Promise<ProjectSubmission | null> {
+  // Check if user has already submitted this project
+  if (submission.user_id && submission.project_id) {
+    const hasSubmitted = await hasUserSubmittedProject(submission.user_id, submission.project_id)
+    if (hasSubmitted) {
+      throw new Error('You have already submitted this project and cannot earn points again.')
+    }
+  }
+
   const { data, error } = await supabase
     .from('project_submissions')
     .insert(submission)
@@ -289,12 +327,35 @@ export async function calculateUserProgress(userId: string): Promise<{
   intermediate: { completed: number; total: number; percentage: number }
   advanced: { completed: number; total: number; percentage: number }
 }> {
+  // Get unique submitted projects (only count each project once)
+  const submittedProjectIds = await getUserSubmittedProjects(userId)
   const projects = await getUserProjects(userId)
-  const completedProjects = projects.filter(p => p.status === 'completed')
+  
+  // Filter to only include projects that have been submitted and are unique
+  const completedProjects = projects.filter(p => 
+    p.status === 'completed' && submittedProjectIds.includes(p.project_id)
+  )
+  
+  // Count unique projects by difficulty
+  const uniqueProjectsByDifficulty = {
+    beginner: new Set(),
+    intermediate: new Set(),
+    advanced: new Set()
+  }
+  
+  completedProjects.forEach(project => {
+    if (project.difficulty === 'beginner') {
+      uniqueProjectsByDifficulty.beginner.add(project.project_id)
+    } else if (project.difficulty === 'intermediate') {
+      uniqueProjectsByDifficulty.intermediate.add(project.project_id)
+    } else if (project.difficulty === 'advanced') {
+      uniqueProjectsByDifficulty.advanced.add(project.project_id)
+    }
+  })
 
-  const beginnerCompleted = completedProjects.filter(p => p.difficulty === 'beginner').length
-  const intermediateCompleted = completedProjects.filter(p => p.difficulty === 'intermediate').length
-  const advancedCompleted = completedProjects.filter(p => p.difficulty === 'advanced').length
+  const beginnerCompleted = uniqueProjectsByDifficulty.beginner.size
+  const intermediateCompleted = uniqueProjectsByDifficulty.intermediate.size
+  const advancedCompleted = uniqueProjectsByDifficulty.advanced.size
 
   return {
     beginner: {

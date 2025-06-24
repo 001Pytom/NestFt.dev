@@ -29,6 +29,7 @@ import {
   submitProject,
   updateUserProfile,
   getUserProfile,
+  hasUserSubmittedProject,
 } from "@/lib/database";
 import { gradeProject } from "@/lib/aiGrading";
 import Link from "next/link";
@@ -50,6 +51,8 @@ export default function ProjectSubmitPage() {
   const [gradingResults, setGradingResults] = useState<any>(null);
   const [repositoryUrl, setRepositoryUrl] = useState("");
   const [deployedUrl, setDeployedUrl] = useState("");
+  const [hasAlreadySubmitted, setHasAlreadySubmitted] = useState(false);
+  const [showResubmitModal, setShowResubmitModal] = useState(false);
 
   useEffect(() => {
     loadProjectData();
@@ -74,9 +77,13 @@ export default function ProjectSubmitPage() {
       }
 
       setProject(foundProject);
-      // console.log(foundProject, projectId);
-      // console.log(allProjects);
-      // console.log(userProjectId);
+      
+      // Check if user has already submitted this project
+      if (user) {
+        const alreadySubmitted = await hasUserSubmittedProject(user.id, projectId);
+        setHasAlreadySubmitted(alreadySubmitted);
+      }
+      
       // Load user project if ID provided
       if (userProjectId && user) {
         const userProj = await getUserProject(userProjectId);
@@ -91,8 +98,14 @@ export default function ProjectSubmitPage() {
     }
   };
 
+  const handleSubmitAttempt = () => {
+    if (hasAlreadySubmitted) {
+      setShowResubmitModal(true);
+      return;
+    }
+    handleSubmitForGrading();
+  };
   const handleSubmitForGrading = async () => {
-    // console.log("grading started");
     if (!project || !userProject || !user) {
       alert("Missing required data for submission");
       return;
@@ -169,6 +182,7 @@ export default function ProjectSubmitPage() {
 
       setGradingResults(gradingResult);
       setGradingStatus("completed");
+      setHasAlreadySubmitted(true);
     } catch (error) {
       console.error("Error during submission and grading:", error);
       setGradingStatus("error");
@@ -282,6 +296,19 @@ export default function ProjectSubmitPage() {
                 <CardTitle>Project Submission</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
+                {hasAlreadySubmitted && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 text-yellow-800">
+                      <CheckCircle className="h-5 w-5" />
+                      <span className="font-medium">Already Submitted</span>
+                    </div>
+                    <p className="text-yellow-700 text-sm mt-1">
+                      You have already submitted this project and earned points for it. 
+                      You can view your previous submission but cannot earn additional points.
+                    </p>
+                  </div>
+                )}
+                
                 <div>
                   <label className="text-sm font-medium mb-2 block">
                     GitHub Repository URL (Optional)
@@ -292,6 +319,7 @@ export default function ProjectSubmitPage() {
                     onChange={(e) => setRepositoryUrl(e.target.value)}
                     placeholder="https://github.com/username/repository"
                     className="w-full h-11 px-3 rounded-md border border-input bg-background text-sm"
+                    disabled={hasAlreadySubmitted}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     Provide your GitHub repository URL for additional context
@@ -308,6 +336,7 @@ export default function ProjectSubmitPage() {
                     onChange={(e) => setDeployedUrl(e.target.value)}
                     placeholder="https://your-project.netlify.app"
                     className="w-full h-11 px-3 rounded-md border border-input bg-background text-sm"
+                    disabled={hasAlreadySubmitted}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     Provide the live URL if you've deployed your project
@@ -330,15 +359,21 @@ export default function ProjectSubmitPage() {
 
                 <Button
                   type="button"
-                  onClick={handleSubmitForGrading}
-                  disabled={isSubmitting}
+                  onClick={handleSubmitAttempt}
+                  disabled={isSubmitting || hasAlreadySubmitted}
                   className="w-full"
                   size="lg"
+                  variant={hasAlreadySubmitted ? "outline" : "default"}
                 >
                   {isSubmitting ? (
                     <>
                       <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                       Submitting for Grading...
+                    </>
+                  ) : hasAlreadySubmitted ? (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Already Submitted
                     </>
                   ) : (
                     <>
@@ -350,6 +385,51 @@ export default function ProjectSubmitPage() {
               </CardContent>
             </Card>
           </motion.div>
+        )}
+        
+        {/* Resubmit Modal */}
+        {showResubmitModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-background rounded-lg p-6 max-w-md w-full"
+            >
+              <div className="text-center">
+                <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                <h3 className="text-xl font-bold mb-4">Project Already Submitted</h3>
+                
+                <div className="space-y-3 text-left">
+                  <p className="text-muted-foreground">
+                    You have already submitted this project and earned points for it. 
+                    To maintain fairness, you cannot earn additional points for the same project.
+                  </p>
+                  
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <h4 className="font-medium text-blue-800 mb-1">Want to earn more points?</h4>
+                    <p className="text-blue-700 text-sm">
+                      Try working on a different project to continue building your skills and earning points!
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowResubmitModal(false)}
+                    className="flex-1"
+                  >
+                    Close
+                  </Button>
+                  <Link href="/projects/browse" className="flex-1">
+                    <Button className="w-full">
+                      Browse Projects
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          </div>
         )}
 
         {/* Grading Progress */}
