@@ -375,6 +375,24 @@ export async function saveProjectCode(projectId: string, codeFiles: Record<strin
   return true
 }
 
+// my added code
+export async function getLeaderboard(limit: number = 100) {
+  const { data, error } = await supabase
+    .from('leaderboard_view')
+    .select('*')
+    .order('total_points', { ascending: false })
+    .order('created_at', { ascending: true })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching leaderboard:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+
 // Project Submissions Functions
 export async function hasUserSubmittedProject(userId: string, projectId: string): Promise<boolean> {
   const { data, error } = await supabase
