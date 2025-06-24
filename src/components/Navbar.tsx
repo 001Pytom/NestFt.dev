@@ -15,7 +15,7 @@ import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useAuthStore } from "../lib/store";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect} from "react";
 import { getUserProfile, UserProfile } from "@/lib/database";
 
 export function Navbar() {
