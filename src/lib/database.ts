@@ -507,7 +507,7 @@ export async function getLeaderboard(limit: number = 50): Promise<UserProfile[]>
     console.error('Error fetching leaderboard:', error)
     return []
   }
-
+  //  Filter duplicates by user_id if somehow duplicates sneak in
 const uniqueUsers = data?.filter(
     (user, index, self) => index === self.findIndex(u => u.user_id === user.user_id)
   ) || []
