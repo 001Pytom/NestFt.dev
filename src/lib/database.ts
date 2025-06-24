@@ -495,20 +495,27 @@ export async function getLearningGuide(id: string): Promise<LearningGuide | null
 // Leaderboard Functions - Updated to use real data
 export async function getLeaderboard(limit: number = 50): Promise<UserProfile[]> {
   const { data, error } = await supabase
-  .from('leaderboard_view') // or 'user_profiles' with appropriate filters -my adjustment
+    .from('user_profiles') // Safer to use the base table unless leaderboard_view is strictly necessary
     .select('*')
-    .gte('total_points', 0)  // Include all profiles with points >= 0
+    .gt('total_points', 0)  // Only users with strictly more than 0 points
     .order('total_points', { ascending: false })
-    .order('created_at', { ascending: true })  // Secondary sort by join date for ties
+    .order('created_at', { ascending: true })
     .limit(limit)
+    .neq('user_id', null) // Safety to avoid empty rows if user_id is null
 
   if (error) {
     console.error('Error fetching leaderboard:', error)
     return []
   }
 
-  return data || []
+  // Optional: Filter duplicates by user_id if somehow duplicates sneak in
+  const uniqueUsers = data?.filter(
+    (user, index, self) => index === self.findIndex(u => u.user_id === user.user_id)
+  ) || []
+
+  return uniqueUsers
 }
+
 
 // Get leaderboard with user rankings
 export async function getLeaderboardWithRankings(limit: number = 50): Promise<(UserProfile & { rank: number })[]> {
