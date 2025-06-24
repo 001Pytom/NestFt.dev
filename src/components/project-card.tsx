@@ -1,5 +1,5 @@
 import React from "react";
-import Link from "next/link";
+// import Link from "next/link";
 import { Project } from "../types";
 import {
   Card,
@@ -10,7 +10,7 @@ import {
 } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { Users, Clock } from "lucide-react";
-import { Button } from "./ui/button";
+// import { Button } from "./ui/button";
 import Image from "next/image";
 
 interface ProjectCardProps {

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Trophy, Medal, Award, Crown, Star, TrendingUp } from 'lucide-react'
+import { Trophy, Medal,  Crown, Star, TrendingUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { getLeaderboardWithRankings, getUserLeaderboardPosition, UserProfile } from '@/lib/database'
 import { useAuthStore } from '@/lib/store'
@@ -31,7 +31,7 @@ export default function LeaderboardPage() {
   const loadLeaderboard = async () => {
     try {
       const data = await getLeaderboardWithRankings(100) // Get more users
-      console.log('Leaderboard data:', data) // Debug log
+      // console.log('Leaderboard data:', data) // Debug log
       setLeaderboardData(data)
     } catch (error) {
       console.error('Error loading leaderboard:', error)
@@ -45,7 +45,7 @@ export default function LeaderboardPage() {
     
     try {
       const position = await getUserLeaderboardPosition(user.id)
-      console.log('User position:', position) // Debug log
+      // console.log('User position:', position) // Debug log
       setUserPosition(position)
     } catch (error) {
       console.error('Error loading user position:', error)
