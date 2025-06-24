@@ -226,7 +226,7 @@ export async function submitProject(submission: Partial<ProjectSubmission>): Pro
   if (submission.user_id && submission.project_id) {
     const hasSubmitted = await hasUserSubmittedProject(submission.user_id, submission.project_id)
     if (hasSubmitted) {
-      throw new Error('You have already submitted this project and cannot earn points again.')
+      throw new Error('You have already submitted this project and received points for it. Try a different project to continue earning points!')
     }
   }
 

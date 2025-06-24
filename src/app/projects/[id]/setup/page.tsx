@@ -10,7 +10,7 @@ import { ArrowLeft, Code, Clock, Trophy, CheckCircle } from 'lucide-react'
 import { beginnerProjects, intermediateProjects, advancedProjects, techStacks } from '@/data/projects'
 import { ProjectTemplate, TechTemplate } from '@/types/project'
 import { useAuthStore } from '@/lib/store'
-import { createUserProject } from '@/lib/database'
+import { createUserProject, hasUserSubmittedProject } from '@/lib/database'
 import Link from 'next/link'
 
 export default function ProjectSetupPage() {
@@ -23,6 +23,7 @@ export default function ProjectSetupPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<TechTemplate | null>(null)
   const [availableTemplates, setAvailableTemplates] = useState<TechTemplate[]>([])
   const [isCreating, setIsCreating] = useState(false)
+  const [hasAlreadySubmitted, setHasAlreadySubmitted] = useState(false)
 
   useEffect(() => {
     const allProjects = [...beginnerProjects, ...intermediateProjects, ...advancedProjects]
@@ -47,7 +48,23 @@ export default function ProjectSetupPage() {
     if (templates.length === 1) {
       setSelectedTemplate(templates[0])
     }
+    
+    // Check if user has already submitted this project
+    if (user && foundProject) {
+      checkSubmissionStatus(foundProject.id)
+    }
   }, [projectId, router])
+  
+  const checkSubmissionStatus = async (projectId: string) => {
+    if (!user) return
+    
+    try {
+      const alreadySubmitted = await hasUserSubmittedProject(user.id, projectId)
+      setHasAlreadySubmitted(alreadySubmitted)
+    } catch (error) {
+      console.error('Error checking submission status:', error)
+    }
+  }
 
   const handleCreateProject = async () => {
     if (!project || !selectedTemplate || !user) {
@@ -182,6 +199,30 @@ export default function ProjectSetupPage() {
                 </div>
               </CardContent>
             </Card>
+            
+            {hasAlreadySubmitted && (
+              <Card className="border-yellow-200 bg-yellow-50">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-yellow-800">Already Completed</h4>
+                      <p className="text-yellow-700 text-sm mt-1">
+                        You've already submitted and earned points for this project. 
+                        You can still work on it for practice, but won't earn additional points.
+                      </p>
+                      <div className="mt-3">
+                        <Link href="/projects/browse">
+                          <Button size="sm" variant="outline" className="text-yellow-800 border-yellow-300 hover:bg-yellow-100">
+                            Find New Projects
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </motion.div>
 
           {/* Template Selection */}
@@ -252,7 +293,7 @@ export default function ProjectSetupPage() {
                   className="w-full"
                   size="lg"
                 >
-                  {isCreating ? 'Creating Project...' : 'Start Building'}
+                  {isCreating ? 'Creating Project...' : hasAlreadySubmitted ? 'Practice Mode - Start Building' : 'Start Building'}
                 </Button>
               </CardContent>
             </Card>

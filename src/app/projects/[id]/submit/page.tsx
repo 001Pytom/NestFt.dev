@@ -306,6 +306,18 @@ export default function ProjectSubmitPage() {
                       You have already submitted this project and earned points for it. 
                       You can view your previous submission but cannot earn additional points.
                     </p>
+                    <div className="mt-3 flex gap-2">
+                      <Link href="/projects/browse">
+                        <Button size="sm" variant="outline" className="text-yellow-800 border-yellow-300 hover:bg-yellow-100">
+                          Browse Other Projects
+                        </Button>
+                      </Link>
+                      <Link href="/dashboard">
+                        <Button size="sm" variant="outline" className="text-yellow-800 border-yellow-300 hover:bg-yellow-100">
+                          View Dashboard
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 )}
                 
