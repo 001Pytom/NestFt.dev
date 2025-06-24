@@ -96,6 +96,9 @@ export async function createUserProfile(profile: Partial<UserProfile>): Promise<
 }
 
 export async function updateUserProfile(userId: string, updates: Partial<UserProfile>): Promise<UserProfile | null> {
+  // Always update the updated_at timestamp
+  updates.updated_at = new Date().toISOString()
+  
   const { data, error } = await supabase
     .from('user_profiles')
     .update(updates)
@@ -109,6 +112,112 @@ export async function updateUserProfile(userId: string, updates: Partial<UserPro
   }
 
   return data
+}
+
+// Update user streak based on daily activity (login + project submission)
+export async function updateUserStreak(userId: string): Promise<void> {
+  try {
+    const userProfile = await getUserProfile(userId)
+    if (!userProfile) return
+
+    const today = new Date().toISOString().split('T')[0]
+    const lastActivityDate = userProfile.last_activity_date
+    
+    // If user already had activity today, don't update streak
+    if (lastActivityDate === today) {
+      return
+    }
+    
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    const yesterdayStr = yesterday.toISOString().split('T')[0]
+    
+    let newStreakDays = 1 // At least 1 day for today's activity
+    
+    // If last activity was yesterday, increment streak
+    if (lastActivityDate === yesterdayStr) {
+      newStreakDays = userProfile.streak_days + 1
+    }
+    // If last activity was before yesterday, reset streak to 1
+    // If no previous activity, start with 1
+    
+    await updateUserProfile(userId, {
+      streak_days: newStreakDays,
+      last_activity_date: today
+    })
+    
+    console.log(`Updated user ${userId} streak to ${newStreakDays} days`)
+  } catch (error) {
+    console.error('Error updating user streak:', error)
+  }
+}
+
+// Get user's recent activity for profile page
+export async function getUserRecentActivity(userId: string, limit: number = 5): Promise<any[]> {
+  try {
+    // Get recent project submissions
+    const { data: submissions, error: submissionsError } = await supabase
+      .from('project_submissions')
+      .select(`
+        id,
+        project_id,
+        ai_score,
+        submitted_at,
+        user_projects!inner(project_name, difficulty)
+      `)
+      .eq('user_id', userId)
+      .order('submitted_at', { ascending: false })
+      .limit(limit)
+
+    if (submissionsError) {
+      console.error('Error fetching recent submissions:', submissionsError)
+      return []
+    }
+
+    // Format the activity data
+    const activities = submissions?.map(submission => ({
+      id: submission.id,
+      type: 'project_submission',
+      title: `Submitted ${submission.user_projects.project_name}`,
+      description: `Earned ${submission.ai_score || 0} points`,
+      difficulty: submission.user_projects.difficulty,
+      date: submission.submitted_at,
+      score: submission.ai_score
+    })) || []
+
+    return activities
+  } catch (error) {
+    console.error('Error fetching user recent activity:', error)
+    return []
+  }
+}
+
+// Get user statistics for profile
+export async function getUserStats(userId: string): Promise<{
+  totalProjects: number
+  totalPoints: number
+  streakDays: number
+  currentStage: string
+}> {
+  try {
+    const userProfile = await getUserProfile(userId)
+    const submittedProjectIds = await getUserSubmittedProjects(userId)
+    
+    return {
+      totalProjects: submittedProjectIds.length,
+      totalPoints: userProfile?.total_points || 0,
+      streakDays: userProfile?.streak_days || 0,
+      currentStage: userProfile?.current_stage || 'beginner'
+    }
+  } catch (error) {
+    console.error('Error fetching user stats:', error)
+    return {
+      totalProjects: 0,
+      totalPoints: 0,
+      streakDays: 0,
+      currentStage: 'beginner'
+    }
+  }
 }
 
 // Check and update user stage based on their progress

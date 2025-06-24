@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { BarChart3, BookOpen, Trophy, Users, ArrowRight, Target, Clock, Star, Award } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { getUserProfile, getUserProjects, calculateUserProgress, createUserProfile, getUserSubmittedProjects, checkAndUpdateUserStage } from '@/lib/database'
+import { getUserProfile, getUserProjects, calculateUserProgress, createUserProfile, getUserSubmittedProjects, checkAndUpdateUserStage, updateUserStreak } from '@/lib/database'
 import { UserProfile, UserProject } from '@/lib/database'
 
 export default function DashboardPage() {
@@ -25,6 +25,8 @@ export default function DashboardPage() {
   useEffect(() => {
     if (user) {
       loadUserData()
+      // Update user streak when they visit dashboard (indicates daily activity)
+      updateUserStreak(user.id)
     }
   }, [user])
 

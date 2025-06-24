@@ -31,6 +31,7 @@ import {
   getUserProfile,
   hasUserSubmittedProject,
   checkAndUpdateUserStage,
+  updateUserStreak,
 } from "@/lib/database";
 import { gradeProject } from "@/lib/aiGrading";
 import Link from "next/link";
@@ -181,6 +182,9 @@ export default function ProjectSubmitPage() {
         project.difficulty,
         project.id
       );
+      
+      // Update user streak for project submission activity
+      await updateUserStreak(user.id);
 
       setGradingResults(gradingResult);
       setGradingStatus("completed");
