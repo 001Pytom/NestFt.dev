@@ -1,15 +1,73 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAuthStore } from '@/lib/store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Mail, Github, ExternalLink, Settings } from 'lucide-react'
+import { Calendar, Mail, Github, ExternalLink, Settings, Trophy, Users, Star, Clock } from 'lucide-react'
+import { getUserStats, getUserRecentActivity, getOrCreateUserProfile } from '@/lib/database'
 
 export default function ProfilePage() {
   const { user, logout } = useAuthStore()
+  const [stats, setStats] = useState({
+    totalProjects: 0,
+    totalPoints: 0,
+    streakDays: 0,
+    currentStage: 'beginner'
+  })
+  const [recentActivity, setRecentActivity] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (user) {
+      loadUserData()
+    }
+  }, [user])
+
+  const loadUserData = async () => {
+    if (!user) return
+    
+    try {
+      // Ensure user profile exists
+      await getOrCreateUserProfile(user.id, user)
+      
+      const [userStats, activity] = await Promise.all([
+        getUserStats(user.id),
+        getUserRecentActivity(user.id, 5)
+      ])
+      
+      setStats(userStats)
+      setRecentActivity(activity)
+    } catch (error) {
+      console.error('Error loading user data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'beginner':
+        return 'text-green-600'
+      case 'intermediate':
+        return 'text-yellow-600'
+      case 'advanced':
+        return 'text-red-600'
+      default:
+        return 'text-gray-600'
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -55,7 +113,7 @@ export default function ProfilePage() {
                   </span>
                 </div>
                 <Badge variant="secondary" className="w-full justify-center">
-                  Beginner Level
+                  {stats.currentStage.charAt(0).toUpperCase() + stats.currentStage.slice(1)} Level
                 </Badge>
                 <Button variant="outline" className="w-full" onClick={logout}>
                   Sign Out
@@ -79,19 +137,21 @@ export default function ProfilePage() {
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">0</div>
+                    <div className="text-2xl font-bold text-primary">{stats.totalProjects}</div>
                     <div className="text-sm text-muted-foreground">Projects</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-secondary">0</div>
+                    <div className="text-2xl font-bold text-secondary">{stats.totalPoints}</div>
                     <div className="text-sm text-muted-foreground">Points</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-accent">0</div>
+                    <div className="text-2xl font-bold text-accent">
+                      {recentActivity.filter(a => a.type === 'project_submission').length}
+                    </div>
                     <div className="text-sm text-muted-foreground">Collaborations</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-success">0</div>
+                    <div className="text-2xl font-bold text-success">{stats.streakDays}</div>
                     <div className="text-sm text-muted-foreground">Streak Days</div>
                   </div>
                 </div>
@@ -104,12 +164,51 @@ export default function ProfilePage() {
                 <CardTitle>Recent Activity</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">No recent activity</p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Start working on projects to see your activity here
-                  </p>
-                </div>
+                {recentActivity.length > 0 ? (
+                  <div className="space-y-4">
+                    {recentActivity.map((activity, index) => (
+                      <div key={activity.id || index} className="flex items-start gap-3 p-3 border rounded-lg">
+                        <div className="flex-shrink-0">
+                          {activity.type === 'project_submission' && (
+                            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                              <Trophy className="h-4 w-4 text-green-600" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <p className="font-medium text-sm">{activity.title}</p>
+                            <span className={`text-xs font-medium ${getDifficultyColor(activity.difficulty)}`}>
+                              {activity.difficulty}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{activity.description}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Calendar className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(activity.date).toLocaleDateString()}
+                            </span>
+                            {activity.score && (
+                              <>
+                                <span className="text-xs text-muted-foreground">•</span>
+                                <Star className="h-3 w-3 text-yellow-500" />
+                                <span className="text-xs font-medium">{activity.score} pts</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No recent activity</p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Start working on projects to see your activity here
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>

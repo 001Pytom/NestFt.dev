@@ -11,8 +11,10 @@ import { ArrowLeft, Clock, Trophy, Users, Star, Lock, AlertCircle } from 'lucide
 import { beginnerProjects, intermediateProjects, advancedProjects, techStacks } from '@/data/projects'
 import { ProjectTemplate } from '@/types/project'
 import { useAuthStore } from '@/lib/store'
-import { canAccessDifficulty, calculateUserProgress } from '@/lib/database'
+import { canAccessDifficulty, calculateUserProgress, getUserSubmittedProjects } from '@/lib/database'
 import Link from 'next/link'
+import { CheckCircle } from "lucide-react";
+
 
 export default function StackProjectsPage() {
   const params = useParams()
@@ -22,6 +24,7 @@ export default function StackProjectsPage() {
   
   const [selectedDifficulty, setSelectedDifficulty] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner')
   const [projects, setProjects] = useState<ProjectTemplate[]>([])
+  const [submittedProjectIds, setSubmittedProjectIds] = useState<string[]>([])
   const [accessLevels, setAccessLevels] = useState({
     beginner: true,
     intermediate: false,
@@ -61,6 +64,9 @@ export default function StackProjectsPage() {
       const progress = await calculateUserProgress(user.id)
       setUserProgress(progress)
 
+      // Get submitted project IDs
+      const submittedIds = await getUserSubmittedProjects(user.id)
+      setSubmittedProjectIds(submittedIds)
       const canAccessIntermediate = await canAccessDifficulty(user.id, 'intermediate')
       const canAccessAdvanced = await canAccessDifficulty(user.id, 'advanced')
 
@@ -342,9 +348,19 @@ export default function StackProjectsPage() {
                             </div>
                           </div>
                           
+                          {submittedProjectIds.includes(project.id) && (
+                            <div className="flex items-center gap-2 text-green-600 text-sm mb-2">
+                              <CheckCircle className="h-4 w-4" />
+                              <span>Already Submitted</span>
+                            </div>
+                          )}
+                          
                           <Link href={`/projects/${project.id}/setup`} className="w-full">
-                            <Button className="w-full">
-                              Start Project
+                            <Button 
+                              className="w-full" 
+                              variant={submittedProjectIds.includes(project.id) ? "outline" : "default"}
+                            >
+                              {submittedProjectIds.includes(project.id) ? "View Project" : "Start Project"}
                             </Button>
                           </Link>
                         </div>

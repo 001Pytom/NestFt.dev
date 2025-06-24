@@ -8,22 +8,41 @@ import {
   GitBranch,
   LayoutDashboard,
   User,
-  Menu,
+  Menu, 
   X,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useAuthStore } from "../lib/store";
 import Image from "next/image";
+import { useEffect} from "react";
+import { getOrCreateUserProfile, UserProfile } from "@/lib/database";
 
 export function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
   const pathname = usePathname();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
+  
+  useEffect(() => {
+    if (user && isAuthenticated) {
+      loadUserProfile();
+    }
+  }, [user, isAuthenticated]);
+  
+  const loadUserProfile = async () => {
+    if (!user) return;
+    try {
+      const profile = await getOrCreateUserProfile(user.id, user);
+      setUserProfile(profile);
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+  };
 
   const isActive = (path: string) => pathname === path;
 
@@ -195,7 +214,10 @@ export function Navbar() {
                 <div>
                   <div className="font-medium">{user?.user_name}</div>
                   <div className="text-sm text-muted-foreground">
-                    {user?.email}
+                    {userProfile?.current_stage ? 
+                      `${userProfile.current_stage.charAt(0).toUpperCase() + userProfile.current_stage.slice(1)} Level` : 
+                      user?.email
+                    }
                   </div>
                 </div>
               </div>
