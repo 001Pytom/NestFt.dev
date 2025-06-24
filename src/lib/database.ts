@@ -501,16 +501,18 @@ export async function getLeaderboard(limit: number = 50): Promise<UserProfile[]>
     .order('total_points', { ascending: false })
     .order('created_at', { ascending: true })  // Secondary sort by join date for ties
     .limit(limit)
-      .neq('user_id', null) // Safety to avoid empty rows if user_id is null
-
+  
  
   if (error) {
     console.error('Error fetching leaderboard:', error)
     return []
   }
 
-  return data || []
-}
+const uniqueUsers = data?.filter(
+    (user, index, self) => index === self.findIndex(u => u.user_id === user.user_id)
+  ) || []
+
+  return uniqueUsers}
 
 // Get leaderboard with user rankings
 export async function getLeaderboardWithRankings(limit: number = 50): Promise<(UserProfile & { rank: number })[]> {
