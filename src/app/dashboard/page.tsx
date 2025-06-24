@@ -7,13 +7,14 @@ import { Button } from '@/components/ui/button'
 import { BarChart3, BookOpen, Trophy, Users, ArrowRight, Target, Clock, Star, Award } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { getUserProfile, getUserProjects, calculateUserProgress, createUserProfile } from '@/lib/database'
+import { getUserProfile, getUserProjects, calculateUserProgress, createUserProfile, getUserSubmittedProjects } from '@/lib/database'
 import { UserProfile, UserProject } from '@/lib/database'
 
 export default function DashboardPage() {
   const { user } = useAuthStore()
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [userProjects, setUserProjects] = useState<UserProject[]>([])
+  const [submittedProjectIds, setSubmittedProjectIds] = useState<string[]>([])
   const [progress, setProgress] = useState({
     beginner: { completed: 0, total: 20, percentage: 0 },
     intermediate: { completed: 0, total: 20, percentage: 0 },
@@ -50,6 +51,10 @@ export default function DashboardPage() {
       // Get user projects
       const projects = await getUserProjects(user.id)
       setUserProjects(projects)
+      
+      // Get submitted project IDs
+      const submittedIds = await getUserSubmittedProjects(user.id)
+      setSubmittedProjectIds(submittedIds)
 
       // Calculate progress
       const userProgress = await calculateUserProgress(user.id)
@@ -91,7 +96,10 @@ export default function DashboardPage() {
     return null
   }
 
-  const completedProjects = userProjects.filter(p => p.status === 'completed')
+  // Only count projects that have been submitted (to avoid counting duplicates)
+  const completedProjects = userProjects.filter(p => 
+    p.status === 'completed' && submittedProjectIds.includes(p.project_id)
+  )
   const currentStageProgress = progress[userProfile?.current_stage || 'beginner']
 
   if (loading) {
@@ -189,7 +197,7 @@ export default function DashboardPage() {
             <CardContent>
               <div className="text-2xl font-bold">{completedProjects.length}</div>
               <p className="text-xs text-muted-foreground">
-                {currentStageProgress.total - currentStageProgress.completed} remaining in current stage
+                Unique projects completed
               </p>
             </CardContent>
           </Card>
@@ -202,7 +210,7 @@ export default function DashboardPage() {
             <CardContent>
               <div className="text-2xl font-bold">{userProfile?.total_points || 0}</div>
               <p className="text-xs text-muted-foreground">
-                Avg: {completedProjects.length > 0 ? Math.round((userProfile?.total_points || 0) / completedProjects.length) : 0} per project
+                Total points earned
               </p>
             </CardContent>
           </Card>
@@ -302,12 +310,12 @@ export default function DashboardPage() {
             <CardContent>
               {completedProjects.length > 0 ? (
                 <div className="space-y-3">
-                  {completedProjects.slice(-3).map((project) => (
+                  {completedProjects.slice(-3).reverse().map((project) => (
                     <div key={project.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div>
                         <div className="font-medium">{project.project_name}</div>
                         <div className="text-sm text-muted-foreground">
-                          Completed {new Date(project.completed_at || '').toLocaleDateString()}
+                          Submitted {new Date(project.completed_at || '').toLocaleDateString()}
                         </div>
                       </div>
                       <div className="text-right">
@@ -322,9 +330,9 @@ export default function DashboardPage() {
               ) : (
                 <div className="text-center py-8">
                   <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No projects completed yet</p>
+                  <p className="text-muted-foreground">No projects submitted yet</p>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Start your first project to see your progress here
+                    Submit your first project to see your progress here
                   </p>
                 </div>
               )}
