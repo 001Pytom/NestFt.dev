@@ -497,7 +497,8 @@ export async function getLeaderboard(limit: number = 50): Promise<UserProfile[]>
   const { data, error } = await supabase
   .from('leaderboard_view') // or 'user_profiles' with appropriate filters
     .select('*')
-    .gte('total_points', 0)  // Include all profiles with points >= 0
+    // .gte('total_points', 0)  // Include all profiles with points >= 0
+    .gt('total_points', 0)  // Include all profiles with points > 0
     .order('total_points', { ascending: false })
     .order('created_at', { ascending: true })  // Secondary sort by join date for ties
     .limit(limit)
