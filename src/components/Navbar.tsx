@@ -117,7 +117,7 @@ export function Navbar() {
                 Leaderboard 
               </Link>
               <Link
-                href="/portfolio"
+                href="/certificates"
                 className={`text-sm font-medium transition-colors hover:text-primary ${
                   isActive("/certificates") ? "text-primary" : "text-black"
                 }`}
