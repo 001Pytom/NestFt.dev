@@ -172,7 +172,7 @@ Join me in building real projects and advancing your tech career! 💻
 #WebDevelopment #Coding #TechCareer #NestFTdev`
 
     try {
-    if (navigator.share) {
+      if (navigator.share) {
         await navigator.share({
           title: `${certificate.stage.charAt(0).toUpperCase() + certificate.stage.slice(1)} Developer Certificate`,
           text: shareText,
@@ -184,11 +184,6 @@ Join me in building real projects and advancing your tech career! 💻
         await navigator.clipboard.writeText(shareText + `\n\n${window.location.origin}`)
         alert('Certificate details copied to clipboard!')
       }
-    } else {
-      // Fallback to copying to clipboard
-      await navigator.clipboard.writeText(shareText + `\n\n${window.location.origin}`)
-      alert('Certificate details copied to clipboard!')
-    }
     } catch (error) {
       console.error('Error sharing certificate:', error)
       alert('Failed to share certificate. Please try again.')
