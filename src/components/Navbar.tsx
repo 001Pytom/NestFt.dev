@@ -10,6 +10,7 @@ import {
   User,
   Menu, 
   X,
+  Award,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";

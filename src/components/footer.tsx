@@ -83,10 +83,10 @@ export function Footer() {
             </li>
             <li>
               <Link
-                href="/portfolio"
+                href="/certificates"
                 className="hover:text-primary transition-colors"
               >
-                Portfolio
+                Certificates
               </Link>
             </li>
           </ul>
