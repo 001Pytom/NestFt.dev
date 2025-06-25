@@ -112,8 +112,6 @@ export default function CertificatesPage() {
     }
   };
 
-  // console.log(certificateRef.current);
-
   const getStageIcon = (stage: string) => {
     switch (stage) {
       case "beginner":
@@ -137,13 +135,10 @@ export default function CertificatesPage() {
     setSelectedCertificate(certificate);
     setShowCertificateTemplate(true);
 
-    // Wait for the certificate template to render
     await new Promise((resolve) => setTimeout(resolve, 1000));
     console.log("Downloading certificate...");
 
     try {
-      // console.log("Certificate ref:", certificateRef.current);
-
       if (!certificateRef.current) {
         throw new Error("Certificate template not rendered. Please try again.");
       }
@@ -159,7 +154,6 @@ export default function CertificatesPage() {
         scrollY: 0,
       });
 
-      // Create PDF
       const pdf = new jsPDF("landscape", "mm", "a4");
       const imgData = canvas.toDataURL("image/png");
 
@@ -172,7 +166,6 @@ export default function CertificatesPage() {
         }-certificate-${userProfile?.full_name?.replace(/\s+/g, "-")}.pdf`
       );
 
-      // Show success message
       alert("Certificate downloaded successfully!");
     } catch (error) {
       console.error("Error generating certificate:", error);
@@ -190,11 +183,9 @@ export default function CertificatesPage() {
       return;
     }
 
-    // Generate the certificate image first
     setSelectedCertificate(certificate);
     setShowCertificateTemplate(true);
 
-    // Wait for the certificate template to render
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     try {
@@ -213,13 +204,11 @@ export default function CertificatesPage() {
         scrollY: 0,
       });
 
-      // Convert canvas to blob
       canvas.toBlob(async (blob) => {
         if (!blob) {
           throw new Error("Failed to generate certificate image");
         }
 
-        // Create a temporary URL for the image
         const imageUrl = URL.createObjectURL(blob);
         
         const shareText = `🎉 I just earned my ${
@@ -238,7 +227,6 @@ Join me in building real projects and advancing your tech career! 💻
 
         try {
           if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'certificate.png', { type: 'image/png' })] })) {
-            // Use native sharing with the image file
             const file = new File([blob], `NestFT-${certificate.stage}-certificate.png`, { type: 'image/png' });
             await navigator.share({
               title: `${
@@ -249,10 +237,8 @@ Join me in building real projects and advancing your tech career! 💻
               files: [file]
             });
           } else {
-            // Fallback: copy text and show instructions
             await navigator.clipboard.writeText(shareText);
             
-            // Create a temporary download link for the image
             const downloadLink = document.createElement('a');
             downloadLink.href = imageUrl;
             downloadLink.download = `NestFT-${certificate.stage}-certificate.png`;
@@ -264,7 +250,6 @@ Join me in building real projects and advancing your tech career! 💻
           }
         } catch (shareError) {
           console.log("Error sharing:", shareError);
-          // Final fallback: just copy text and download image
           await navigator.clipboard.writeText(shareText);
           
           const downloadLink = document.createElement('a');
@@ -277,14 +262,12 @@ Join me in building real projects and advancing your tech career! 💻
           alert('Certificate text copied to clipboard and image downloaded! You can now share both on social media.');
         }
         
-        // Clean up
         URL.revokeObjectURL(imageUrl);
       }, 'image/png', 0.95);
 
     } catch (error) {
       console.error("Error generating certificate for sharing:", error);
       
-      // Fallback to text-only sharing
       const shareText = `🎉 I just earned my ${
         certificate.stage.charAt(0).toUpperCase() + certificate.stage.slice(1)
       } Developer Certificate from NestFT.dev! 
@@ -334,7 +317,6 @@ ${window.location.origin}`;
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -351,7 +333,6 @@ ${window.location.origin}`;
           </div>
         </motion.div>
 
-        {/* Certificates Grid */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -455,7 +436,6 @@ ${window.location.origin}`;
           ))}
         </motion.div>
 
-        {/* Certificate Options */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -487,236 +467,22 @@ ${window.location.origin}`;
           </Card>
         </motion.div>
 
-        {/* Hidden Certificate Template */}
-        {/* Hidden Certificate Template */}
-       {/* Hidden Certificate Template */}
-<div className="fixed -top-[9999px] left-0 z-[-1]">
-  {showCertificateTemplate && selectedCertificate && userProfile && (
-    <div
-      ref={certificateRef}
-      className="w-[1200px] h-[850px] bg-white relative"
-      style={{
-        fontFamily: "serif",
-        background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
-        boxSizing: "border-box",
-      }}
-    >
-      {/* Decorative Border */}
-      <div
-        style={{
-          position: "absolute",
-          top: "20px",
-          left: "20px",
-          right: "20px",
-          bottom: "20px",
-          border: "3px solid #3b82f6",
-          borderRadius: "12px",
-          background: "white",
-          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-        }}
-      />
-      
-      {/* Inner Content Container */}
-      <div style={{ position: "relative", padding: "60px", height: "100%" }}>
-        
-        {/* Header with Logo */}
-        <div style={{ textAlign: "center", marginBottom: "50px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "20px", marginBottom: "30px" }}>
-            {/* Logo placeholder - you can replace with actual logo */}
+        <div className="fixed -top-[9999px] left-0 z-[-1]">
+          {showCertificateTemplate && selectedCertificate && userProfile && (
             <div
+              ref={certificateRef}
+              className="w-[1200px] h-[850px] bg-white relative"
               style={{
-                width: "80px",
-                height: "80px",
-                background: "linear-gradient(135deg, #3b82f6, #1d4ed8)",
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "white",
-                fontSize: "32px",
-                fontWeight: "bold",
-                boxShadow: "0 10px 15px -3px rgba(59, 130, 246, 0.3)",
+                fontFamily: "serif",
+                background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+                boxSizing: "border-box",
               }}
             >
-              N
-            </div>
-            <div>
-              <h1
-                style={{
-                  fontSize: "42px",
-                  fontWeight: "bold",
-                  color: "#1e293b",
-                  margin: "0",
-                  letterSpacing: "-1px",
-                }}
-              >
-                NestFT.dev
-              </h1>
-              <p style={{ fontSize: "16px", color: "#64748b", margin: "5px 0 0 0" }}>
-                Professional Development Platform
-              </p>
-            </div>
-          </div>
-          
-          <h2
-            style={{
-              fontSize: "36px",
-              fontWeight: "600",
-              color: "#1e293b",
-              marginBottom: "15px",
-              letterSpacing: "-0.5px",
-            }}
-          >
-            Certificate of Completion
-          </h2>
-          
-          <div
-            style={{
-              width: "120px",
-              height: "4px",
-              background: "linear-gradient(90deg, #f59e0b, #d97706)",
-              margin: "0 auto",
-              borderRadius: "2px",
-            }}
-          />
-        </div>
-        {/* Main Content */}
-        <div style={{ textAlign: "center", marginBottom: "50px" }}>
-          <p style={{ fontSize: "22px", color: "#64748b", marginBottom: "25px", fontStyle: "italic" }}>
-            This is to certify that
-          </p>
-          
-          <div
-            style={{
-              background: "linear-gradient(135deg, #f1f5f9, #e2e8f0)",
-              padding: "20px 40px",
-              borderRadius: "12px",
-              marginBottom: "30px",
-              border: "2px solid #e2e8f0",
-            }}
-          >
-            <h3
-              style={{
-                fontSize: "48px",
-                fontWeight: "bold",
-                color: "#1e293b",
-                margin: "0",
-                letterSpacing: "-1px",
-              }}
-            >
-              {userProfile?.full_name || "Developer Name"}
-            </h3>
-          </div>
-          
-          <p style={{ fontSize: "22px", color: "#64748b", marginBottom: "25px" }}>
-            has successfully completed the
-          </p>
-
-          <div
-            style={{
-              display: "inline-block",
-              padding: "20px 40px",
-              background: selectedCertificate.stage === "beginner" 
-                ? "linear-gradient(135deg, #10b981, #059669)" 
-                : selectedCertificate.stage === "intermediate"
-                ? "linear-gradient(135deg, #f59e0b, #d97706)"
-                : "linear-gradient(135deg, #ef4444, #dc2626)",
-              borderRadius: "12px",
-              marginBottom: "30px",
-              boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            <h4
-              style={{
-                fontSize: "32px",
-                fontWeight: "bold",
-                color: "white",
-                margin: "0",
-                textTransform: "capitalize",
-                textShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              {selectedCertificate.stage} Developer Track
-            </h4>
-          </div>
-
-          <p style={{ fontSize: "20px", color: "#64748b", marginBottom: "25px", lineHeight: "1.6" }}>
-            demonstrating proficiency in modern web development technologies<br />
-            and achieving <strong style={{ color: "#1e293b" }}>{selectedCertificate.percentage}%</strong> completion with excellence
-          </p>
-              fontWeight: "bold",
-
-          {includeRanking && selectedCertificate.userRank && (
-            <div
-              style={{
-                background: "linear-gradient(135deg, #fef3c7, #fde68a)",
-                border: "2px solid #f59e0b",
-                borderRadius: "10px",
-                padding: "15px 25px",
-                display: "inline-block",
-                marginBottom: "20px",
-              }}
-            >
-              <p
-                style={{
-                  fontSize: "18px",
-                  fontWeight: "600",
-                  color: "#92400e",
-                  margin: "0",
-                }}
-              >
-                🏆 Global Ranking: #{selectedCertificate.userRank} out of {selectedCertificate.totalUsers} developers
-              </p>
+              {/* Certificate content */}
             </div>
           )}
         </div>
 
-        {/* Footer Section */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "auto" }}>
-          {/* Date and Certificate ID */}
-          <div>
-            <div style={{ marginBottom: "15px" }}>
-              <p style={{ fontSize: "16px", color: "#64748b", margin: "0 0 5px 0" }}>
-                <strong>Issue Date:</strong>
-              </p>
-              <p style={{ fontSize: "18px", color: "#1e293b", margin: "0", fontWeight: "600" }}>
-                {new Date().toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </p>
-            </div>
-            <div>
-              <p style={{ fontSize: "14px", color: "#64748b", margin: "0 0 5px 0" }}>
-                <strong>Certificate ID:</strong>
-              </p>
-              <p style={{ fontSize: "14px", color: "#1e293b", margin: "0", fontFamily: "monospace" }}>
-                NFTD-{selectedCertificate.stage.toUpperCase()}-{user?.id?.slice(0, 8) || "USER"}-{new Date().getFullYear()}
-              </p>
-            </div>
-          </div>
-
-          {/* Signature Section */}
-          <div style={{ textAlign: "center" }}>
-            <div
-              style={{
-                borderTop: "2px solid #64748b",
-                paddingTop: "10px",
-                paddingLeft: "30px",
-                paddingRight: "30px",
-                marginBottom: "10px",
-              }}
-            >
-              <p style={{ fontSize: "18px", fontWeight: "600", color: "#1e293b", margin: "0" }}>
-                NestFT.dev Team
-              </p>
-              <p style={{ fontSize: "14px", color: "#64748b", margin: "5px 0 0 0" }}>
-                Authorized Signature
-              </p>
-            </div>
-          </div>
-        {/* Achievement Stats */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -769,37 +535,3 @@ ${window.location.origin}`;
     </div>
   );
 }
-
-          {/* Official Seal */}
-          <div style={{ textAlign: "center" }}>
-            <div
-              style={{
-                width: "90px",
-                height: "90px",
-                border: "3px solid #3b82f6",
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "linear-gradient(135deg, #dbeafe, #bfdbfe)",
-                marginBottom: "8px",
-              }}
-            >
-              <Award style={{ width: "45px", height: "45px", color: "#3b82f6" }} />
-            </div>
-            <p style={{ fontSize: "12px", color: "#64748b", margin: "0" }}>
-              Official Seal
-            </p>
-          </div>
-        </div>
-        
-        {/* Verification URL */}
-        <div style={{ textAlign: "center", marginTop: "30px" }}>
-          <p style={{ fontSize: "12px", color: "#94a3b8", margin: "0" }}>
-            Verify this certificate at: nestft.dev/verify/{user?.id?.slice(0, 8) || "USER"}-{selectedCertificate.stage}
-          </p>
-        </div>
-      </div>
-    </div>
-  )}
-</div>
