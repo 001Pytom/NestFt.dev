@@ -10,6 +10,7 @@ import {
   User,
   Menu, 
   X,
+  Award,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -113,15 +114,15 @@ export function Navbar() {
                   isActive("/leaderboard") ? "text-primary" : "text-black"
                 }`}
               >
-                Leaderboard
+                Leaderboard 
               </Link>
               <Link
-                href="/portfolio"
+                href="/certificates"
                 className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive("/portfolio") ? "text-primary" : "text-black"
+                  isActive("/certificates") ? "text-primary" : "text-black"
                 }`}
-              >
-                Portfolio
+              > 
+                Certificates
               </Link>
               <Link href="/profile" className="ml-4">
                 <Avatar>
@@ -147,7 +148,7 @@ export function Navbar() {
               >
                 Features
               </Link>
-              <Link
+               <Link
                 href="/about"
                 className={`text-sm font-medium transition-colors hover:text-primary ${
                   isActive("/about") ? "text-primary" : "text-black"
