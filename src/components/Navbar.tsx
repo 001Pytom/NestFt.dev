@@ -148,7 +148,7 @@ export function Navbar() {
               >
                 Features
               </Link>
-              <Link
+               <Link
                 href="/about"
                 className={`text-sm font-medium transition-colors hover:text-primary ${
                   isActive("/about") ? "text-primary" : "text-black"
