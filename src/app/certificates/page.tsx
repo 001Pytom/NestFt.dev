@@ -28,6 +28,7 @@ export default function CertificatesPage() {
   const [includeRanking, setIncludeRanking] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [showCertificateTemplate, setShowCertificateTemplate] = useState(false)
   const certificateRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -110,22 +111,26 @@ export default function CertificatesPage() {
   }
 
   const downloadCertificate = async (certificate: CertificateData) => {
-    if (!certificateRef.current || !userProfile) return
+    if (!userProfile) {
+      alert('User profile not loaded. Please try again.')
+      return
+    }
 
     setIsGenerating(true)
     setSelectedCertificate(certificate)
+    setShowCertificateTemplate(true)
 
-    // Wait for the certificate to render properly
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // Wait for the certificate template to render
+    await new Promise(resolve => setTimeout(resolve, 1000))
 
     try {
-      // Find the certificate element
-      const certificateElement = certificateRef.current
-      if (!certificateElement) {
-        throw new Error('Certificate element not found')
+      console.log('Certificate ref:', certificateRef.current)
+      
+      if (!certificateRef.current) {
+        throw new Error('Certificate template not rendered. Please try again.')
       }
 
-      const canvas = await html2canvas(certificateElement, {
+      const canvas = await html2canvas(certificateRef.current, {
         scale: 3,
         backgroundColor: '#ffffff',
         useCORS: true,
@@ -154,6 +159,7 @@ export default function CertificatesPage() {
     } finally {
       setIsGenerating(false)
       setSelectedCertificate(null)
+      setShowCertificateTemplate(false)
     }
   }
 
@@ -333,11 +339,11 @@ Join me in building real projects and advancing your tech career! 💻
         </motion.div>
 
         {/* Hidden Certificate Template */}
-        {selectedCertificate && userProfile && (
-          <div className="fixed -top-[9999px] left-0">
+        {showCertificateTemplate && selectedCertificate && userProfile && (
+          <div className="fixed -top-[9999px] left-0 z-[-1]">
             <div
               ref={certificateRef}
-              className="w-[1200px] h-[800px] bg-white p-16 relative overflow-hidden print:block"
+              className="w-[1200px] h-[800px] bg-white p-16 relative overflow-hidden"
               style={{ fontFamily: 'serif' }}
             >
               {/* Background Pattern */}
@@ -352,7 +358,7 @@ Join me in building real projects and advancing your tech career! 💻
               <div className="text-center mb-12">
                 <div className="flex items-center justify-center gap-4 mb-6">
                   <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-2xl">N</span>
+                    <span className="text-white font-bold text-2xl">🏆</span>
                   </div>
                   <h1 className="text-4xl font-bold text-gray-800">NestFT.dev</h1>
                 </div>
