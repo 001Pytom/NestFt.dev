@@ -148,7 +148,7 @@ export default function CertificatesPage() {
       const imgWidth = 297
       const imgHeight = 210
       pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
-      pdf.save(`NestFT-${certificate.stage}-certificate-${userProfile?.full_name?.replace(/\s+/g, '-')}.pdf`)
+      pdf.save(`NestFT-${certificate.stage}-certificate-${userProfile?.full_name?.replace(/\s+/g, '-')}.pdf`) 
 
       // Show success message
       alert('Certificate downloaded successfully!')
