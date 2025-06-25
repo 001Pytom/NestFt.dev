@@ -14,7 +14,7 @@ import jsPDF from 'jspdf'
 interface CertificateData {
   stage: 'beginner' | 'intermediate' | 'advanced'
   completionDate: string
-  percentage: number
+  percentage: number 
   isEligible: boolean
   userRank?: number
   totalUsers?: number
