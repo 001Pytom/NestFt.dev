@@ -489,374 +489,156 @@ ${window.location.origin}`;
 
         {/* Hidden Certificate Template */}
         {/* Hidden Certificate Template */}
-        <div className="fixed -top-[9999px] left-0 z-[-1]">
-          {showCertificateTemplate && selectedCertificate && userProfile && (
-            <div
-              ref={certificateRef}
-              className="w-[1200px] h-[800px] p-16 relative overflow-hidden"
-              style={{ 
-                fontFamily: "serif",
-                backgroundColor: "#ffffff",
-                background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)"
-              }}
-            >
-              {/* Background Pattern */}
-              <div className="absolute inset-0" style={{ opacity: 0.05 }}>
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "40px",
-                    left: "40px",
-                    width: "128px",
-                    height: "128px",
-                    border: "4px solid #6366f1",
-                    borderRadius: "50%",
-                  }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "80px",
-                    right: "80px",
-                    width: "96px",
-                    height: "96px",
-                    border: "4px solid #10b981",
-                    borderRadius: "50%",
-                  }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: "80px",
-                    left: "80px",
-                    width: "112px",
-                    height: "112px",
-                    border: "4px solid #f59e0b",
-                    borderRadius: "50%",
-                  }}
-                />
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: "40px",
-                    right: "40px",
-                    width: "80px",
-                    height: "80px",
-                    border: "4px solid #6366f1",
-                    borderRadius: "50%",
-                  }}
-                />
-              </div>
+       {/* Hidden Certificate Template */}
+<div className="fixed -top-[9999px] left-0 z-[-1]">
+  {showCertificateTemplate && selectedCertificate && userProfile && (
+    <div
+      ref={certificateRef}
+      className="w-[1200px] h-[850px] bg-white p-20 relative"
+      style={{
+        fontFamily: "serif",
+        border: "8px solid #1e3a8a", // Deep Blue Border
+        boxSizing: "border-box",
+        backgroundImage: "url('https://i.imgur.com/UQF5V4U.png')", // Optional subtle background texture
+        backgroundSize: "cover",
+      }}
+    >
+      {/* Header */}
+      <div style={{ textAlign: "center", marginBottom: "60px" }}>
+        <h1
+          style={{
+            fontSize: "48px",
+            fontWeight: "bold",
+            color: "#1e3a8a",
+            marginBottom: "10px",
+          }}
+        >
+          Certificate of Achievement
+        </h1>
+        <div
+          style={{
+            width: "200px",
+            height: "4px",
+            backgroundColor: "#d4af37", // Gold
+            margin: "0 auto",
+          }}
+        />
+      </div>
 
-              {/* Header */}
-              <div style={{ 
-                textAlign: "center", 
-                marginBottom: "48px",
-                position: "relative",
-                zIndex: 10
-              }}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "16px",
-                    marginBottom: "24px",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "64px",
-                      height: "64px",
-                      backgroundColor: "#3b82f6",
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      boxShadow: "0 10px 25px rgba(59, 130, 246, 0.3)"
-                    }}
-                  >
-                    <span
-                      style={{
-                        color: "white",
-                        fontWeight: "bold",
-                        fontSize: "24px",
-                      }}
-                    >
-                      🏆
-                    </span>
-                  </div>
-                  <h1
-                    style={{
-                      fontSize: "32px",
-                      fontWeight: "bold",
-                      color: "#1e293b",
-                      textShadow: "0 2px 4px rgba(0,0,0,0.1)"
-                    }}
-                  >
-                    NestFT.dev
-                  </h1>
-                </div>
-                <h2
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "600",
-                    color: "#64748b",
-                    marginBottom: "8px",
-                  }}
-                >
-                  Certificate of Completion
-                </h2>
-                <div
-                  style={{
-                    width: "128px",
-                    height: "4px",
-                    margin: "0 auto",
-                    background: "linear-gradient(90deg, #3b82f6, #8b5cf6)",
-                    borderRadius: "2px"
-                  }}
-                />
-              </div>
+      {/* Body */}
+      <div style={{ textAlign: "center", marginBottom: "40px" }}>
+        <p style={{ fontSize: "20px", color: "#4b5563", marginBottom: "30px" }}>
+          This certifies that
+        </p>
+        <h2
+          style={{
+            fontSize: "40px",
+            fontWeight: "bold",
+            color: "#111827",
+            marginBottom: "30px",
+          }}
+        >
+          {userProfile?.full_name || "Developer Name"}
+        </h2>
+        <p style={{ fontSize: "20px", color: "#4b5563", marginBottom: "20px" }}>
+          has successfully completed the
+        </p>
 
-              {/* Main Content */}
-              <div style={{ 
-                textAlign: "center", 
-                marginBottom: "48px",
-                position: "relative",
-                zIndex: 10
-              }}>
-                <p
-                  style={{
-                    fontSize: "18px",
-                    color: "#64748b",
-                    marginBottom: "32px",
-                  }}
-                >
-                  This is to certify that
-                </p>
-
-                <h3
-                  style={{
-                    fontSize: "48px",
-                    fontWeight: "bold",
-                    color: "#1e293b",
-                    marginBottom: "32px",
-                    borderBottom: "3px solid #e2e8f0",
-                    paddingBottom: "16px",
-                    display: "inline-block",
-                    paddingInline: "32px",
-                    textShadow: "0 2px 4px rgba(0,0,0,0.1)"
-                  }}
-                >
-                  {userProfile?.full_name || "Developer"}
-                </h3>
-
-                <p
-                  style={{
-                    fontSize: "18px",
-                    color: "#64748b",
-                    marginBottom: "16px",
-                  }}
-                >
-                  has successfully completed the
-                </p>
-
-                <div
-                  style={{
-                    display: "inline-block",
-                    padding: "16px 32px",
-                    borderRadius: "8px",
-                    boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
-                    backgroundColor:
-                      selectedCertificate.stage === "beginner"
-                        ? "#059669"
-                        : selectedCertificate.stage === "intermediate"
-                        ? "#d97706"
-                        : "#dc2626",
-                    color: "white",
-                    marginBottom: "32px",
-                  }}
-                >
-                  <h4
-                    style={{
-                      fontSize: "24px",
-                      fontWeight: "bold",
-                      textTransform: "capitalize",
-                      textShadow: "0 1px 2px rgba(0,0,0,0.3)"
-                    }}
-                  >
-                    {selectedCertificate.stage} Developer Program
-                  </h4>
-                </div>
-
-                <p
-                  style={{
-                    fontSize: "18px",
-                    color: "#64748b",
-                    marginBottom: "32px",
-                  }}
-                >
-                  demonstrating proficiency in web development technologies and
-                  completing {selectedCertificate.percentage}% of required
-                  projects
-                </p>
-
-                {includeRanking && selectedCertificate.userRank && (
-                  <div
-                    style={{
-                      backgroundColor: "#fef3c7",
-                      border: "2px solid #fbbf24",
-                      borderRadius: "8px",
-                      padding: "16px",
-                      marginBottom: "32px",
-                      display: "inline-block",
-                      boxShadow: "0 4px 12px rgba(251, 191, 36, 0.2)"
-                    }}
-                  >
-                    <p
-                      style={{
-                        fontSize: "18px",
-                        fontWeight: "600",
-                        color: "#92400e",
-                      }}
-                    >
-                      🏆 Ranked #{selectedCertificate.userRank} out of{" "}
-                      {selectedCertificate.totalUsers} developers
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Footer */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-end",
-                  position: "relative",
-                  zIndex: 10
-                }}
-              >
-                <div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      marginBottom: "8px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "16px",
-                        height: "16px",
-                        color: "#6b7280"
-                      }}
-                    >📅</div>
-                    <span style={{ fontSize: "14px", color: "#4b5563" }}>
-                      Issued:{" "}
-                      {new Date().toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </span>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "16px",
-                        height: "16px",
-                        color: "#6b7280"
-                      }}
-                    >📍</div>
-                    <span style={{ fontSize: "14px", color: "#4b5563" }}>
-                      NestFT.dev Platform
-                    </span>
-                  </div>
-                </div>
-
-                <div style={{ textAlign: "center" }}>
-                  <div
-                    style={{
-                      borderTop: "3px solid #9ca3af",
-                      paddingTop: "8px",
-                      paddingInline: "32px",
-                      marginTop: "16px",
-                    }}
-                  >
-                    <p
-                      style={{
-                        fontSize: "18px",
-                        fontWeight: "600",
-                        color: "#1e293b",
-                      }}
-                    >
-                      NestFT.dev
-                    </p>
-                    <p style={{ fontSize: "14px", color: "#4b5563" }}>
-                      Authorized Signature
-                    </p>
-                  </div>
-                </div>
-
-                <div style={{ textAlign: "right" }}>
-                  <div
-                    style={{
-                      width: "96px",
-                      height: "96px",
-                      border: "4px solid #3b82f6",
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginBottom: "8px",
-                      backgroundColor: "#ffffff",
-                      boxShadow: "0 8px 25px rgba(59, 130, 246, 0.2)"
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "48px",
-                        height: "48px",
-                        color: "#3b82f6",
-                        fontSize: "48px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center"
-                      }}
-                    >🏆</div>
-                  </div>
-                  <p style={{ fontSize: "12px", color: "#6b7280" }}>
-                    Official Seal
-                  </p>
-                </div>
-              </div>
-
-              {/* Certificate ID */}
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: "16px",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  zIndex: 10
-                }}
-              >
-                <p style={{ fontSize: "12px", color: "#9ca3af" }}>
-                  Certificate ID: NFTD-{selectedCertificate.stage.toUpperCase()}
-                  -{user?.id?.slice(0, 8) || "USER"}-{new Date().getFullYear()}
-                </p>
-              </div>
-            </div>
-          )}
+        <div
+          style={{
+            display: "inline-block",
+            padding: "12px 24px",
+            border: "2px solid #d4af37",
+            borderRadius: "8px",
+            backgroundColor: "#fefce8",
+            marginBottom: "30px",
+          }}
+        >
+          <h3
+            style={{
+              fontSize: "28px",
+              fontWeight: "bold",
+              textTransform: "capitalize",
+              color: "#1e3a8a",
+            }}
+          >
+            {selectedCertificate.stage} Developer Program
+          </h3>
         </div>
+
+        <p style={{ fontSize: "18px", color: "#4b5563", marginBottom: "20px" }}>
+          demonstrating excellence in web development and achieving{" "}
+          <strong>{selectedCertificate.percentage}%</strong> completion
+        </p>
+
+        {includeRanking && selectedCertificate.userRank && (
+          <p
+            style={{
+              fontSize: "18px",
+              color: "#854d0e",
+              backgroundColor: "#fefce8",
+              padding: "10px 20px",
+              borderRadius: "6px",
+              display: "inline-block",
+              marginBottom: "20px",
+            }}
+          >
+            🏆 Ranked #{selectedCertificate.userRank} out of{" "}
+            {selectedCertificate.totalUsers} developers
+          </p>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "60px" }}>
+        <div>
+          <p style={{ fontSize: "14px", color: "#6b7280", marginBottom: "8px" }}>
+            Issued on:{" "}
+            {new Date().toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </p>
+          <p style={{ fontSize: "14px", color: "#6b7280" }}>
+            Certificate ID: NFTD-{selectedCertificate.stage.toUpperCase()}
+            -{user?.id?.slice(0, 8) || "USER"}-{new Date().getFullYear()}
+          </p>
+        </div>
+
+        <div style={{ textAlign: "center" }}>
+          <div style={{ borderTop: "2px solid #9ca3af", paddingTop: "8px" }}>
+            <p style={{ fontSize: "16px", fontWeight: "600", color: "#1f2937" }}>
+              NestFT.dev
+            </p>
+            <p style={{ fontSize: "14px", color: "#6b7280" }}>
+              Authorized Signature
+            </p>
+          </div>
+        </div>
+
+        <div style={{ textAlign: "right" }}>
+          <div
+            style={{
+              width: "80px",
+              height: "80px",
+              border: "3px solid #d4af37",
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: "8px",
+            }}
+          >
+            <Award style={{ width: "40px", height: "40px", color: "#d4af37" }} />
+          </div>
+          <p style={{ fontSize: "12px", color: "#6b7280" }}>Official Seal</p>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
+
 
         {/* Achievement Stats */}
         <motion.div
