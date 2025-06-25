@@ -143,7 +143,7 @@ export default function CertificatesPage() {
       if (!certificateRef.current) {
         throw new Error("Certificate template not rendered. Please try again.");
       }
-
+ 
       // Log user data for debugging
       console.log("User Profile:", userProfile);
       console.log("Certificate Data:", certificate);
