@@ -49,7 +49,7 @@ export default function CertificatesPage() {
   useEffect(() => {
     if (user) {
       loadCertificateData();
-    }
+    } 
   }, [user]);
 
   const loadCertificateData = async () => {
