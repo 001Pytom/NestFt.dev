@@ -121,7 +121,7 @@ export function Navbar() {
                 className={`text-sm font-medium transition-colors hover:text-primary ${
                   isActive("/certificates") ? "text-primary" : "text-black"
                 }`}
-              >
+              > 
                 Certificates
               </Link>
               <Link href="/profile" className="ml-4">
