@@ -190,10 +190,42 @@ export default function CertificatesPage() {
       return;
     }
 
-    const shareText = `🎉 I just earned my ${
-      certificate.stage.charAt(0).toUpperCase() + certificate.stage.slice(1)
-    } Developer Certificate from NestFT.dev! 
-    
+    // Generate the certificate image first
+    setSelectedCertificate(certificate);
+    setShowCertificateTemplate(true);
+
+    // Wait for the certificate template to render
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    try {
+      if (!certificateRef.current) {
+        throw new Error("Certificate template not rendered. Please try again.");
+      }
+
+      const canvas = await html2canvas(certificateRef.current, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+        allowTaint: true,
+        width: 1200,
+        height: 800,
+        scrollX: 0,
+        scrollY: 0,
+      });
+
+      // Convert canvas to blob
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          throw new Error("Failed to generate certificate image");
+        }
+
+        // Create a temporary URL for the image
+        const imageUrl = URL.createObjectURL(blob);
+        
+        const shareText = `🎉 I just earned my ${
+          certificate.stage.charAt(0).toUpperCase() + certificate.stage.slice(1)
+        } Developer Certificate from NestFT.dev! 
+        
 ${
   includeRanking && certificate.userRank
     ? `🏆 Currently ranked #${certificate.userRank} out of ${certificate.totalUsers} developers!`
@@ -204,24 +236,90 @@ Join me in building real projects and advancing your tech career! 💻
 
 #WebDevelopment #Coding #TechCareer #NestFTdev`;
 
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `${
-            certificate.stage.charAt(0).toUpperCase() +
-            certificate.stage.slice(1)
-          } Developer Certificate`,
-          text: shareText,
-          url: window.location.origin,
-        });
+        try {
+          if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'certificate.png', { type: 'image/png' })] })) {
+            // Use native sharing with the image file
+            const file = new File([blob], `NestFT-${certificate.stage}-certificate.png`, { type: 'image/png' });
+            await navigator.share({
+              title: `${
+                certificate.stage.charAt(0).toUpperCase() +
+                certificate.stage.slice(1)
+              } Developer Certificate`,
+              text: shareText,
+              files: [file]
+            });
+          } else {
+            // Fallback: copy text and show instructions
+            await navigator.clipboard.writeText(shareText);
+            
+            // Create a temporary download link for the image
+            const downloadLink = document.createElement('a');
+            downloadLink.href = imageUrl;
+            downloadLink.download = `NestFT-${certificate.stage}-certificate.png`;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            
+            alert('Certificate text copied to clipboard and image downloaded! You can now share both on social media.');
+          }
+        } catch (shareError) {
+          console.log("Error sharing:", shareError);
+          // Final fallback: just copy text and download image
+          await navigator.clipboard.writeText(shareText);
+          
+          const downloadLink = document.createElement('a');
+          downloadLink.href = imageUrl;
+          downloadLink.download = `NestFT-${certificate.stage}-certificate.png`;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+          
+          alert('Certificate text copied to clipboard and image downloaded! You can now share both on social media.');
+        }
+        
+        // Clean up
+        URL.revokeObjectURL(imageUrl);
+      }, 'image/png', 0.95);
+
+    } catch (error) {
+      console.error("Error generating certificate for sharing:", error);
+      
+      // Fallback to text-only sharing
+      const shareText = `🎉 I just earned my ${
+        certificate.stage.charAt(0).toUpperCase() + certificate.stage.slice(1)
+      } Developer Certificate from NestFT.dev! 
+      
+${
+  includeRanking && certificate.userRank
+    ? `🏆 Currently ranked #${certificate.userRank} out of ${certificate.totalUsers} developers!`
+    : ""
+}
+
+Join me in building real projects and advancing your tech career! 💻
+
+#WebDevelopment #Coding #TechCareer #NestFTdev
+
+${window.location.origin}`;
+
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: `${
+              certificate.stage.charAt(0).toUpperCase() +
+              certificate.stage.slice(1)
+            } Developer Certificate`,
+            text: shareText,
+            url: window.location.origin,
+          });
+        }
+      } catch (shareError) {
+        console.log("Error sharing:", shareError);
+        await navigator.clipboard.writeText(shareText);
+        alert("Certificate details copied to clipboard!");
       }
-    } catch (shareError) {
-      console.log("Error sharing:", shareError);
-      // Fallback to clipboard
-      await navigator.clipboard.writeText(
-        shareText + `\n\n${window.location.origin}`
-      );
-      alert("Certificate details copied to clipboard!");
+    } finally {
+      setShowCertificateTemplate(false);
+      setSelectedCertificate(null);
     }
   };
 
@@ -395,11 +493,15 @@ Join me in building real projects and advancing your tech career! 💻
           {showCertificateTemplate && selectedCertificate && userProfile && (
             <div
               ref={certificateRef}
-              className="w-[1200px] h-[800px] bg-white p-16 relative overflow-hidden"
-              style={{ fontFamily: "serif" }}
+              className="w-[1200px] h-[800px] p-16 relative overflow-hidden"
+              style={{ 
+                fontFamily: "serif",
+                backgroundColor: "#ffffff",
+                background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)"
+              }}
             >
               {/* Background Pattern */}
-              <div className="absolute inset-0 opacity-5">
+              <div className="absolute inset-0" style={{ opacity: 0.05 }}>
                 <div
                   style={{
                     position: "absolute",
@@ -407,7 +509,7 @@ Join me in building real projects and advancing your tech career! 💻
                     left: "40px",
                     width: "128px",
                     height: "128px",
-                    border: "4px solid #4f46e5",
+                    border: "4px solid #6366f1",
                     borderRadius: "50%",
                   }}
                 />
@@ -418,7 +520,7 @@ Join me in building real projects and advancing your tech career! 💻
                     right: "80px",
                     width: "96px",
                     height: "96px",
-                    border: "4px solid #16a34a",
+                    border: "4px solid #10b981",
                     borderRadius: "50%",
                   }}
                 />
@@ -429,7 +531,7 @@ Join me in building real projects and advancing your tech career! 💻
                     left: "80px",
                     width: "112px",
                     height: "112px",
-                    border: "4px solid #f97316",
+                    border: "4px solid #f59e0b",
                     borderRadius: "50%",
                   }}
                 />
@@ -440,14 +542,19 @@ Join me in building real projects and advancing your tech career! 💻
                     right: "40px",
                     width: "80px",
                     height: "80px",
-                    border: "4px solid #4f46e5",
+                    border: "4px solid #6366f1",
                     borderRadius: "50%",
                   }}
                 />
               </div>
 
               {/* Header */}
-              <div style={{ textAlign: "center", marginBottom: "48px" }}>
+              <div style={{ 
+                textAlign: "center", 
+                marginBottom: "48px",
+                position: "relative",
+                zIndex: 10
+              }}>
                 <div
                   style={{
                     display: "flex",
@@ -461,11 +568,12 @@ Join me in building real projects and advancing your tech career! 💻
                     style={{
                       width: "64px",
                       height: "64px",
-                      backgroundColor: "#2563eb",
+                      backgroundColor: "#3b82f6",
                       borderRadius: "50%",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
+                      boxShadow: "0 10px 25px rgba(59, 130, 246, 0.3)"
                     }}
                   >
                     <span
@@ -482,7 +590,8 @@ Join me in building real projects and advancing your tech career! 💻
                     style={{
                       fontSize: "32px",
                       fontWeight: "bold",
-                      color: "#1f2937",
+                      color: "#1e293b",
+                      textShadow: "0 2px 4px rgba(0,0,0,0.1)"
                     }}
                   >
                     NestFT.dev
@@ -492,7 +601,7 @@ Join me in building real projects and advancing your tech career! 💻
                   style={{
                     fontSize: "24px",
                     fontWeight: "600",
-                    color: "#4b5563",
+                    color: "#64748b",
                     marginBottom: "8px",
                   }}
                 >
@@ -503,17 +612,23 @@ Join me in building real projects and advancing your tech career! 💻
                     width: "128px",
                     height: "4px",
                     margin: "0 auto",
-                    backgroundColor: "#4f46e5",
+                    background: "linear-gradient(90deg, #3b82f6, #8b5cf6)",
+                    borderRadius: "2px"
                   }}
                 />
               </div>
 
               {/* Main Content */}
-              <div style={{ textAlign: "center", marginBottom: "48px" }}>
+              <div style={{ 
+                textAlign: "center", 
+                marginBottom: "48px",
+                position: "relative",
+                zIndex: 10
+              }}>
                 <p
                   style={{
                     fontSize: "18px",
-                    color: "#4b5563",
+                    color: "#64748b",
                     marginBottom: "32px",
                   }}
                 >
@@ -524,12 +639,13 @@ Join me in building real projects and advancing your tech career! 💻
                   style={{
                     fontSize: "48px",
                     fontWeight: "bold",
-                    color: "#1f2937",
+                    color: "#1e293b",
                     marginBottom: "32px",
-                    borderBottom: "2px solid #d1d5db",
+                    borderBottom: "3px solid #e2e8f0",
                     paddingBottom: "16px",
                     display: "inline-block",
                     paddingInline: "32px",
+                    textShadow: "0 2px 4px rgba(0,0,0,0.1)"
                   }}
                 >
                   {userProfile?.full_name || "Developer"}
@@ -538,7 +654,7 @@ Join me in building real projects and advancing your tech career! 💻
                 <p
                   style={{
                     fontSize: "18px",
-                    color: "#4b5563",
+                    color: "#64748b",
                     marginBottom: "16px",
                   }}
                 >
@@ -550,12 +666,13 @@ Join me in building real projects and advancing your tech career! 💻
                     display: "inline-block",
                     padding: "16px 32px",
                     borderRadius: "8px",
+                    boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
                     backgroundColor:
                       selectedCertificate.stage === "beginner"
-                        ? "#10b981"
+                        ? "#059669"
                         : selectedCertificate.stage === "intermediate"
-                        ? "#facc15"
-                        : "#ef4444",
+                        ? "#d97706"
+                        : "#dc2626",
                     color: "white",
                     marginBottom: "32px",
                   }}
@@ -565,6 +682,7 @@ Join me in building real projects and advancing your tech career! 💻
                       fontSize: "24px",
                       fontWeight: "bold",
                       textTransform: "capitalize",
+                      textShadow: "0 1px 2px rgba(0,0,0,0.3)"
                     }}
                   >
                     {selectedCertificate.stage} Developer Program
@@ -574,7 +692,7 @@ Join me in building real projects and advancing your tech career! 💻
                 <p
                   style={{
                     fontSize: "18px",
-                    color: "#4b5563",
+                    color: "#64748b",
                     marginBottom: "32px",
                   }}
                 >
@@ -586,19 +704,20 @@ Join me in building real projects and advancing your tech career! 💻
                 {includeRanking && selectedCertificate.userRank && (
                   <div
                     style={{
-                      backgroundColor: "#fefce8",
-                      border: "2px solid #fef08a",
+                      backgroundColor: "#fef3c7",
+                      border: "2px solid #fbbf24",
                       borderRadius: "8px",
                       padding: "16px",
                       marginBottom: "32px",
                       display: "inline-block",
+                      boxShadow: "0 4px 12px rgba(251, 191, 36, 0.2)"
                     }}
                   >
                     <p
                       style={{
                         fontSize: "18px",
                         fontWeight: "600",
-                        color: "#854d0e",
+                        color: "#92400e",
                       }}
                     >
                       🏆 Ranked #{selectedCertificate.userRank} out of{" "}
@@ -614,6 +733,8 @@ Join me in building real projects and advancing your tech career! 💻
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "flex-end",
+                  position: "relative",
+                  zIndex: 10
                 }}
               >
                 <div>
@@ -625,13 +746,13 @@ Join me in building real projects and advancing your tech career! 💻
                       marginBottom: "8px",
                     }}
                   >
-                    <Calendar
+                    <div
                       style={{
                         width: "16px",
                         height: "16px",
-                        color: "#6b7280",
+                        color: "#6b7280"
                       }}
-                    />
+                    >📅</div>
                     <span style={{ fontSize: "14px", color: "#4b5563" }}>
                       Issued:{" "}
                       {new Date().toLocaleDateString("en-US", {
@@ -648,13 +769,13 @@ Join me in building real projects and advancing your tech career! 💻
                       gap: "8px",
                     }}
                   >
-                    <MapPin
+                    <div
                       style={{
                         width: "16px",
                         height: "16px",
-                        color: "#6b7280",
+                        color: "#6b7280"
                       }}
-                    />
+                    >📍</div>
                     <span style={{ fontSize: "14px", color: "#4b5563" }}>
                       NestFT.dev Platform
                     </span>
@@ -664,7 +785,7 @@ Join me in building real projects and advancing your tech career! 💻
                 <div style={{ textAlign: "center" }}>
                   <div
                     style={{
-                      borderTop: "2px solid #9ca3af",
+                      borderTop: "3px solid #9ca3af",
                       paddingTop: "8px",
                       paddingInline: "32px",
                       marginTop: "16px",
@@ -674,7 +795,7 @@ Join me in building real projects and advancing your tech career! 💻
                       style={{
                         fontSize: "18px",
                         fontWeight: "600",
-                        color: "#1f2937",
+                        color: "#1e293b",
                       }}
                     >
                       NestFT.dev
@@ -690,21 +811,27 @@ Join me in building real projects and advancing your tech career! 💻
                     style={{
                       width: "96px",
                       height: "96px",
-                      border: "4px solid #2563eb",
+                      border: "4px solid #3b82f6",
                       borderRadius: "50%",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       marginBottom: "8px",
+                      backgroundColor: "#ffffff",
+                      boxShadow: "0 8px 25px rgba(59, 130, 246, 0.2)"
                     }}
                   >
-                    <Award
+                    <div
                       style={{
                         width: "48px",
                         height: "48px",
-                        color: "#2563eb",
+                        color: "#3b82f6",
+                        fontSize: "48px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center"
                       }}
-                    />
+                    >🏆</div>
                   </div>
                   <p style={{ fontSize: "12px", color: "#6b7280" }}>
                     Official Seal
@@ -719,6 +846,7 @@ Join me in building real projects and advancing your tech career! 💻
                   bottom: "16px",
                   left: "50%",
                   transform: "translateX(-50%)",
+                  zIndex: 10
                 }}
               >
                 <p style={{ fontSize: "12px", color: "#9ca3af" }}>
