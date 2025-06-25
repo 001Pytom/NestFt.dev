@@ -114,7 +114,7 @@ export function Navbar() {
                   isActive("/leaderboard") ? "text-primary" : "text-black"
                 }`}
               >
-                Leaderboard
+                Leaderboard 
               </Link>
               <Link
                 href="/portfolio"
