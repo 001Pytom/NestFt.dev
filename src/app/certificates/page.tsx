@@ -178,7 +178,8 @@ Join me in building real projects and advancing your tech career! 💻
           text: shareText,
           url: window.location.origin
         })
-      } catch (shareError) {
+      }
+        catch (shareError) {
         console.log('Error sharing:', shareError)
         // Fallback to clipboard
         await navigator.clipboard.writeText(shareText + `\n\n${window.location.origin}`)
