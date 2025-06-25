@@ -119,10 +119,10 @@ export function Navbar() {
               <Link
                 href="/portfolio"
                 className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isActive("/portfolio") ? "text-primary" : "text-black"
+                  isActive("/certificates") ? "text-primary" : "text-black"
                 }`}
               >
-                Portfolio
+                Certificates
               </Link>
               <Link href="/profile" className="ml-4">
                 <Avatar>
