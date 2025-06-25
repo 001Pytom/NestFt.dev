@@ -192,8 +192,8 @@ export default function CertificatesPage() {
         backgroundColor: "#ffffff",
         useCORS: true,
         allowTaint: true,
-        width: 1200,
-        height: 800,
+        width: 1400,
+        height: 1000,
         scrollX: 0,
         scrollY: 0,
       });
