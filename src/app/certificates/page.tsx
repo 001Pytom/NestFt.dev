@@ -295,7 +295,7 @@ ${window.location.origin}`;
             url: window.location.origin,
           });
         }
-      } catch (shareError) {
+      } catch (shareError) { 
         console.log("Error sharing:", shareError);
         await navigator.clipboard.writeText(shareText);
         alert("Certificate details copied to clipboard!");
