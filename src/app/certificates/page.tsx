@@ -135,23 +135,38 @@ export default function CertificatesPage() {
     setSelectedCertificate(certificate);
     setShowCertificateTemplate(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // Wait longer for template to fully render
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     console.log("Downloading certificate...");
 
     try {
       if (!certificateRef.current) {
         throw new Error("Certificate template not rendered. Please try again.");
       }
+ 
+      // Log user data for debugging
+      console.log("User Profile:", userProfile);
+      console.log("Certificate Data:", certificate);
 
       const canvas = await html2canvas(certificateRef.current, {
-        scale: 3,
+        scale: 2,
         backgroundColor: "#ffffff",
         useCORS: true,
         allowTaint: true,
-        width: 1200,
-        height: 800,
+        width: 1400,
+        height: 1000,
         scrollX: 0,
         scrollY: 0,
+        logging: true,
+        onclone: (clonedDoc) => {
+          // Ensure fonts are loaded in cloned document
+          const style = clonedDoc.createElement('style');
+          style.textContent = `
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+            * { font-family: 'Inter', sans-serif !important; }
+          `;
+          clonedDoc.head.appendChild(style);
+        }
       });
 
       const pdf = new jsPDF("landscape", "mm", "a4");
@@ -186,7 +201,8 @@ export default function CertificatesPage() {
     setSelectedCertificate(certificate);
     setShowCertificateTemplate(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // Wait longer for template to fully render
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     try {
       if (!certificateRef.current) {
@@ -198,10 +214,20 @@ export default function CertificatesPage() {
         backgroundColor: "#ffffff",
         useCORS: true,
         allowTaint: true,
-        width: 1200,
-        height: 800,
+        width: 1400,
+        height: 1000,
         scrollX: 0,
         scrollY: 0,
+        logging: true,
+        onclone: (clonedDoc) => {
+          // Ensure fonts are loaded in cloned document
+          const style = clonedDoc.createElement('style');
+          style.textContent = `
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+            * { font-family: 'Inter', sans-serif !important; }
+          `;
+          clonedDoc.head.appendChild(style);
+        }
       });
 
       canvas.toBlob(async (blob) => {
@@ -471,25 +497,27 @@ ${window.location.origin}`;
           {showCertificateTemplate && selectedCertificate && userProfile && (
             <div
               ref={certificateRef}
-              className="w-[1200px] h-[850px] bg-white relative"
+              className="w-[1400px] h-[1000px] bg-white relative"
               style={{
-                fontFamily: "serif",
+                fontFamily: "'Inter', sans-serif",
                 background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
                 boxSizing: "border-box",
-                padding: "60px",
+                padding: "80px",
                 border: "8px solid #1e40af",
                 borderRadius: "20px",
                 boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                position: "relative",
+                overflow: "hidden"
               }}
             >
               {/* Decorative Border Pattern */}
               <div
                 style={{
                   position: "absolute",
-                  top: "20px",
-                  left: "20px",
-                  right: "20px",
-                  bottom: "20px",
+                  top: "30px",
+                  left: "30px",
+                  right: "30px",
+                  bottom: "30px",
                   border: "3px solid #3b82f6",
                   borderRadius: "15px",
                   background: "linear-gradient(45deg, transparent 0%, rgba(59, 130, 246, 0.05) 50%, transparent 100%)",
@@ -497,20 +525,20 @@ ${window.location.origin}`;
               />
               
               {/* Header Section with Logo */}
-              <div style={{ textAlign: "center", marginBottom: "40px", position: "relative", zIndex: 10 }}>
+              <div style={{ textAlign: "center", marginBottom: "50px", position: "relative", zIndex: 10 }}>
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     gap: "20px",
-                    marginBottom: "20px",
+                    marginBottom: "30px",
                   }}
                 >
                   <div
                     style={{
-                      width: "80px",
-                      height: "80px",
+                      width: "90px",
+                      height: "90px",
                       background: "linear-gradient(135deg, #3b82f6, #1e40af)",
                       borderRadius: "50%",
                       display: "flex",
@@ -519,12 +547,12 @@ ${window.location.origin}`;
                       boxShadow: "0 10px 20px rgba(59, 130, 246, 0.3)",
                     }}
                   >
-                    <span style={{ color: "white", fontSize: "36px", fontWeight: "bold" }}>N</span>
+                    <span style={{ color: "white", fontSize: "40px", fontWeight: "bold" }}>N</span>
                   </div>
                   <div>
                     <h1
                       style={{
-                        fontSize: "42px",
+                        fontSize: "48px",
                         fontWeight: "bold",
                         color: "#1e40af",
                         margin: "0",
@@ -533,7 +561,7 @@ ${window.location.origin}`;
                     >
                       NestFT.dev
                     </h1>
-                    <p style={{ fontSize: "16px", color: "#64748b", margin: "5px 0 0 0" }}>
+                    <p style={{ fontSize: "18px", color: "#64748b", margin: "5px 0 0 0" }}>
                       Professional Development Platform
                     </p>
                   </div>
@@ -541,8 +569,8 @@ ${window.location.origin}`;
                 
                 <div
                   style={{
-                    width: "200px",
-                    height: "4px",
+                    width: "250px",
+                    height: "5px",
                     background: "linear-gradient(90deg, #3b82f6, #8b5cf6, #3b82f6)",
                     margin: "0 auto",
                     borderRadius: "2px",
@@ -551,10 +579,10 @@ ${window.location.origin}`;
               </div>
 
               {/* Certificate Title */}
-              <div style={{ textAlign: "center", marginBottom: "50px" }}>
+              <div style={{ textAlign: "center", marginBottom: "60px" }}>
                 <h2
                   style={{
-                    fontSize: "32px",
+                    fontSize: "36px",
                     fontWeight: "600",
                     color: "#1e293b",
                     margin: "0 0 10px 0",
@@ -563,26 +591,26 @@ ${window.location.origin}`;
                 >
                   CERTIFICATE OF COMPLETION
                 </h2>
-                <p style={{ fontSize: "18px", color: "#64748b", margin: "0" }}>
+                <p style={{ fontSize: "20px", color: "#64748b", margin: "0" }}>
                   This certifies that
                 </p>
               </div>
 
               {/* User Name Section */}
-              <div style={{ textAlign: "center", marginBottom: "40px" }}>
+              <div style={{ textAlign: "center", marginBottom: "50px" }}>
                 <div
                   style={{
                     background: "linear-gradient(135deg, #f1f5f9, #e2e8f0)",
                     border: "2px solid #cbd5e1",
                     borderRadius: "15px",
-                    padding: "25px 40px",
+                    padding: "30px 50px",
                     display: "inline-block",
                     boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
                   }}
                 >
                   <h3
                     style={{
-                      fontSize: "48px",
+                      fontSize: "54px",
                       fontWeight: "bold",
                       color: "#1e293b",
                       margin: "0",
@@ -590,21 +618,21 @@ ${window.location.origin}`;
                       textTransform: "uppercase",
                     }}
                   >
-                    {userProfile?.full_name || "Developer"}
+                    {userProfile?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || "Developer"}
                   </h3>
                 </div>
               </div>
 
               {/* Achievement Details */}
-              <div style={{ textAlign: "center", marginBottom: "40px" }}>
-                <p style={{ fontSize: "20px", color: "#475569", marginBottom: "20px" }}>
+              <div style={{ textAlign: "center", marginBottom: "50px" }}>
+                <p style={{ fontSize: "22px", color: "#475569", marginBottom: "25px" }}>
                   has successfully completed the
                 </p>
                 
                 <div
                   style={{
                     display: "inline-block",
-                    padding: "20px 40px",
+                    padding: "25px 50px",
                     borderRadius: "12px",
                     background: selectedCertificate.stage === "beginner"
                       ? "linear-gradient(135deg, #10b981, #059669)"
@@ -612,13 +640,13 @@ ${window.location.origin}`;
                       ? "linear-gradient(135deg, #f59e0b, #d97706)"
                       : "linear-gradient(135deg, #ef4444, #dc2626)",
                     color: "white",
-                    marginBottom: "25px",
+                    marginBottom: "30px",
                     boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
                   }}
                 >
                   <h4
                     style={{
-                      fontSize: "28px",
+                      fontSize: "32px",
                       fontWeight: "bold",
                       textTransform: "uppercase",
                       margin: "0",
@@ -629,7 +657,7 @@ ${window.location.origin}`;
                   </h4>
                 </div>
                 
-                <p style={{ fontSize: "18px", color: "#475569", marginBottom: "20px" }}>
+                <p style={{ fontSize: "20px", color: "#475569", marginBottom: "25px" }}>
                   demonstrating proficiency in web development technologies and completing{" "}
                   <strong>{selectedCertificate.percentage}%</strong> of required projects
                 </p>
@@ -640,14 +668,14 @@ ${window.location.origin}`;
                       background: "linear-gradient(135deg, #fef3c7, #fde68a)",
                       border: "2px solid #f59e0b",
                       borderRadius: "10px",
-                      padding: "15px 25px",
+                      padding: "18px 30px",
                       display: "inline-block",
-                      marginTop: "15px",
+                      marginTop: "20px",
                     }}
                   >
                     <p
                       style={{
-                        fontSize: "18px",
+                        fontSize: "20px",
                         fontWeight: "600",
                         color: "#92400e",
                         margin: "0",
@@ -666,30 +694,30 @@ ${window.location.origin}`;
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "flex-end",
-                  marginTop: "60px",
+                  marginTop: "80px",
                   position: "relative",
                 }}
               >
                 {/* Date and Location */}
                 <div>
-                  <div style={{ marginBottom: "15px" }}>
+                  <div style={{ marginBottom: "20px" }}>
                     <div
                       style={{
                         display: "flex",
                         alignItems: "center",
                         gap: "8px",
-                        marginBottom: "8px",
+                        marginBottom: "10px",
                       }}
                     >
                       <div
                         style={{
-                          width: "16px",
-                          height: "16px",
+                          width: "18px",
+                          height: "18px",
                           background: "#64748b",
                           borderRadius: "2px",
                         }}
                       />
-                      <span style={{ fontSize: "14px", color: "#475569" }}>
+                      <span style={{ fontSize: "16px", color: "#475569" }}>
                         Issued: {new Date().toLocaleDateString("en-US", {
                           year: "numeric",
                           month: "long",
@@ -706,13 +734,13 @@ ${window.location.origin}`;
                     >
                       <div
                         style={{
-                          width: "16px",
-                          height: "16px",
+                          width: "18px",
+                          height: "18px",
                           background: "#64748b",
                           borderRadius: "2px",
                         }}
                       />
-                      <span style={{ fontSize: "14px", color: "#475569" }}>
+                      <span style={{ fontSize: "16px", color: "#475569" }}>
                         Platform: NestFT.dev
                       </span>
                     </div>
@@ -724,15 +752,15 @@ ${window.location.origin}`;
                   <div
                     style={{
                       borderTop: "2px solid #94a3b8",
-                      paddingTop: "10px",
-                      paddingLeft: "40px",
-                      paddingRight: "40px",
-                      marginTop: "20px",
+                      paddingTop: "12px",
+                      paddingLeft: "50px",
+                      paddingRight: "50px",
+                      marginTop: "25px",
                     }}
                   >
                     <p
                       style={{
-                        fontSize: "18px",
+                        fontSize: "20px",
                         fontWeight: "600",
                         color: "#1e293b",
                         margin: "0 0 5px 0",
@@ -740,7 +768,7 @@ ${window.location.origin}`;
                     >
                       NestFT.dev Team
                     </p>
-                    <p style={{ fontSize: "14px", color: "#64748b", margin: "0" }}>
+                    <p style={{ fontSize: "16px", color: "#64748b", margin: "0" }}>
                       Authorized Signature
                     </p>
                   </div>
@@ -750,21 +778,21 @@ ${window.location.origin}`;
                 <div style={{ textAlign: "center" }}>
                   <div
                     style={{
-                      width: "100px",
-                      height: "100px",
+                      width: "110px",
+                      height: "110px",
                       border: "4px solid #3b82f6",
                       borderRadius: "50%",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      marginBottom: "10px",
+                      marginBottom: "12px",
                       background: "linear-gradient(135deg, #dbeafe, #bfdbfe)",
                     }}
                   >
                     <div
                       style={{
-                        width: "60px",
-                        height: "60px",
+                        width: "70px",
+                        height: "70px",
                         background: "#3b82f6",
                         borderRadius: "50%",
                         display: "flex",
@@ -772,10 +800,10 @@ ${window.location.origin}`;
                         justifyContent: "center",
                       }}
                     >
-                      <span style={{ color: "white", fontSize: "24px" }}>🏆</span>
+                      <span style={{ color: "white", fontSize: "28px" }}>🏆</span>
                     </div>
                   </div>
-                  <p style={{ fontSize: "12px", color: "#64748b", margin: "0" }}>
+                  <p style={{ fontSize: "14px", color: "#64748b", margin: "0" }}>
                     Official Seal
                   </p>
                 </div>
@@ -785,17 +813,17 @@ ${window.location.origin}`;
               <div
                 style={{
                   position: "absolute",
-                  bottom: "20px",
+                  bottom: "30px",
                   left: "50%",
                   transform: "translateX(-50%)",
                   textAlign: "center",
                 }}
               >
-                <p style={{ fontSize: "12px", color: "#94a3b8", margin: "0 0 5px 0" }}>
+                <p style={{ fontSize: "14px", color: "#94a3b8", margin: "0 0 5px 0" }}>
                   Certificate ID: NFTD-{selectedCertificate.stage.toUpperCase()}-
                   {user?.id?.slice(0, 8) || "USER"}-{new Date().getFullYear()}
                 </p>
-                <p style={{ fontSize: "11px", color: "#cbd5e1", margin: "0" }}>
+                <p style={{ fontSize: "13px", color: "#cbd5e1", margin: "0" }}>
                   Verify at: nestft.dev/verify
                 </p>
               </div>
@@ -804,10 +832,10 @@ ${window.location.origin}`;
               <div
                 style={{
                   position: "absolute",
-                  top: "40px",
-                  left: "40px",
-                  width: "60px",
-                  height: "60px",
+                  top: "50px",
+                  left: "50px",
+                  width: "70px",
+                  height: "70px",
                   background: "linear-gradient(45deg, #3b82f6, #8b5cf6)",
                   borderRadius: "50%",
                   opacity: "0.1",
@@ -816,10 +844,10 @@ ${window.location.origin}`;
               <div
                 style={{
                   position: "absolute",
-                  top: "60px",
-                  right: "60px",
-                  width: "40px",
-                  height: "40px",
+                  top: "70px",
+                  right: "70px",
+                  width: "50px",
+                  height: "50px",
                   background: "linear-gradient(45deg, #10b981, #059669)",
                   borderRadius: "50%",
                   opacity: "0.1",
@@ -828,10 +856,10 @@ ${window.location.origin}`;
               <div
                 style={{
                   position: "absolute",
-                  bottom: "80px",
-                  left: "80px",
-                  width: "50px",
-                  height: "50px",
+                  bottom: "100px",
+                  left: "100px",
+                  width: "60px",
+                  height: "60px",
                   background: "linear-gradient(45deg, #f59e0b, #d97706)",
                   borderRadius: "50%",
                   opacity: "0.1",
