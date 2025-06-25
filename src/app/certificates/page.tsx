@@ -300,7 +300,7 @@ ${window.location.origin}`;
         await navigator.clipboard.writeText(shareText);
         alert("Certificate details copied to clipboard!");
       }
-    } finally { 
+    } finally {
       setShowCertificateTemplate(false);
       setSelectedCertificate(null);
     }
