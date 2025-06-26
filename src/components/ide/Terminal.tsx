@@ -6,6 +6,7 @@ import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 import { SearchAddon } from 'xterm-addon-search'
 import 'xterm/css/xterm.css' 
+import { FileNode } from '@/types/ide'
 
 interface TerminalProps {
   projectId: string

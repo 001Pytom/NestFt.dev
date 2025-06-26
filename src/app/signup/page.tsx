@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Github, Mail, Eye, EyeOff, ArrowLeft, User } from "lucide-react";
 import { useAuthStore } from "@/lib/store";
+import { useToast, toast } from "@/components/ui/toast";
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -29,6 +30,7 @@ export default function SignupPage() {
   const [success, setSuccess] = useState("");
 
   const { login, signup } = useAuthStore();
+  const { addToast } = useToast();
   const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,9 +98,11 @@ export default function SignupPage() {
         setSuccess(
           `A confirmation link has been sent to ${formData.email}. Please check your inbox to complete your signup.`
         );
+        addToast(toast.info(`Confirmation email sent to ${formData.email}`, "Check Your Email"));
       }
     } catch (error: any) {
       setError(error.message || "Signup failed");
+      addToast(toast.error(error.message || "Signup failed", "Signup Error"));
     } finally {
       setIsLoading(false);
     }
@@ -112,6 +116,7 @@ export default function SignupPage() {
       await login(provider);
     } catch (error: any) {
       setError(error.message || "Signup failed");
+      addToast(toast.error(error.message || "Signup failed", "Signup Error"));
     } finally {
       setIsLoading(false);
     }

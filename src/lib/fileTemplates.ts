@@ -313,19 +313,19 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Basic validation
             if (!name || !email || !message) {
-                alert('Please fill in all fields');
+                console.error('Please fill in all fields');
                 return;
             }
             
             // Email validation
             const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
             if (!emailRegex.test(email)) {
-                alert('Please enter a valid email address');
+                console.error('Please enter a valid email address');
                 return;
             }
             
             // Simulate form submission
-            alert('Thank you for your message! We\\'ll get back to you soon.');
+            console.log('Thank you for your message! We\\'ll get back to you soon.');
             this.reset();
         });
     }
