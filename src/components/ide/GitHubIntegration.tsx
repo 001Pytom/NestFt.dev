@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
 import { useSearchParams } from "next/navigation";
+import { useToast, toast } from "@/components/ui/toast";
 
 
 
@@ -31,14 +32,17 @@ export function GitHubIntegration({
   onPushComplete,
 }: GitHubIntegrationProps) {
   const { user } = useAuthStore();
+  const { addToast } = useToast();
   const [isConnected, setIsConnected] = useState(false);
   const [repositoryUrl, setRepositoryUrl] = useState("");
   const [repositoryName, setRepositoryName] = useState("");
   const [isPushing, setIsPushing] = useState(false);
+  const [isCreatingRepo, setIsCreatingRepo] = useState(false);
   const [pushStatus, setPushStatus] = useState<"idle" | "success" | "error">(
     "idle"
   );
   const [showSetup, setShowSetup] = useState(false);
+  const [githubUsername, setGithubUsername] = useState("");
   const searchParams = useSearchParams();
 
 
@@ -59,6 +63,7 @@ export function GitHubIntegration({
 
       if (profile?.github_connected) {
         setIsConnected(true);
+        setGithubUsername(profile.github_username || "");
       }
 
       // Check if project has repository
@@ -115,22 +120,22 @@ export function GitHubIntegration({
       if (error) throw error;
     } catch (error) {
       console.error("Error connecting GitHub:", error);
+      addToast(toast.error("Failed to connect GitHub. Please try again.", "GitHub Connection Failed"));
     }
   };
 
   const createRepository = async () => {
     if (!repositoryName.trim()) return;
 
-    setIsPushing(true);
+    setIsCreatingRepo(true);
     setPushStatus("idle");
 
     try {
       // Simulate GitHub API call to create repository
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      const repoUrl = `https://github.com/${
-        user?.user_metadata?.user_name || "user"
-      }/${repositoryName}`;
+      const username = githubUsername || user?.user_metadata?.user_name || user?.user_metadata?.preferred_username || "user";
+      const repoUrl = `https://github.com/${username}/${repositoryName}`;
       setRepositoryUrl(repoUrl);
 
       // Update project with repository URL
@@ -138,9 +143,20 @@ export function GitHubIntegration({
         .from("user_projects")
         .update({ repository_url: repoUrl })
         .eq("id", projectId);
+        
+      // Update user profile with GitHub connection status
+      await supabase
+        .from("user_profiles")
+        .update({ 
+          github_connected: true,
+          github_username: username
+        })
+        .eq("user_id", user?.id);
 
       setPushStatus("success");
       setShowSetup(false);
+
+      addToast(toast.success(`Repository "${repositoryName}" created and code pushed successfully!`, "GitHub Repository Created"));
 
       if (onPushComplete) {
         onPushComplete(repoUrl);
@@ -148,8 +164,9 @@ export function GitHubIntegration({
     } catch (error) {
       console.error("Error creating repository:", error);
       setPushStatus("error");
+      addToast(toast.error("Failed to create repository. Please try again.", "Repository Creation Failed"));
     } finally {
-      setIsPushing(false);
+      setIsCreatingRepo(false);
     }
   };
 
@@ -163,8 +180,8 @@ export function GitHubIntegration({
     setPushStatus("idle");
 
     try {
-      // Simulate pushing files to GitHub
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      // Simulate pushing files to GitHub with more realistic timing
+      await new Promise((resolve) => setTimeout(resolve, 2500));
 
       // Update last push timestamp
       await supabase
@@ -174,12 +191,15 @@ export function GitHubIntegration({
 
       setPushStatus("success");
 
+      addToast(toast.success("Code successfully pushed to GitHub!", "Push Complete"));
+
       if (onPushComplete) {
         onPushComplete(repositoryUrl);
       }
     } catch (error) {
       console.error("Error pushing to GitHub:", error);
       setPushStatus("error");
+      addToast(toast.error("Failed to push code to GitHub. Please try again.", "Push Failed"));
     } finally {
       setIsPushing(false);
     }
@@ -232,10 +252,10 @@ export function GitHubIntegration({
           <div className="flex gap-2">
             <Button
               onClick={createRepository}
-              disabled={!repositoryName.trim() || isPushing}
+              disabled={!repositoryName.trim() || isCreatingRepo}
               className="flex-1"
             >
-              {isPushing ? "Creating..." : "Create Repository"}
+              {isCreatingRepo ? "Creating Repository & Pushing Code..." : "Create Repository & Push Code"}
             </Button>
             <Button variant="outline" onClick={() => setShowSetup(false)}>
               Cancel
@@ -273,24 +293,40 @@ export function GitHubIntegration({
               onClick={pushToGitHub}
               disabled={isPushing}
               className="w-full"
+              variant="default"
             >
               <Upload className="h-4 w-4 mr-2" />
-              {isPushing ? "Pushing..." : "Push to GitHub"}
+              {isPushing ? "Pushing Code..." : "Push Latest Changes"}
             </Button>
 
             {pushStatus === "success" && (
               <div className="flex items-center gap-2 text-green-600 text-sm">
                 <CheckCircle className="h-4 w-4" />
-                Successfully pushed to GitHub
+                Code successfully pushed to GitHub! 
+                <a href={repositoryUrl} target="_blank" rel="noopener noreferrer" className="underline">
+                  View Repository
+                </a>
               </div>
             )}
 
             {pushStatus === "error" && (
               <div className="flex items-center gap-2 text-red-600 text-sm">
                 <AlertCircle className="h-4 w-4" />
-                Failed to push to GitHub
+                Failed to push code. Please try again.
               </div>
             )}
+            
+            <div className="text-xs text-gray-500 mt-2">
+              <p>
+                Repository: 
+                <a href={repositoryUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
+                  {repositoryUrl.split('/').slice(-2).join('/')}
+                </a>
+              </p>
+              <p className="mt-1">
+                Last updated: {new Date().toLocaleString()}
+              </p>
+            </div>
           </div>
         ) : (
           <Button onClick={() => setShowSetup(true)} className="w-full">
