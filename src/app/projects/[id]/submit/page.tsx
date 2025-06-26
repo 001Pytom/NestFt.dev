@@ -35,12 +35,14 @@ import {
 } from "@/lib/database";
 import { gradeProject } from "@/lib/aiGrading";
 import Link from "next/link";
+import { useToast, toast } from "@/components/ui/toast";
 
 export default function ProjectSubmitPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuthStore();
+  const { addToast } = useToast();
   const projectId = params.id as string;
   const userProjectId = searchParams.get("userProjectId");
 
@@ -109,7 +111,7 @@ export default function ProjectSubmitPage() {
   };
   const handleSubmitForGrading = async () => {
     if (!project || !userProject || !user) {
-      alert("Missing required data for submission");
+      addToast(toast.error("Missing required data for submission", "Submission Error"));
       return;
     }
 
@@ -192,7 +194,7 @@ export default function ProjectSubmitPage() {
     } catch (error) {
       console.error("Error during submission and grading:", error);
       setGradingStatus("error");
-      alert("Error during submission: " + error.message);
+      addToast(toast.error("Error during submission: " + error.message, "Submission Failed"));
     } finally {
       setIsSubmitting(false);
     }

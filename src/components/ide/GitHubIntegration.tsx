@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
 import { useSearchParams } from "next/navigation";
+import { useToast, toast } from "@/components/ui/toast";
 
 
 
@@ -31,6 +32,7 @@ export function GitHubIntegration({
   onPushComplete,
 }: GitHubIntegrationProps) {
   const { user } = useAuthStore();
+  const { addToast } = useToast();
   const [isConnected, setIsConnected] = useState(false);
   const [repositoryUrl, setRepositoryUrl] = useState("");
   const [repositoryName, setRepositoryName] = useState("");
@@ -118,6 +120,7 @@ export function GitHubIntegration({
       if (error) throw error;
     } catch (error) {
       console.error("Error connecting GitHub:", error);
+      addToast(toast.error("Failed to connect GitHub. Please try again.", "GitHub Connection Failed"));
     }
   };
 
@@ -153,12 +156,15 @@ export function GitHubIntegration({
       setPushStatus("success");
       setShowSetup(false);
 
+      addToast(toast.success(`Repository "${repositoryName}" created and code pushed successfully!`, "GitHub Repository Created"));
+
       if (onPushComplete) {
         onPushComplete(repoUrl);
       }
     } catch (error) {
       console.error("Error creating repository:", error);
       setPushStatus("error");
+      addToast(toast.error("Failed to create repository. Please try again.", "Repository Creation Failed"));
     } finally {
       setIsCreatingRepo(false);
     }
@@ -185,12 +191,15 @@ export function GitHubIntegration({
 
       setPushStatus("success");
 
+      addToast(toast.success("Code successfully pushed to GitHub!", "Push Complete"));
+
       if (onPushComplete) {
         onPushComplete(repositoryUrl);
       }
     } catch (error) {
       console.error("Error pushing to GitHub:", error);
       setPushStatus("error");
+      addToast(toast.error("Failed to push code to GitHub. Please try again.", "Push Failed"));
     } finally {
       setIsPushing(false);
     }

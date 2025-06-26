@@ -4,6 +4,7 @@ import { Mail, Phone, MapPin, Send, MessageSquare, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { useToast, toast } from '@/components/ui/toast';
 
 
 function ContactPage() {
@@ -13,11 +14,13 @@ function ContactPage() {
     subject: '',
     message: ''
   });
+  const { addToast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle form submission
     console.log('Form submitted:', formData);
+    addToast(toast.success('Thank you for your message! We\'ll get back to you soon.', 'Message Sent'));
     // Reset form
     setFormData({ name: '', email: '', subject: '', message: '' });
   };

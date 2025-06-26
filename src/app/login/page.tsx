@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Github, Mail, Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import { useAuthStore } from '@/lib/store'
+import { useToast, toast } from '@/components/ui/toast'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -17,6 +18,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   
   const { login } = useAuthStore()
+  const { addToast } = useToast()
   const router = useRouter()
 
   const handleEmailLogin = async (e: React.FormEvent) => {
@@ -27,8 +29,10 @@ export default function LoginPage() {
     try {
       await login('email', { email, password })
       router.push('/dashboard')
+      addToast(toast.success('Successfully logged in!', 'Welcome Back'))
     } catch (error: any) {
       setError(error.message || 'Login failed')
+      addToast(toast.error(error.message || 'Login failed', 'Login Error'))
     } finally {
       setIsLoading(false)
     }
@@ -42,6 +46,7 @@ export default function LoginPage() {
       await login(provider)
     } catch (error: any) {
       setError(error.message || 'Login failed')
+      addToast(toast.error(error.message || 'Login failed', 'Login Error'))
     } finally {
       setIsLoading(false)
     }

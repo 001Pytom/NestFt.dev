@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/footer";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { ToastProvider } from "@/components/ui/toast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,11 +30,13 @@ export default function RootLayout({
   return (
     <html lang="en\" className={`${inter.variable} ${spaceGrotesk.variable}`}>
       <body className="antialiased flex flex-col min-h-screen">
-        <AuthGuard>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
-        </AuthGuard>
+        <ToastProvider>
+          <AuthGuard>
+            <Navbar />
+            <main>{children}</main>
+            <Footer />
+          </AuthGuard>
+        </ToastProvider>
       </body>
     </html>
   );

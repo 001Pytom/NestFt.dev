@@ -40,12 +40,14 @@ import { UserProject } from "@/lib/database";
 import { getFileContent } from "@/lib/fileTemplates";
 import { techStacks } from "@/data/projects";
 import { useAuthStore } from "@/lib/store";
+import { useToast, toast } from "@/components/ui/toast";
 
 export default function IDEPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user } = useAuthStore();
+  const { addToast } = useToast();
   const projectId = params.projectId as string;
   const userProjectId = searchParams.get("project_id") as string;
 
@@ -310,11 +312,12 @@ export default function IDEPage() {
       setLastSaved(new Date());
 
       if (showFeedback) {
-        // Show save notification
+        addToast(toast.success('Project saved successfully!', 'Saved'))
       }
     } catch (error) {
       console.error("Error saving project:", error);
-    } finally {
+      addToast(toast.error('Failed to save project. Please try again.', 'Save Failed'))
+      addToast(toast.error('Failed to create project. Please try again.', 'Project Creation Failed'))
       setIsSaving(false);
     }
   };
@@ -343,7 +346,7 @@ export default function IDEPage() {
       );
     } catch (error) {
       console.error("Error submitting project:", error);
-      alert("Failed to submit project. Please try again.");
+      addToast(toast.error("Failed to submit project. Please try again.", "Submission Failed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -389,6 +392,7 @@ export default function IDEPage() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      addToast(toast.success('Project downloaded successfully!', 'Download Complete'));
     });
   };
 
