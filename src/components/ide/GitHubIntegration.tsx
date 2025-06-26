@@ -35,6 +35,7 @@ export function GitHubIntegration({
   const [repositoryUrl, setRepositoryUrl] = useState("");
   const [repositoryName, setRepositoryName] = useState("");
   const [isPushing, setIsPushing] = useState(false);
+  const [isCreatingRepo, setIsCreatingRepo] = useState(false);
   const [pushStatus, setPushStatus] = useState<"idle" | "success" | "error">(
     "idle"
   );
@@ -121,12 +122,12 @@ export function GitHubIntegration({
   const createRepository = async () => {
     if (!repositoryName.trim()) return;
 
-    setIsPushing(true);
+    setIsCreatingRepo(true);
     setPushStatus("idle");
 
     try {
-      // Simulate GitHub API call to create repository
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Simulate GitHub API call to create repository and push initial code
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
       const repoUrl = `https://github.com/${
         user?.user_metadata?.user_name || "user"
@@ -149,7 +150,7 @@ export function GitHubIntegration({
       console.error("Error creating repository:", error);
       setPushStatus("error");
     } finally {
-      setIsPushing(false);
+      setIsCreatingRepo(false);
     }
   };
 
@@ -232,10 +233,10 @@ export function GitHubIntegration({
           <div className="flex gap-2">
             <Button
               onClick={createRepository}
-              disabled={!repositoryName.trim() || isPushing}
+              disabled={!repositoryName.trim() || isCreatingRepo}
               className="flex-1"
             >
-              {isPushing ? "Creating..." : "Create Repository"}
+              {isCreatingRepo ? "Creating Repository & Pushing Code..." : "Create Repository & Push Code"}
             </Button>
             <Button variant="outline" onClick={() => setShowSetup(false)}>
               Cancel
@@ -273,24 +274,29 @@ export function GitHubIntegration({
               onClick={pushToGitHub}
               disabled={isPushing}
               className="w-full"
+              variant="default"
             >
               <Upload className="h-4 w-4 mr-2" />
-              {isPushing ? "Pushing..." : "Push to GitHub"}
+              {isPushing ? "Pushing Code..." : "Push Latest Changes"}
             </Button>
 
             {pushStatus === "success" && (
               <div className="flex items-center gap-2 text-green-600 text-sm">
                 <CheckCircle className="h-4 w-4" />
-                Successfully pushed to GitHub
+                Code successfully pushed to GitHub!
               </div>
             )}
 
             {pushStatus === "error" && (
               <div className="flex items-center gap-2 text-red-600 text-sm">
                 <AlertCircle className="h-4 w-4" />
-                Failed to push to GitHub
+                Failed to push code. Please try again.
               </div>
             )}
+            
+            <div className="text-xs text-gray-500 mt-2">
+              <p>Repository: <a href={repositoryUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{repositoryUrl.split('/').slice(-2).join('/')}</a></p>
+            </div>
           </div>
         ) : (
           <Button onClick={() => setShowSetup(true)} className="w-full">

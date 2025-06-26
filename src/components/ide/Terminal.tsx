@@ -510,56 +510,91 @@ export function Terminal({ projectId, fileTree, onFileTreeUpdate, onFileSelect, 
   }
 
   const handleGitCommand = async (terminal: XTerm, args: string[]) => {
-  const subcommand = args[0];
+    const subcommand = args[0];
 
-  switch (subcommand) {
-    case 'status':
-      terminal.writeln('On branch main');
-      terminal.writeln('Your branch is up to date with \'origin/main\'.');
-      terminal.writeln('');
-      terminal.writeln('Changes not staged for commit:');
-      terminal.writeln('  \x1b[31mmodified:   src/App.js\x1b[0m');
-      terminal.writeln('  \x1b[31mmodified:   src/components/Header.js\x1b[0m');
-      break;
+    switch (subcommand) {
+      case 'status':
+        terminal.writeln('On branch main');
+        terminal.writeln('Your branch is up to date with \'origin/main\'.');
+        terminal.writeln('');
+        terminal.writeln('Changes not staged for commit:');
+        terminal.writeln('  \x1b[31mmodified:   src/App.js\x1b[0m');
+        terminal.writeln('  \x1b[31mmodified:   src/components/Header.js\x1b[0m');
+        break;
 
-    case 'add':
-      const files = args.slice(1);
-      if (files.includes('.')) {
-        terminal.writeln('Added all files to staging area');
-      } else if (files.length > 0) {
-        terminal.writeln(`Added ${files.join(', ')} to staging area`);
-      } else {
-        terminal.writeln('No files specified to add');
-      }
-      break;
+      case 'add':
+        const files = args.slice(1);
+        if (files.includes('.')) {
+          terminal.writeln('\x1b[32m✓\x1b[0m Added all files to staging area');
+        } else if (files.length > 0) {
+          terminal.writeln(`\x1b[32m✓\x1b[0m Added ${files.join(', ')} to staging area`);
+        } else {
+          terminal.writeln('\x1b[33m!\x1b[0m No files specified to add');
+        }
+        break;
 
-    case 'commit':
-      const messageIndex = args.indexOf('-m');
-      const message = messageIndex !== -1 ? args[messageIndex + 1] : 'Update files';
-      terminal.writeln(`[main ${Math.random().toString(36).substr(2, 7)}] ${message}`);
-      terminal.writeln(' 2 files changed, 15 insertions(+), 3 deletions(-)');
-      break;
+      case 'commit':
+        const messageIndex = args.indexOf('-m');
+        const message = messageIndex !== -1 ? args[messageIndex + 1] : 'Update files';
+        const commitHash = Math.random().toString(36).substr(2, 7);
+        terminal.writeln(`\x1b[32m✓\x1b[0m [main ${commitHash}] ${message}`);
+        terminal.writeln(' 2 files changed, 15 insertions(+), 3 deletions(-)');
+        break;
 
-    case 'push':
-      terminal.writeln('Pushing to origin main...');
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      terminal.writeln('\x1b[32m✓\x1b[0m Successfully pushed to GitHub');
-      break;
+      case 'push':
+        terminal.writeln('Pushing to origin main...');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        terminal.writeln('\x1b[32m✓\x1b[0m Successfully pushed to GitHub');
+        terminal.writeln('   \x1b[36mremote:\x1b[0m Resolving deltas: 100% (2/2), done.');
+        terminal.writeln('   \x1b[36mTo github.com:user/repository.git\x1b[0m');
+        terminal.writeln('   \x1b[36m   abc123..def456  main -> main\x1b[0m');
+        break;
 
-    case 'pull':
-      terminal.writeln('Pulling from origin main...');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      terminal.writeln('Already up to date.');
-      break;
+      case 'pull':
+        terminal.writeln('Pulling from origin main...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        terminal.writeln('\x1b[32m✓\x1b[0m Already up to date.');
+        break;
 
-    case 'init':
-      terminal.writeln('Initialized empty Git repository in current directory');
-      break;
+      case 'init':
+        terminal.writeln('\x1b[32m✓\x1b[0m Initialized empty Git repository in .git/');
+        break;
+        
+      case 'clone':
+        const repoUrl = args[1];
+        if (!repoUrl) {
+          terminal.writeln('\x1b[31m✗\x1b[0m Error: Repository URL required');
+          break;
+        }
+        terminal.writeln(`Cloning into '${repoUrl.split('/').pop()?.replace('.git', '')}'...`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        terminal.writeln('\x1b[32m✓\x1b[0m Repository cloned successfully');
+        break;
+        
+      case 'branch':
+        if (args.length === 1) {
+          terminal.writeln('* \x1b[32mmain\x1b[0m');
+          terminal.writeln('  feature/new-component');
+        } else {
+          const branchName = args[1];
+          terminal.writeln(`\x1b[32m✓\x1b[0m Created branch '${branchName}'`);
+        }
+        break;
+        
+      case 'checkout':
+        const branch = args[1];
+        if (!branch) {
+          terminal.writeln('\x1b[31m✗\x1b[0m Error: Branch name required');
+        } else {
+          terminal.writeln(`\x1b[32m✓\x1b[0m Switched to branch '${branch}'`);
+        }
+        break;
 
-    default:
-      terminal.writeln(`git: '${subcommand}' is not a git command.`);
-  }
-};
+      default:
+        terminal.writeln(`\x1b[31m✗\x1b[0m git: '${subcommand}' is not a git command.`);
+        terminal.writeln('See \'git --help\' for available commands.');
+    }
+  };
 
 
   const handleNodeCommand = async (terminal: XTerm, args: string[]) => {
