@@ -2,25 +2,20 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Play,
   Square,
-  FolderPlus,
-  FilePlus,
   Save,
   Download,
   RefreshCw,
   Settings,
   Terminal as TerminalIcon,
   Eye,
-  Code,
   GitBranch,
   Send,
-  CheckCircle,
   ExternalLink,
   PanelLeftClose,
   PanelLeftOpen,
@@ -42,7 +37,7 @@ import { techStacks } from "@/data/projects";
 import { useAuthStore } from "@/lib/store";
 import { useToast, toast } from "@/components/ui/toast";
 import JSZip from "jszip";
-
+import { TechTemplate } from "@/types/project";
 
 export default function IDEPage() {
   const params = useParams();
@@ -61,18 +56,22 @@ export default function IDEPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [activePanel, setActivePanel] = useState<"terminal" | "preview" | "github">("preview");
-  const [consoleOutput, setConsoleOutput] = useState<string[]>([]);
-  
+  const [activePanel, setActivePanel] = useState<
+    "terminal" | "preview" | "github"
+  >("preview");
+  // const [consoleOutput, setConsoleOutput] = useState<string[]>([]);
+
   // Layout state
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [bottomPanelCollapsed, setBottomPanelCollapsed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(280);
-  const [bottomPanelHeight, setBottomPanelHeight] = useState(300);
+  const [sidebarWidth] = useState(280);
+  const [bottomPanelHeight] = useState(300);
 
   // Language preference
-  const [selectedLanguage, setSelectedLanguage] = useState<'javascript' | 'typescript'>('javascript');
+  const [selectedLanguage, setSelectedLanguage] = useState<
+    "javascript" | "typescript"
+  >("javascript");
   const [consoleMessages, setConsoleMessages] = useState<string[]>([]);
 
   useEffect(() => {
@@ -94,10 +93,12 @@ export default function IDEPage() {
     try {
       const templateId = searchParams.get("template");
       const projectName = searchParams.get("name");
-      const language = searchParams.get("language") as 'javascript' | 'typescript' || 'javascript';
+      const language =
+        (searchParams.get("language") as "javascript" | "typescript") ||
+        "javascript";
 
       if (!templateId || !projectName) return;
-      
+
       setSelectedLanguage(language);
 
       // Find template
@@ -145,9 +146,9 @@ export default function IDEPage() {
   };
 
   const initializeFileTree = (
-    structure: any,
+    structure:object,
     basePath = "",
-    template: any,
+    template:TechTemplate,
     projectName: string
   ): FileNode[] => {
     return Object.entries(structure).map(([name, content]) => {
@@ -288,7 +289,7 @@ export default function IDEPage() {
     };
 
     setFileTree(deleteFromTree(fileTree));
-    
+
     // If deleted file was selected, clear selection
     if (selectedFile?.path === path) {
       setSelectedFile(null);
@@ -314,12 +315,19 @@ export default function IDEPage() {
       setLastSaved(new Date());
 
       if (showFeedback) {
-        addToast(toast.success('Project saved successfully!', 'Saved'))
+        addToast(toast.success("Project saved successfully!", "Saved"));
       }
     } catch (error) {
       console.error("Error saving project:", error);
-      addToast(toast.error('Failed to save project. Please try again.', 'Save Failed'))
-      addToast(toast.error('Failed to create project. Please try again.', 'Project Creation Failed'))
+      addToast(
+        toast.error("Failed to save project. Please try again.", "Save Failed")
+      );
+      addToast(
+        toast.error(
+          "Failed to create project. Please try again.",
+          "Project Creation Failed"
+        )
+      );
       setIsSaving(false);
     }
   };
@@ -348,7 +356,12 @@ export default function IDEPage() {
       );
     } catch (error) {
       console.error("Error submitting project:", error);
-      addToast(toast.error("Failed to submit project. Please try again.", "Submission Failed"));
+      addToast(
+        toast.error(
+          "Failed to submit project. Please try again.",
+          "Submission Failed"
+        )
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -380,21 +393,23 @@ export default function IDEPage() {
   const handleDownload = () => {
     const allFiles = collectAllFiles(fileTree);
     const zip = new JSZip();
-    
+
     Object.entries(allFiles).forEach(([path, content]) => {
       zip.file(path, content);
     });
-    
+
     zip.generateAsync({ type: "blob" }).then((content) => {
       const url = URL.createObjectURL(content);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${userProject?.project_name || 'project'}.zip`;
+      a.download = `${userProject?.project_name || "project"}.zip`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      addToast(toast.success('Project downloaded successfully!', 'Download Complete'));
+      addToast(
+        toast.success("Project downloaded successfully!", "Download Complete")
+      );
     });
   };
 
@@ -446,7 +461,11 @@ export default function IDEPage() {
             size="sm"
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
           >
-            {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+            {sidebarCollapsed ? (
+              <PanelLeftOpen className="h-4 w-4" />
+            ) : (
+              <PanelLeftClose className="h-4 w-4" />
+            )}
           </Button>
 
           <Button
@@ -454,15 +473,19 @@ export default function IDEPage() {
             size="sm"
             onClick={() => setBottomPanelCollapsed(!bottomPanelCollapsed)}
           >
-            {bottomPanelCollapsed ? <PanelBottomOpen className="h-4 w-4" /> : <PanelBottomClose className="h-4 w-4" />}
+            {bottomPanelCollapsed ? (
+              <PanelBottomOpen className="h-4 w-4" />
+            ) : (
+              <PanelBottomClose className="h-4 w-4" />
+            )}
           </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={toggleFullscreen}
-          >
-            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          <Button variant="outline" size="sm" onClick={toggleFullscreen}>
+            {isFullscreen ? (
+              <Minimize2 className="h-4 w-4" />
+            ) : (
+              <Maximize2 className="h-4 w-4" />
+            )}
           </Button>
 
           <Button
@@ -475,11 +498,7 @@ export default function IDEPage() {
             {isSaving ? "Saving..." : "Save"}
           </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDownload}
-          >
+          <Button variant="outline" size="sm" onClick={handleDownload}>
             <Download className="h-4 w-4 mr-1" />
             Download
           </Button>
@@ -557,12 +576,12 @@ export default function IDEPage() {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Editor and Preview */}
-          <div 
+          <div
             className="flex-1 flex overflow-hidden"
-            style={{ 
-              height: bottomPanelCollapsed 
-                ? '100%' 
-                : `calc(100% - ${bottomPanelHeight}px)` 
+            style={{
+              height: bottomPanelCollapsed
+                ? "100%"
+                : `calc(100% - ${bottomPanelHeight}px)`,
             }}
           >
             {/* Code Editor */}
@@ -575,8 +594,8 @@ export default function IDEPage() {
                       <input
                         type="radio"
                         name="language"
-                        checked={selectedLanguage === 'javascript'}
-                        onChange={() => setSelectedLanguage('javascript')}
+                        checked={selectedLanguage === "javascript"}
+                        onChange={() => setSelectedLanguage("javascript")}
                         className="mr-1"
                       />
                       JavaScript
@@ -585,8 +604,8 @@ export default function IDEPage() {
                       <input
                         type="radio"
                         name="language"
-                        checked={selectedLanguage === 'typescript'}
-                        onChange={() => setSelectedLanguage('typescript')}
+                        checked={selectedLanguage === "typescript"}
+                        onChange={() => setSelectedLanguage("typescript")}
                         className="mr-1"
                       />
                       TypeScript
@@ -598,9 +617,11 @@ export default function IDEPage() {
                   size="sm"
                   onClick={() => {
                     const previewUrl = collectAllFiles(fileTree);
-                    const blob = new Blob([previewUrl['index.html'] || ''], { type: 'text/html' });
+                    const blob = new Blob([previewUrl["index.html"] || ""], {
+                      type: "text/html",
+                    });
                     const url = URL.createObjectURL(blob);
-                    window.open(url, '_blank');
+                    window.open(url, "_blank");
                   }}
                 >
                   <ExternalLink className="h-4 w-4 mr-1" />
@@ -626,7 +647,9 @@ export default function IDEPage() {
                 files={collectAllFiles(fileTree)}
                 isRunning={isRunning}
                 template={userProject?.template_id}
-                onConsoleOutput={(output) => setConsoleMessages(prev => [...prev, output])}
+                onConsoleOutput={(output) =>
+                  setConsoleMessages((prev) => [...prev, output])
+                }
               />
             </div>
           </div>
@@ -639,7 +662,7 @@ export default function IDEPage() {
             >
               <Tabs
                 value={activePanel}
-                onValueChange={(value) => setActivePanel(value as any)}
+                onValueChange={(value) => setActivePanel(value as "terminal" | "preview" | "github")}
                 className="flex-1 flex flex-col"
               >
                 <TabsList className="w-full rounded-none border-b">
@@ -686,10 +709,15 @@ export default function IDEPage() {
                     <div className="text-blue-400 mb-2">Console Output:</div>
                     {consoleMessages.length > 0 ? (
                       consoleMessages.map((output, index) => (
-                        <div key={index} className="mb-1">{output}</div>
+                        <div key={index} className="mb-1">
+                          {output}
+                        </div>
                       ))
                     ) : (
-                      <div className="text-gray-500">Ready to run your code... Try console.log('Hello World!');</div>
+                      <div className="text-gray-500">
+                        Ready to run your code... Try console.log(&#39;Hello
+                        World!&#39;);
+                      </div>
                     )}
                   </div>
                 </TabsContent>

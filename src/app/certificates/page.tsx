@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { useAuthStore } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useToast, toast } from "@/components/ui/toast";
+
 import {
   Download,
   Share2,
@@ -39,6 +41,8 @@ export default function CertificatesPage() {
   const [selectedCertificate, setSelectedCertificate] =
     useState<CertificateData | null>(null);
   const [includeRanking, setIncludeRanking] = useState(true);
+  const { addToast } = useToast();
+
   const [isGenerating, setIsGenerating] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showCertificateTemplate, setShowCertificateTemplate] = useState(false);
@@ -125,7 +129,7 @@ export default function CertificatesPage() {
 
   const downloadCertificate = async (certificate: CertificateData) => {
     if (!userProfile) {
-      alert("User profile not loaded. Please try again.");
+      addToast(toast.error("User profile not loaded. Please try again."));
       return;
     }
 
@@ -160,10 +164,12 @@ export default function CertificatesPage() {
         }-certificate-${userProfile?.full_name?.replace(/\s+/g, "-")}.pdf`
       );
 
-      alert("Certificate downloaded successfully!");
+      addToast(toast.success("Certificate downloaded successfully!"));
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to generate certificate. Please try again.");
+      addToast(
+        toast.error("Failed to generate certificate. Please try again.")
+      );
     } finally {
       setIsGenerating(false);
       setSelectedCertificate(null);
@@ -173,7 +179,7 @@ export default function CertificatesPage() {
 
   const shareCertificate = async (certificate: CertificateData) => {
     if (!userProfile) {
-      alert("User profile not loaded. Please try again.");
+      addToast(toast.error("User profile not loaded. Please try again."));
       return;
     }
 
@@ -254,8 +260,10 @@ Join me in building real projects and advancing your tech career! 💻
               downloadLink.click();
               document.body.removeChild(downloadLink);
 
-              alert(
-                "Certificate text copied to clipboard and image downloaded! You can now share both on social media."
+              addToast(
+                toast.success(
+                  "Certificate text copied to clipboard and image downloaded! You can now share both on social media."
+                )
               );
             }
           } catch (shareError) {
@@ -269,8 +277,10 @@ Join me in building real projects and advancing your tech career! 💻
             downloadLink.click();
             document.body.removeChild(downloadLink);
 
-            alert(
-              "Certificate text copied to clipboard and image downloaded! You can now share both on social media."
+            addToast(
+              toast.success(
+                "Certificate text copied to clipboard and image downloaded! You can now share both on social media."
+              )
             );
           }
 
@@ -312,7 +322,7 @@ ${window.location.origin}`;
       } catch (shareError) {
         console.log("Error sharing:", shareError);
         await navigator.clipboard.writeText(shareText);
-        alert("Certificate details copied to clipboard!");
+        addToast(toast.success("Certificate details copied to clipboard!"));
       }
     } finally {
       setShowCertificateTemplate(false);

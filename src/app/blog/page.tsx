@@ -1,8 +1,9 @@
-import React from 'react';
-import { Calendar,  ArrowRight} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import React from "react";
+import { Calendar, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 interface BlogPost {
   id: string;
@@ -20,75 +21,86 @@ interface BlogPost {
 
 const blogPosts: BlogPost[] = [
   {
-    id: '1',
-    title: 'The Future of Collaborative Coding: How Real-Time Development is Changing Tech Education',
-    excerpt: 'Explore how real-time collaborative coding platforms are revolutionizing the way developers learn and work together.',
-    content: '',
-    author: 'Sarah Chen',
-    authorAvatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg',
-    publishedAt: '2025-01-15',
-    readTime: '8 min read',
-    tags: ['Collaboration', 'Education', 'Technology'],
+    id: "1",
+    title:
+      "The Future of Collaborative Coding: How Real-Time Development is Changing Tech Education",
+    excerpt:
+      "Explore how real-time collaborative coding platforms are revolutionizing the way developers learn and work together.",
+    content: "",
+    author: "Sarah Chen",
+    authorAvatar:
+      "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg",
+    publishedAt: "2025-01-15",
+    readTime: "8 min read",
+    tags: ["Collaboration", "Education", "Technology"],
     featured: true,
-    image: 'https://images.pexels.com/photos/3861958/pexels-photo-3861958.jpeg'
+    image: "https://images.pexels.com/photos/3861958/pexels-photo-3861958.jpeg",
   },
   {
-    id: '2',
-    title: '10 Essential Projects Every Developer Should Build',
-    excerpt: 'A comprehensive guide to the most valuable projects that will boost your portfolio and land you your dream job.',
-    content: '',
-    author: 'Marcus Johnson',
-    authorAvatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg',
-    publishedAt: '2025-01-12',
-    readTime: '12 min read',
-    tags: ['Career', 'Portfolio', 'Projects'],
+    id: "2",
+    title: "10 Essential Projects Every Developer Should Build",
+    excerpt:
+      "A comprehensive guide to the most valuable projects that will boost your portfolio and land you your dream job.",
+    content: "",
+    author: "Marcus Johnson",
+    authorAvatar:
+      "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg",
+    publishedAt: "2025-01-12",
+    readTime: "12 min read",
+    tags: ["Career", "Portfolio", "Projects"],
     featured: false,
-    image: 'https://images.pexels.com/photos/1181677/pexels-photo-1181677.jpeg'
+    image: "https://images.pexels.com/photos/1181677/pexels-photo-1181677.jpeg",
   },
   {
-    id: '3',
-    title: 'From Bootcamp to Big Tech: Success Stories from NestFt.dev Alumni',
-    excerpt: 'Read inspiring stories from developers who used NestFt.dev to transition into successful tech careers.',
-    content: '',
-    author: 'Emily Rodriguez',
-    authorAvatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg',
-    publishedAt: '2025-01-10',
-    readTime: '6 min read',
-    tags: ['Success Stories', 'Career', 'Inspiration'],
+    id: "3",
+    title: "From Bootcamp to Big Tech: Success Stories from NestFt.dev Alumni",
+    excerpt:
+      "Read inspiring stories from developers who used NestFt.dev to transition into successful tech careers.",
+    content: "",
+    author: "Emily Rodriguez",
+    authorAvatar:
+      "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg",
+    publishedAt: "2025-01-10",
+    readTime: "6 min read",
+    tags: ["Success Stories", "Career", "Inspiration"],
     featured: false,
-    image: 'https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg'
+    image: "https://images.pexels.com/photos/3184360/pexels-photo-3184360.jpeg",
   },
   {
-    id: '4',
-    title: 'Mastering Git Collaboration: Best Practices for Team Projects',
-    excerpt: 'Learn the essential Git workflows and collaboration strategies that every developer needs to know.',
-    content: '',
-    author: 'David Kumar',
-    authorAvatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg',
-    publishedAt: '2025-01-08',
-    readTime: '10 min read',
-    tags: ['Git', 'Collaboration', 'Best Practices'],
+    id: "4",
+    title: "Mastering Git Collaboration: Best Practices for Team Projects",
+    excerpt:
+      "Learn the essential Git workflows and collaboration strategies that every developer needs to know.",
+    content: "",
+    author: "David Kumar",
+    authorAvatar:
+      "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg",
+    publishedAt: "2025-01-08",
+    readTime: "10 min read",
+    tags: ["Git", "Collaboration", "Best Practices"],
     featured: false,
-    image: 'https://images.pexels.com/photos/4164418/pexels-photo-4164418.jpeg'
+    image: "https://images.pexels.com/photos/4164418/pexels-photo-4164418.jpeg",
   },
   {
-    id: '5',
-    title: 'Building Your First Full-Stack Application: A Step-by-Step Guide',
-    excerpt: 'Complete walkthrough of building a full-stack application from planning to deployment.',
-    content: '',
-    author: 'Alex Thompson',
-    authorAvatar: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg',
-    publishedAt: '2025-01-05',
-    readTime: '15 min read',
-    tags: ['Full-Stack', 'Tutorial', 'Development'],
+    id: "5",
+    title: "Building Your First Full-Stack Application: A Step-by-Step Guide",
+    excerpt:
+      "Complete walkthrough of building a full-stack application from planning to deployment.",
+    content: "",
+    author: "Alex Thompson",
+    authorAvatar:
+      "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg",
+    publishedAt: "2025-01-05",
+    readTime: "15 min read",
+    tags: ["Full-Stack", "Tutorial", "Development"],
     featured: false,
-    image: 'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg'
-  }
+    image: "https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg",
+  },
 ];
 
 function BlogPage() {
-  const featuredPost = blogPosts.find(post => post.featured);
-  const regularPosts = blogPosts.filter(post => !post.featured);
+  const featuredPost = blogPosts.find((post) => post.featured);
+  const regularPosts = blogPosts.filter((post) => !post.featured);
 
   return (
     <div className="min-h-screen">
@@ -100,7 +112,8 @@ function BlogPage() {
               NestFt.dev Blog
             </h1>
             <p className="text-xl text-muted-foreground">
-              Insights, tutorials, and stories from the world of collaborative development.
+              Insights, tutorials, and stories from the world of collaborative
+              development.
             </p>
           </div>
         </div>
@@ -115,15 +128,15 @@ function BlogPage() {
               <Card className="overflow-hidden">
                 <div className="md:flex">
                   <div className="md:w-1/2">
-                    <img 
-                      src={featuredPost.image} 
+                    <Image
+                      src={featuredPost.image}
                       alt={featuredPost.title}
                       className="w-full h-64 md:h-full object-cover"
                     />
                   </div>
                   <div className="md:w-1/2 p-8">
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {featuredPost.tags.map(tag => (
+                      {featuredPost.tags.map((tag) => (
                         <Badge key={tag} variant="secondary">
                           {tag}
                         </Badge>
@@ -136,16 +149,22 @@ function BlogPage() {
                       {featuredPost.excerpt}
                     </p>
                     <div className="flex items-center gap-4 mb-6">
-                      <img 
-                        src={featuredPost.authorAvatar} 
+                      <img
+                        src={featuredPost.authorAvatar}
                         alt={featuredPost.author}
                         className="w-10 h-10 rounded-full object-cover"
                       />
                       <div>
-                        <div className="font-medium text-sm">{featuredPost.author}</div>
+                        <div className="font-medium text-sm">
+                          {featuredPost.author}
+                        </div>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          <span>{new Date(featuredPost.publishedAt).toLocaleDateString()}</span>
+                          <span>
+                            {new Date(
+                              featuredPost.publishedAt
+                            ).toLocaleDateString()}
+                          </span>
                           <span>•</span>
                           <span>{featuredPost.readTime}</span>
                         </div>
@@ -166,20 +185,25 @@ function BlogPage() {
       {/* Regular Posts */}
       <section className="py-16 bg-muted/50">
         <div className="container px-4">
-          <h2 className="text-3xl font-bold mb-12 text-center">Latest Articles</h2>
+          <h2 className="text-3xl font-bold mb-12 text-center">
+            Latest Articles
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {regularPosts.map(post => (
-              <Card key={post.id} className="overflow-hidden h-full flex flex-col">
+            {regularPosts.map((post) => (
+              <Card
+                key={post.id}
+                className="overflow-hidden h-full flex flex-col"
+              >
                 <div className="aspect-video overflow-hidden">
-                  <img 
-                    src={post.image} 
+                  <Image
+                    src={post.image}
                     alt={post.title}
                     className="w-full h-full object-cover transition-transform hover:scale-105"
                   />
                 </div>
                 <CardContent className="p-6 flex-1 flex flex-col">
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {post.tags.slice(0, 2).map(tag => (
+                    {post.tags.slice(0, 2).map((tag) => (
                       <Badge key={tag} variant="outline" className="text-xs">
                         {tag}
                       </Badge>
@@ -192,8 +216,8 @@ function BlogPage() {
                     {post.excerpt}
                   </p>
                   <div className="flex items-center gap-3 mb-4">
-                    <img 
-                      src={post.authorAvatar} 
+                    <img
+                      src={post.authorAvatar}
                       alt={post.author}
                       className="w-8 h-8 rounded-full object-cover"
                     />
@@ -201,7 +225,9 @@ function BlogPage() {
                       <div className="font-medium text-sm">{post.author}</div>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
-                        <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
+                        <span>
+                          {new Date(post.publishedAt).toLocaleDateString()}
+                        </span>
                         <span>•</span>
                         <span>{post.readTime}</span>
                       </div>
@@ -223,11 +249,12 @@ function BlogPage() {
           <Card className="max-w-2xl mx-auto p-8 text-center">
             <h2 className="text-2xl font-bold mb-4">Stay Updated</h2>
             <p className="text-muted-foreground mb-6">
-              Get the latest articles, tutorials, and developer insights delivered to your inbox.
+              Get the latest articles, tutorials, and developer insights
+              delivered to your inbox.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input 
-                type="email" 
+              <input
+                type="email"
                 placeholder="Enter your email"
                 className="flex-1 px-4 py-2 border rounded-md"
               />

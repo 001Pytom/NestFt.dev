@@ -9,21 +9,21 @@ import 'xterm/css/xterm.css'
 import { FileNode } from '@/types/ide'
 
 interface TerminalProps {
-  projectId: string
+  projectId: string 
   fileTree: FileNode[]
   onFileTreeUpdate: (fileTree: FileNode[]) => void
   onFileSelect: (file: FileNode) => void
   onOutput?: (output: string) => void
 }
 
-export function Terminal({ projectId, fileTree, onFileTreeUpdate, onFileSelect, onOutput }: TerminalProps) {
+export function Terminal({  fileTree, onFileTreeUpdate }: TerminalProps) {
   const terminalRef = useRef<HTMLDivElement>(null)
   const xtermRef = useRef<XTerm | null>(null)
   const fitAddonRef = useRef<FitAddon | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [currentDirectory, setCurrentDirectory] = useState('/')
-  const [commandHistory, setCommandHistory] = useState<string[]>([])
-  const [historyIndex, setHistoryIndex] = useState(-1)
+  // const [commandHistory, setCommandHistory] = useState<string[]>([])
+  // const [historyIndex, setHistoryIndex] = useState(-1)
 
   useEffect(() => {
     if (!terminalRef.current) return
@@ -457,18 +457,18 @@ export function Terminal({ projectId, fileTree, onFileTreeUpdate, onFileSelect, 
     })
   }
 
-  const simulateCommand = async (terminal: XTerm, command: string, output: string[]) => {
-    // Simulate command execution delay
-    await new Promise(resolve => setTimeout(resolve, 200))
+  // const simulateCommand = async (terminal: XTerm, command: string, output: string[]) => {
+  //   // Simulate command execution delay
+  //   await new Promise(resolve => setTimeout(resolve, 200))
     
-    output.forEach(line => {
-      terminal.writeln(line)
-    })
+  //   output.forEach(line => {
+  //     terminal.writeln(line)
+  //   })
     
-    if (onOutput) {
-      onOutput(output.join('\n'))
-    }
-  }
+  //   if (onOutput) {
+  //     onOutput(output.join('\n'))
+  //   }
+  // }
 
   const handleNpmCommand = async (terminal: XTerm, args: string[]) => {
     const subcommand = args[0]
