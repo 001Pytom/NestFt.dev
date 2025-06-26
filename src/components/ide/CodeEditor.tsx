@@ -9,9 +9,10 @@ interface CodeEditorProps {
   code: string
   onChange: (value: string) => void
   onSave: () => void
+  useTypeScript?: boolean
 }
 
-export function CodeEditor({ file, code, onChange, onSave }: CodeEditorProps) {
+export function CodeEditor({ file, code, onChange, onSave, useTypeScript = false }: CodeEditorProps) {
   const editorRef = useRef<any>(null)
   const [theme, setTheme] = useState('vs-dark')
 
@@ -67,6 +68,12 @@ export function CodeEditor({ file, code, onChange, onSave }: CodeEditorProps) {
 
   const getLanguage = (fileName: string) => {
     const ext = fileName.split('.').pop()?.toLowerCase()
+    
+    // Override with TypeScript if preference is set
+    if (useTypeScript && (ext === 'js' || ext === 'jsx')) {
+      return ext === 'jsx' ? 'typescript' : 'typescript'
+    }
+    
     switch (ext) {
       case 'js':
       case 'jsx':
