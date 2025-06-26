@@ -41,6 +41,8 @@ import { getFileContent } from "@/lib/fileTemplates";
 import { techStacks } from "@/data/projects";
 import { useAuthStore } from "@/lib/store";
 import { useToast, toast } from "@/components/ui/toast";
+import JSZip from "jszip";
+
 
 export default function IDEPage() {
   const params = useParams();
