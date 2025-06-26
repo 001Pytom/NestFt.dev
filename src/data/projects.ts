@@ -1235,6 +1235,609 @@ export const beginnerProjects: ProjectTemplate[] = [
       },
       'README.md': ''
     }
+  },
+  {
+    id: 'backend-1',
+    name: 'Simple REST API',
+    description: 'Build a basic REST API with CRUD operations for managing a list of items.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'JSON'],
+    estimatedHours: 4,
+    maxPoints: 100,
+    requirements: [
+      'Create GET endpoint to retrieve all items',
+      'Create POST endpoint to add new items',
+      'Create PUT endpoint to update items',
+      'Create DELETE endpoint to remove items',
+      'Use proper HTTP status codes'
+    ],
+    gradingCriteria: [
+      {
+        id: 'api-endpoints',
+        category: 'API Endpoints',
+        description: 'Implementation of all required CRUD endpoints',
+        maxPoints: 40,
+        requirements: ['GET /items', 'POST /items', 'PUT /items/:id', 'DELETE /items/:id']
+      },
+      {
+        id: 'code-quality',
+        category: 'Code Quality',
+        description: 'Clean, organized code with proper error handling',
+        maxPoints: 30,
+        requirements: ['Proper error handling', 'Clean code structure', 'Meaningful variable names']
+      },
+      {
+        id: 'functionality',
+        category: 'Functionality',
+        description: 'All endpoints work correctly with proper responses',
+        maxPoints: 30,
+        requirements: ['Correct HTTP methods', 'Proper status codes', 'JSON responses']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'src': {
+        'routes': {
+          'api.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-2',
+    name: 'User Authentication API',
+    description: 'Create an authentication system with user registration and login endpoints.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'JWT', 'bcrypt'],
+    estimatedHours: 6,
+    maxPoints: 120,
+    requirements: [
+      'User registration endpoint',
+      'User login endpoint',
+      'Password hashing with bcrypt',
+      'JWT token generation',
+      'Protected route middleware'
+    ],
+    gradingCriteria: [
+      {
+        id: 'authentication',
+        category: 'Authentication & Security',
+        description: 'Secure user authentication implementation',
+        maxPoints: 50,
+        requirements: ['Password hashing', 'JWT tokens', 'Secure endpoints']
+      },
+      {
+        id: 'api-design',
+        category: 'API Design',
+        description: 'Well-designed authentication endpoints',
+        maxPoints: 40,
+        requirements: ['Registration endpoint', 'Login endpoint', 'Protected routes']
+      },
+      {
+        id: 'error-handling',
+        category: 'Error Handling',
+        description: 'Proper error responses and validation',
+        maxPoints: 30,
+        requirements: ['Input validation', 'Error messages', 'Status codes']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'src': {
+        'routes': {
+          'auth.js': ''
+        },
+        'middleware': {
+          'auth.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-3',
+    name: 'File Upload API',
+    description: 'Build an API that handles file uploads and serves uploaded files.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'Multer', 'File System'],
+    estimatedHours: 5,
+    maxPoints: 110,
+    requirements: [
+      'File upload endpoint',
+      'File serving endpoint',
+      'File type validation',
+      'File size limits',
+      'Error handling for invalid files'
+    ],
+    gradingCriteria: [
+      {
+        id: 'file-handling',
+        category: 'File Handling',
+        description: 'Proper file upload and serving functionality',
+        maxPoints: 50,
+        requirements: ['Upload endpoint', 'File serving', 'Storage management']
+      },
+      {
+        id: 'validation',
+        category: 'Validation & Security',
+        description: 'File validation and security measures',
+        maxPoints: 35,
+        requirements: ['File type validation', 'Size limits', 'Security checks']
+      },
+      {
+        id: 'error-handling',
+        category: 'Error Handling',
+        description: 'Robust error handling for file operations',
+        maxPoints: 25,
+        requirements: ['Upload errors', 'File not found', 'Validation errors']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'uploads': {},
+      'src': {
+        'routes': {
+          'files.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-4',
+    name: 'Weather Data API',
+    description: 'Create an API that fetches and serves weather data from external APIs.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'Axios', 'External APIs'],
+    estimatedHours: 4,
+    maxPoints: 100,
+    requirements: [
+      'Fetch weather data from external API',
+      'Create endpoint to get weather by city',
+      'Handle API errors gracefully',
+      'Cache responses for better performance',
+      'Return formatted weather data'
+    ],
+    gradingCriteria: [
+      {
+        id: 'api-integration',
+        category: 'API Integration',
+        description: 'Successful integration with external weather API',
+        maxPoints: 40,
+        requirements: ['External API calls', 'Data fetching', 'Response handling']
+      },
+      {
+        id: 'data-processing',
+        category: 'Data Processing',
+        description: 'Proper data formatting and response structure',
+        maxPoints: 35,
+        requirements: ['Data formatting', 'Response structure', 'Error handling']
+      },
+      {
+        id: 'performance',
+        category: 'Performance',
+        description: 'Caching and optimization implementation',
+        maxPoints: 25,
+        requirements: ['Response caching', 'Error handling', 'Performance optimization']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'src': {
+        'routes': {
+          'weather.js': ''
+        },
+        'services': {
+          'weatherService.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-5',
+    name: 'Simple Database API',
+    description: 'Build an API that connects to a database and performs CRUD operations.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'SQLite', 'SQL'],
+    estimatedHours: 6,
+    maxPoints: 120,
+    requirements: [
+      'Database connection setup',
+      'Create database tables',
+      'CRUD operations with database',
+      'SQL query implementation',
+      'Database error handling'
+    ],
+    gradingCriteria: [
+      {
+        id: 'database-integration',
+        category: 'Database Integration',
+        description: 'Successful database connection and operations',
+        maxPoints: 50,
+        requirements: ['Database connection', 'Table creation', 'CRUD operations']
+      },
+      {
+        id: 'sql-queries',
+        category: 'SQL Implementation',
+        description: 'Proper SQL queries and database operations',
+        maxPoints: 40,
+        requirements: ['SELECT queries', 'INSERT operations', 'UPDATE/DELETE operations']
+      },
+      {
+        id: 'error-handling',
+        category: 'Error Handling',
+        description: 'Database error handling and validation',
+        maxPoints: 30,
+        requirements: ['Connection errors', 'Query errors', 'Data validation']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'database.db': '',
+      'src': {
+        'routes': {
+          'api.js': ''
+        },
+        'database': {
+          'db.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-6',
+    name: 'Email Service API',
+    description: 'Create an API service that sends emails using a third-party email service.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'Nodemailer', 'Email APIs'],
+    estimatedHours: 5,
+    maxPoints: 110,
+    requirements: [
+      'Email sending endpoint',
+      'Email template support',
+      'Input validation for email data',
+      'Error handling for email failures',
+      'Email delivery confirmation'
+    ],
+    gradingCriteria: [
+      {
+        id: 'email-functionality',
+        category: 'Email Functionality',
+        description: 'Working email sending implementation',
+        maxPoints: 45,
+        requirements: ['Email sending', 'Template support', 'Delivery handling']
+      },
+      {
+        id: 'validation',
+        category: 'Input Validation',
+        description: 'Proper validation of email data',
+        maxPoints: 35,
+        requirements: ['Email validation', 'Required fields', 'Data sanitization']
+      },
+      {
+        id: 'error-handling',
+        category: 'Error Handling',
+        description: 'Robust error handling for email operations',
+        maxPoints: 30,
+        requirements: ['Send failures', 'Invalid emails', 'Service errors']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'src': {
+        'routes': {
+          'email.js': ''
+        },
+        'services': {
+          'emailService.js': ''
+        },
+        'templates': {
+          'welcome.html': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-7',
+    name: 'URL Shortener API',
+    description: 'Build a URL shortening service similar to bit.ly with analytics.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'Database', 'URL Validation'],
+    estimatedHours: 6,
+    maxPoints: 120,
+    requirements: [
+      'URL shortening endpoint',
+      'URL redirection functionality',
+      'Click tracking and analytics',
+      'URL validation',
+      'Custom short codes support'
+    ],
+    gradingCriteria: [
+      {
+        id: 'core-functionality',
+        category: 'Core Functionality',
+        description: 'URL shortening and redirection features',
+        maxPoints: 50,
+        requirements: ['URL shortening', 'Redirection', 'Short code generation']
+      },
+      {
+        id: 'analytics',
+        category: 'Analytics & Tracking',
+        description: 'Click tracking and analytics implementation',
+        maxPoints: 40,
+        requirements: ['Click counting', 'Analytics endpoint', 'Data storage']
+      },
+      {
+        id: 'validation',
+        category: 'Validation & Security',
+        description: 'URL validation and security measures',
+        maxPoints: 30,
+        requirements: ['URL validation', 'Security checks', 'Error handling']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'src': {
+        'routes': {
+          'urls.js': ''
+        },
+        'models': {
+          'url.js': ''
+        },
+        'utils': {
+          'shortener.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-8',
+    name: 'Task Queue API',
+    description: 'Create a simple task queue system for background job processing.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'Queue System', 'Background Jobs'],
+    estimatedHours: 7,
+    maxPoints: 130,
+    requirements: [
+      'Task creation endpoint',
+      'Task processing system',
+      'Task status tracking',
+      'Queue management',
+      'Background job execution'
+    ],
+    gradingCriteria: [
+      {
+        id: 'queue-system',
+        category: 'Queue System',
+        description: 'Task queue implementation and management',
+        maxPoints: 50,
+        requirements: ['Task queuing', 'Queue processing', 'Job execution']
+      },
+      {
+        id: 'task-management',
+        category: 'Task Management',
+        description: 'Task creation, tracking, and status updates',
+        maxPoints: 45,
+        requirements: ['Task creation', 'Status tracking', 'Task completion']
+      },
+      {
+        id: 'background-processing',
+        category: 'Background Processing',
+        description: 'Asynchronous task processing implementation',
+        maxPoints: 35,
+        requirements: ['Async processing', 'Error handling', 'Task retry logic']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'src': {
+        'routes': {
+          'tasks.js': ''
+        },
+        'queue': {
+          'taskQueue.js': ''
+        },
+        'workers': {
+          'taskWorker.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-9',
+    name: 'Rate Limiting API',
+    description: 'Implement an API with rate limiting to prevent abuse and ensure fair usage.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'Rate Limiting', 'Middleware'],
+    estimatedHours: 4,
+    maxPoints: 100,
+    requirements: [
+      'Rate limiting middleware',
+      'Different rate limits for different endpoints',
+      'Rate limit headers in responses',
+      'Rate limit exceeded error handling',
+      'IP-based rate limiting'
+    ],
+    gradingCriteria: [
+      {
+        id: 'rate-limiting',
+        category: 'Rate Limiting Implementation',
+        description: 'Effective rate limiting mechanism',
+        maxPoints: 45,
+        requirements: ['Rate limiting logic', 'Request counting', 'Time windows']
+      },
+      {
+        id: 'middleware',
+        category: 'Middleware Design',
+        description: 'Well-designed middleware implementation',
+        maxPoints: 35,
+        requirements: ['Middleware structure', 'Reusability', 'Configuration']
+      },
+      {
+        id: 'error-handling',
+        category: 'Error Handling',
+        description: 'Proper handling of rate limit violations',
+        maxPoints: 20,
+        requirements: ['Error responses', 'Status codes', 'Headers']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'src': {
+        'middleware': {
+          'rateLimiter.js': ''
+        },
+        'routes': {
+          'api.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-10',
+    name: 'Logging and Monitoring API',
+    description: 'Build an API with comprehensive logging and basic monitoring capabilities.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'Winston', 'Monitoring'],
+    estimatedHours: 5,
+    maxPoints: 110,
+    requirements: [
+      'Request logging middleware',
+      'Error logging system',
+      'Log levels and formatting',
+      'Health check endpoint',
+      'Basic metrics collection'
+    ],
+    gradingCriteria: [
+      {
+        id: 'logging-system',
+        category: 'Logging System',
+        description: 'Comprehensive logging implementation',
+        maxPoints: 45,
+        requirements: ['Request logging', 'Error logging', 'Log formatting']
+      },
+      {
+        id: 'monitoring',
+        category: 'Monitoring & Health Checks',
+        description: 'Health monitoring and metrics collection',
+        maxPoints: 35,
+        requirements: ['Health endpoints', 'Metrics collection', 'Status reporting']
+      },
+      {
+        id: 'configuration',
+        category: 'Configuration & Setup',
+        description: 'Proper logging configuration and setup',
+        maxPoints: 30,
+        requirements: ['Log levels', 'Configuration', 'Environment setup']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'logs': {},
+      'src': {
+        'middleware': {
+          'logger.js': ''
+        },
+        'routes': {
+          'health.js': ''
+        },
+        'config': {
+          'logger.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'fullstack-1',
+    name: 'Personal Blog Platform',
+    description: 'Create a full-stack blog platform where users can create, edit, and publish blog posts.',
+    stack: 'fullstack',
+    difficulty: 'beginner',
+    technologies: ['React', 'Node.js', 'Express', 'SQLite', 'CSS'],
+    estimatedHours: 12,
+    maxPoints: 200,
+    requirements: [
+      'Frontend blog interface with React',
+      'Backend API for blog operations',
+      'Database for storing posts',
+      'Create, read, update, delete posts',
+      'Responsive design'
+    ],
+    gradingCriteria: [
+      {
+        id: 'frontend-implementation',
+        category: 'Frontend Implementation',
+        description: 'React frontend with proper component structure',
+        maxPoints: 60,
+        requirements: ['React components', 'State management', 'User interface']
+      },
+      {
+        id: 'backend-api',
+        category: 'Backend API',
+        description: 'RESTful API with proper endpoints',
+        maxPoints: 60,
+        requirements: ['API endpoints', 'Database integration', 'CRUD operations']
+      },
+      {
+        id: 'integration',
+        category: 'Frontend-Backend Integration',
+        description: 'Seamless integration between frontend and backend',
+        maxPoints: 50,
+        requirements: ['API calls', 'Data flow', 'Error handling']
+      },
+      {
+        id: 'design-responsiveness',
+        category: 'Design & Responsiveness',
+        description: 'Responsive design and user experience',
+        maxPoints: 30,
+        requirements: ['Responsive layout', 'CSS styling', 'User experience']
+      }
+    ],
+    folderStructure: {
+      'package.json': '',
+      'server.js': '',
+      'client': {
+        'public': {
+          'index.html': ''
+        },
+        'src': {
+          'App.js': '',
+          'index.js': '',
+          'components': {
+            'BlogList.js': '',
+            'BlogPost.js': '',
+            'CreatePost.js': ''
+          },
+          'App.css': ''
+        }
+      },
+      'server': {
+        'routes': {
+          'posts.js': ''
+        },
+        'database': {
+          'db.js': ''
+        }
+      }
+    }
   }
 ];
 
