@@ -338,46 +338,47 @@ export default function ProjectSetupPage() {
                     </button>
                     
                     {showTemplateDropdown && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10 max-h-80 overflow-y-auto">
-                        {availableTemplates.length === 0 ? (
-                          <div className="p-4 text-center text-gray-500">
-                            <p>No templates available for {selectedLanguage}</p>
-                            <p className="text-xs mt-1">Try selecting a different language</p>
-                          </div>
-                        ) : (
-                        {availableTemplates.map((template) => (
-                          <button
-                            key={template.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedTemplate(template);
-                              setShowTemplateDropdown(false);
-                            }}
-                            className="w-full p-4 text-left hover:bg-gray-50 border-b last:border-b-0 transition-colors"
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-medium">{template.name}</h4>
-                              <div className="flex gap-1">
-                                <Badge variant="outline" className="text-xs">
-                                  {selectedLanguage === 'typescript' && 
-                                   (template.language === 'javascript' || template.id.includes('react') || template.id.includes('nextjs') || template.id.includes('vue') || template.id.includes('nodejs'))
-                                    ? 'TypeScript' : template.language}
-                                </Badge>
-                                {template.framework && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    {template.framework}
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              {template.description}
-                            </p>
-                          </button>
-                        ))}
-                        )}
-                      </div>
-                    )}
+  <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10 max-h-80 overflow-y-auto">
+    {availableTemplates.length === 0 ? (
+      <div className="p-4 text-center text-gray-500">
+        <p>No templates available for {selectedLanguage}</p>
+        <p className="text-xs mt-1">Try selecting a different language</p>
+      </div>
+    ) : (
+      availableTemplates.map((template) => (
+        <button
+          key={template.id}
+          type="button"
+          onClick={() => {
+            setSelectedTemplate(template);
+            setShowTemplateDropdown(false);
+          }}
+          className="w-full p-4 text-left hover:bg-gray-50 border-b last:border-b-0 transition-colors"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="font-medium">{template.name}</h4>
+            <div className="flex gap-1">
+              <Badge variant="outline" className="text-xs">
+                {selectedLanguage === 'typescript' && 
+                 (template.language === 'javascript' || template.id.includes('react') || template.id.includes('nextjs') || template.id.includes('vue') || template.id.includes('nodejs'))
+                  ? 'TypeScript' : template.language}
+              </Badge>
+              {template.framework && (
+                <Badge variant="secondary" className="text-xs">
+                  {template.framework}
+                </Badge>
+              )}
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {template.description}
+          </p>
+        </button>
+      ))
+    )}
+  </div>
+)}
+
                   </div>
                   
                   {/* Selected Template Preview */}
