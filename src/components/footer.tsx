@@ -7,9 +7,9 @@ import Image from "next/image";
 
 export function Footer() {
   return (
-    <footer className="w-full border-t bg-background py-12 px-24">
-      <div className="container grid grid-cols-1 gap-8 md:grid-cols-4">
-        <div className="flex flex-col gap-2">
+    <footer className="w-full border-t bg-background py-12 md:px-24 px-6">
+      <div className="container mx-auto grid grid-cols-1 sm:gap-12 gap-8 md:grid-cols-2 lg:grid-cols-4 items-start">
+        <div className="flex-1 flex-col gap-2">
           <div className="flex items-center">
             <Link
               href="/"
