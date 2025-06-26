@@ -1235,6 +1235,609 @@ export const beginnerProjects: ProjectTemplate[] = [
       },
       'README.md': ''
     }
+  },
+  {
+    id: 'backend-1',
+    name: 'Simple REST API',
+    description: 'Build a basic REST API with CRUD operations for managing a list of items.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'JSON'],
+    estimatedHours: 4,
+    maxPoints: 100,
+    requirements: [
+      'Create GET endpoint to retrieve all items',
+      'Create POST endpoint to add new items',
+      'Create PUT endpoint to update items',
+      'Create DELETE endpoint to remove items',
+      'Use proper HTTP status codes'
+    ],
+    gradingCriteria: [
+      {
+        id: 'api-endpoints',
+        category: 'API Endpoints',
+        description: 'Implementation of all required CRUD endpoints',
+        maxPoints: 40,
+        requirements: ['GET /items', 'POST /items', 'PUT /items/:id', 'DELETE /items/:id']
+      },
+      {
+        id: 'code-quality',
+        category: 'Code Quality',
+        description: 'Clean, organized code with proper error handling',
+        maxPoints: 30,
+        requirements: ['Proper error handling', 'Clean code structure', 'Meaningful variable names']
+      },
+      {
+        id: 'functionality',
+        category: 'Functionality',
+        description: 'All endpoints work correctly with proper responses',
+        maxPoints: 30,
+        requirements: ['Correct HTTP methods', 'Proper status codes', 'JSON responses']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'src': {
+        'routes': {
+          'api.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-2',
+    name: 'User Authentication API',
+    description: 'Create an authentication system with user registration and login endpoints.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'JWT', 'bcrypt'],
+    estimatedHours: 6,
+    maxPoints: 120,
+    requirements: [
+      'User registration endpoint',
+      'User login endpoint',
+      'Password hashing with bcrypt',
+      'JWT token generation',
+      'Protected route middleware'
+    ],
+    gradingCriteria: [
+      {
+        id: 'authentication',
+        category: 'Authentication & Security',
+        description: 'Secure user authentication implementation',
+        maxPoints: 50,
+        requirements: ['Password hashing', 'JWT tokens', 'Secure endpoints']
+      },
+      {
+        id: 'api-design',
+        category: 'API Design',
+        description: 'Well-designed authentication endpoints',
+        maxPoints: 40,
+        requirements: ['Registration endpoint', 'Login endpoint', 'Protected routes']
+      },
+      {
+        id: 'error-handling',
+        category: 'Error Handling',
+        description: 'Proper error responses and validation',
+        maxPoints: 30,
+        requirements: ['Input validation', 'Error messages', 'Status codes']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'src': {
+        'routes': {
+          'auth.js': ''
+        },
+        'middleware': {
+          'auth.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-3',
+    name: 'File Upload API',
+    description: 'Build an API that handles file uploads and serves uploaded files.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'Multer', 'File System'],
+    estimatedHours: 5,
+    maxPoints: 110,
+    requirements: [
+      'File upload endpoint',
+      'File serving endpoint',
+      'File type validation',
+      'File size limits',
+      'Error handling for invalid files'
+    ],
+    gradingCriteria: [
+      {
+        id: 'file-handling',
+        category: 'File Handling',
+        description: 'Proper file upload and serving functionality',
+        maxPoints: 50,
+        requirements: ['Upload endpoint', 'File serving', 'Storage management']
+      },
+      {
+        id: 'validation',
+        category: 'Validation & Security',
+        description: 'File validation and security measures',
+        maxPoints: 35,
+        requirements: ['File type validation', 'Size limits', 'Security checks']
+      },
+      {
+        id: 'error-handling',
+        category: 'Error Handling',
+        description: 'Robust error handling for file operations',
+        maxPoints: 25,
+        requirements: ['Upload errors', 'File not found', 'Validation errors']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'uploads': {},
+      'src': {
+        'routes': {
+          'files.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-4',
+    name: 'Weather Data API',
+    description: 'Create an API that fetches and serves weather data from external APIs.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'Axios', 'External APIs'],
+    estimatedHours: 4,
+    maxPoints: 100,
+    requirements: [
+      'Fetch weather data from external API',
+      'Create endpoint to get weather by city',
+      'Handle API errors gracefully',
+      'Cache responses for better performance',
+      'Return formatted weather data'
+    ],
+    gradingCriteria: [
+      {
+        id: 'api-integration',
+        category: 'API Integration',
+        description: 'Successful integration with external weather API',
+        maxPoints: 40,
+        requirements: ['External API calls', 'Data fetching', 'Response handling']
+      },
+      {
+        id: 'data-processing',
+        category: 'Data Processing',
+        description: 'Proper data formatting and response structure',
+        maxPoints: 35,
+        requirements: ['Data formatting', 'Response structure', 'Error handling']
+      },
+      {
+        id: 'performance',
+        category: 'Performance',
+        description: 'Caching and optimization implementation',
+        maxPoints: 25,
+        requirements: ['Response caching', 'Error handling', 'Performance optimization']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'src': {
+        'routes': {
+          'weather.js': ''
+        },
+        'services': {
+          'weatherService.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-5',
+    name: 'Simple Database API',
+    description: 'Build an API that connects to a database and performs CRUD operations.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'SQLite', 'SQL'],
+    estimatedHours: 6,
+    maxPoints: 120,
+    requirements: [
+      'Database connection setup',
+      'Create database tables',
+      'CRUD operations with database',
+      'SQL query implementation',
+      'Database error handling'
+    ],
+    gradingCriteria: [
+      {
+        id: 'database-integration',
+        category: 'Database Integration',
+        description: 'Successful database connection and operations',
+        maxPoints: 50,
+        requirements: ['Database connection', 'Table creation', 'CRUD operations']
+      },
+      {
+        id: 'sql-queries',
+        category: 'SQL Implementation',
+        description: 'Proper SQL queries and database operations',
+        maxPoints: 40,
+        requirements: ['SELECT queries', 'INSERT operations', 'UPDATE/DELETE operations']
+      },
+      {
+        id: 'error-handling',
+        category: 'Error Handling',
+        description: 'Database error handling and validation',
+        maxPoints: 30,
+        requirements: ['Connection errors', 'Query errors', 'Data validation']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'database.db': '',
+      'src': {
+        'routes': {
+          'api.js': ''
+        },
+        'database': {
+          'db.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-6',
+    name: 'Email Service API',
+    description: 'Create an API service that sends emails using a third-party email service.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'Nodemailer', 'Email APIs'],
+    estimatedHours: 5,
+    maxPoints: 110,
+    requirements: [
+      'Email sending endpoint',
+      'Email template support',
+      'Input validation for email data',
+      'Error handling for email failures',
+      'Email delivery confirmation'
+    ],
+    gradingCriteria: [
+      {
+        id: 'email-functionality',
+        category: 'Email Functionality',
+        description: 'Working email sending implementation',
+        maxPoints: 45,
+        requirements: ['Email sending', 'Template support', 'Delivery handling']
+      },
+      {
+        id: 'validation',
+        category: 'Input Validation',
+        description: 'Proper validation of email data',
+        maxPoints: 35,
+        requirements: ['Email validation', 'Required fields', 'Data sanitization']
+      },
+      {
+        id: 'error-handling',
+        category: 'Error Handling',
+        description: 'Robust error handling for email operations',
+        maxPoints: 30,
+        requirements: ['Send failures', 'Invalid emails', 'Service errors']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'src': {
+        'routes': {
+          'email.js': ''
+        },
+        'services': {
+          'emailService.js': ''
+        },
+        'templates': {
+          'welcome.html': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-7',
+    name: 'URL Shortener API',
+    description: 'Build a URL shortening service similar to bit.ly with analytics.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'Database', 'URL Validation'],
+    estimatedHours: 6,
+    maxPoints: 120,
+    requirements: [
+      'URL shortening endpoint',
+      'URL redirection functionality',
+      'Click tracking and analytics',
+      'URL validation',
+      'Custom short codes support'
+    ],
+    gradingCriteria: [
+      {
+        id: 'core-functionality',
+        category: 'Core Functionality',
+        description: 'URL shortening and redirection features',
+        maxPoints: 50,
+        requirements: ['URL shortening', 'Redirection', 'Short code generation']
+      },
+      {
+        id: 'analytics',
+        category: 'Analytics & Tracking',
+        description: 'Click tracking and analytics implementation',
+        maxPoints: 40,
+        requirements: ['Click counting', 'Analytics endpoint', 'Data storage']
+      },
+      {
+        id: 'validation',
+        category: 'Validation & Security',
+        description: 'URL validation and security measures',
+        maxPoints: 30,
+        requirements: ['URL validation', 'Security checks', 'Error handling']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'src': {
+        'routes': {
+          'urls.js': ''
+        },
+        'models': {
+          'url.js': ''
+        },
+        'utils': {
+          'shortener.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-8',
+    name: 'Task Queue API',
+    description: 'Create a simple task queue system for background job processing.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'Queue System', 'Background Jobs'],
+    estimatedHours: 7,
+    maxPoints: 130,
+    requirements: [
+      'Task creation endpoint',
+      'Task processing system',
+      'Task status tracking',
+      'Queue management',
+      'Background job execution'
+    ],
+    gradingCriteria: [
+      {
+        id: 'queue-system',
+        category: 'Queue System',
+        description: 'Task queue implementation and management',
+        maxPoints: 50,
+        requirements: ['Task queuing', 'Queue processing', 'Job execution']
+      },
+      {
+        id: 'task-management',
+        category: 'Task Management',
+        description: 'Task creation, tracking, and status updates',
+        maxPoints: 45,
+        requirements: ['Task creation', 'Status tracking', 'Task completion']
+      },
+      {
+        id: 'background-processing',
+        category: 'Background Processing',
+        description: 'Asynchronous task processing implementation',
+        maxPoints: 35,
+        requirements: ['Async processing', 'Error handling', 'Task retry logic']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'src': {
+        'routes': {
+          'tasks.js': ''
+        },
+        'queue': {
+          'taskQueue.js': ''
+        },
+        'workers': {
+          'taskWorker.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-9',
+    name: 'Rate Limiting API',
+    description: 'Implement an API with rate limiting to prevent abuse and ensure fair usage.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'Rate Limiting', 'Middleware'],
+    estimatedHours: 4,
+    maxPoints: 100,
+    requirements: [
+      'Rate limiting middleware',
+      'Different rate limits for different endpoints',
+      'Rate limit headers in responses',
+      'Rate limit exceeded error handling',
+      'IP-based rate limiting'
+    ],
+    gradingCriteria: [
+      {
+        id: 'rate-limiting',
+        category: 'Rate Limiting Implementation',
+        description: 'Effective rate limiting mechanism',
+        maxPoints: 45,
+        requirements: ['Rate limiting logic', 'Request counting', 'Time windows']
+      },
+      {
+        id: 'middleware',
+        category: 'Middleware Design',
+        description: 'Well-designed middleware implementation',
+        maxPoints: 35,
+        requirements: ['Middleware structure', 'Reusability', 'Configuration']
+      },
+      {
+        id: 'error-handling',
+        category: 'Error Handling',
+        description: 'Proper handling of rate limit violations',
+        maxPoints: 20,
+        requirements: ['Error responses', 'Status codes', 'Headers']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'src': {
+        'middleware': {
+          'rateLimiter.js': ''
+        },
+        'routes': {
+          'api.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'backend-10',
+    name: 'Logging and Monitoring API',
+    description: 'Build an API with comprehensive logging and basic monitoring capabilities.',
+    stack: 'backend',
+    difficulty: 'beginner',
+    technologies: ['Node.js', 'Express', 'Winston', 'Monitoring'],
+    estimatedHours: 5,
+    maxPoints: 110,
+    requirements: [
+      'Request logging middleware',
+      'Error logging system',
+      'Log levels and formatting',
+      'Health check endpoint',
+      'Basic metrics collection'
+    ],
+    gradingCriteria: [
+      {
+        id: 'logging-system',
+        category: 'Logging System',
+        description: 'Comprehensive logging implementation',
+        maxPoints: 45,
+        requirements: ['Request logging', 'Error logging', 'Log formatting']
+      },
+      {
+        id: 'monitoring',
+        category: 'Monitoring & Health Checks',
+        description: 'Health monitoring and metrics collection',
+        maxPoints: 35,
+        requirements: ['Health endpoints', 'Metrics collection', 'Status reporting']
+      },
+      {
+        id: 'configuration',
+        category: 'Configuration & Setup',
+        description: 'Proper logging configuration and setup',
+        maxPoints: 30,
+        requirements: ['Log levels', 'Configuration', 'Environment setup']
+      }
+    ],
+    folderStructure: {
+      'server.js': '',
+      'package.json': '',
+      'logs': {},
+      'src': {
+        'middleware': {
+          'logger.js': ''
+        },
+        'routes': {
+          'health.js': ''
+        },
+        'config': {
+          'logger.js': ''
+        }
+      }
+    }
+  },
+  {
+    id: 'fullstack-1',
+    name: 'Personal Blog Platform',
+    description: 'Create a full-stack blog platform where users can create, edit, and publish blog posts.',
+    stack: 'fullstack',
+    difficulty: 'beginner',
+    technologies: ['React', 'Node.js', 'Express', 'SQLite', 'CSS'],
+    estimatedHours: 12,
+    maxPoints: 200,
+    requirements: [
+      'Frontend blog interface with React',
+      'Backend API for blog operations',
+      'Database for storing posts',
+      'Create, read, update, delete posts',
+      'Responsive design'
+    ],
+    gradingCriteria: [
+      {
+        id: 'frontend-implementation',
+        category: 'Frontend Implementation',
+        description: 'React frontend with proper component structure',
+        maxPoints: 60,
+        requirements: ['React components', 'State management', 'User interface']
+      },
+      {
+        id: 'backend-api',
+        category: 'Backend API',
+        description: 'RESTful API with proper endpoints',
+        maxPoints: 60,
+        requirements: ['API endpoints', 'Database integration', 'CRUD operations']
+      },
+      {
+        id: 'integration',
+        category: 'Frontend-Backend Integration',
+        description: 'Seamless integration between frontend and backend',
+        maxPoints: 50,
+        requirements: ['API calls', 'Data flow', 'Error handling']
+      },
+      {
+        id: 'design-responsiveness',
+        category: 'Design & Responsiveness',
+        description: 'Responsive design and user experience',
+        maxPoints: 30,
+        requirements: ['Responsive layout', 'CSS styling', 'User experience']
+      }
+    ],
+    folderStructure: {
+      'package.json': '',
+      'server.js': '',
+      'client': {
+        'public': {
+          'index.html': ''
+        },
+        'src': {
+          'App.js': '',
+          'index.js': '',
+          'components': {
+            'BlogList.js': '',
+            'BlogPost.js': '',
+            'CreatePost.js': ''
+          },
+          'App.css': ''
+        }
+      },
+      'server': {
+        'routes': {
+          'posts.js': ''
+        },
+        'database': {
+          'db.js': ''
+        }
+      }
+    }
   }
 ];
 
@@ -3160,1329 +3763,4 @@ export const advancedProjects: ProjectTemplate[] = [
       'AI content generation and editing',
       'Automated content optimization',
       'Personalized content recommendations',
-      'Multi-language content support',
-      'SEO optimization with AI insights',
-      'Content performance analytics',
-      'Collaborative editing platform',
-      'Version control and workflow management',
-      'API for headless CMS functionality',
-      'Advanced search and content discovery'
-    ],
-    gradingCriteria: [
-      {
-        id: 'adv-7-ai',
-        category: 'AI Integration',
-        description: 'AI-powered content features',
-        maxPoints: 35,
-        requirements: ['Content generation', 'Content optimization', 'Personalization', 'AI recommendations']
-      },
-      {
-        id: 'adv-7-cms',
-        category: 'Content Management',
-        description: 'Core CMS functionality',
-        maxPoints: 25,
-        requirements: ['Content creation', 'Workflow management', 'Version control', 'Collaborative editing']
-      },
-      {
-        id: 'adv-7-optimization',
-        category: 'SEO & Performance',
-        description: 'SEO optimization and performance analytics',
-        maxPoints: 25,
-        requirements: ['SEO optimization', 'Performance analytics', 'Content insights', 'Search functionality']
-      },
-      {
-        id: 'adv-7-api',
-        category: 'API & Integration',
-        description: 'Headless CMS API and integrations',
-        maxPoints: 15,
-        requirements: ['Headless API', 'Third-party integrations', 'Multi-channel publishing', 'Developer tools']
-      }
-    ],
-    folderStructure: {
-      'client': {
-        'src': {},
-        'package.json': ''
-      },
-      'server': {
-        'src': {},
-        'package.json': ''
-      },
-      'ai-service': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'api': {
-        'src': {},
-        'package.json': ''
-      },
-      'docker-compose.yml': '',
-      'README.md': ''
-    }
-  },
-  {
-    id: 'adv-8',
-    name: 'Multi-tenant SaaS Platform',
-    description: 'Create a scalable multi-tenant SaaS platform with tenant isolation, billing, and white-label capabilities.',
-    stack: 'fullstack',
-    difficulty: 'advanced',
-    technologies: ['React', 'Node.js', 'PostgreSQL', 'Redis', 'Docker', 'Kubernetes'],
-    estimatedHours: 50,
-    maxPoints: 100,
-    requirements: [
-      'Multi-tenant architecture with data isolation',
-      'Tenant onboarding and provisioning',
-      'Subscription billing and payment processing',
-      'White-label and customization features',
-      'Role-based access control per tenant',
-      'Usage analytics and monitoring',
-      'API rate limiting and quotas',
-      'Automated scaling and load balancing',
-      'Tenant-specific configurations',
-      'Admin dashboard for platform management'
-    ],
-    gradingCriteria: [
-      {
-        id: 'adv-8-architecture',
-        category: 'Multi-tenant Architecture',
-        description: 'Tenant isolation and architecture design',
-        maxPoints: 30,
-        requirements: ['Data isolation', 'Tenant provisioning', 'Scalable architecture', 'Security isolation']
-      },
-      {
-        id: 'adv-8-billing',
-        category: 'Billing & Subscriptions',
-        description: 'Subscription management and billing system',
-        maxPoints: 25,
-        requirements: ['Subscription billing', 'Payment processing', 'Usage tracking', 'Pricing models']
-      },
-      {
-        id: 'adv-8-customization',
-        category: 'Customization & White-label',
-        description: 'Tenant customization and white-label features',
-        maxPoints: 25,
-        requirements: ['White-label capabilities', 'Tenant customization', 'Branding options', 'Configuration management']
-      },
-      {
-        id: 'adv-8-operations',
-        category: 'Operations & Monitoring',
-        description: 'Platform operations and monitoring',
-        maxPoints: 20,
-        requirements: ['Usage analytics', 'Performance monitoring', 'Admin dashboard', 'Automated scaling']
-      }
-    ],
-    folderStructure: {
-      'client': {
-        'src': {},
-        'package.json': ''
-      },
-      'server': {
-        'src': {},
-        'package.json': ''
-      },
-      'admin-dashboard': {
-        'src': {},
-        'package.json': ''
-      },
-      'billing-service': {
-        'src': {},
-        'package.json': ''
-      },
-      'kubernetes': {},
-      'docker-compose.yml': '',
-      'README.md': ''
-    }
-  },
-  {
-    id: 'adv-9',
-    name: 'Real-time Collaboration Suite',
-    description: 'Build a comprehensive collaboration platform with document editing, video conferencing, and project management.',
-    stack: 'fullstack',
-    difficulty: 'advanced',
-    technologies: ['React', 'Node.js', 'WebRTC', 'Socket.io', 'Operational Transform', 'Redis'],
-    estimatedHours: 48,
-    maxPoints: 100,
-    requirements: [
-      'Real-time collaborative document editing',
-      'Video conferencing with screen sharing',
-      'Project management with kanban boards',
-      'File sharing and version control',
-      'Real-time chat and messaging',
-      'Calendar integration and scheduling',
-      'Notification system across all features',
-      'Mobile applications for all platforms',
-      'Offline synchronization capabilities',
-      'Advanced permission and sharing controls'
-    ],
-    gradingCriteria: [
-      {
-        id: 'adv-9-collaboration',
-        category: 'Real-time Collaboration',
-        description: 'Document editing and real-time features',
-        maxPoints: 35,
-        requirements: ['Real-time editing', 'Operational transform', 'Conflict resolution', 'Synchronization']
-      },
-      {
-        id: 'adv-9-communication',
-        category: 'Communication Features',
-        description: 'Video conferencing and messaging',
-        maxPoints: 25,
-        requirements: ['Video conferencing', 'Screen sharing', 'Real-time chat', 'Voice communication']
-      },
-      {
-        id: 'adv-9-project',
-        category: 'Project Management',
-        description: 'Project management and organization tools',
-        maxPoints: 25,
-        requirements: ['Project management', 'Kanban boards', 'Task management', 'File organization']
-      },
-      {
-        id: 'adv-9-sync',
-        category: 'Synchronization & Mobile',
-        description: 'Offline sync and mobile applications',
-        maxPoints: 15,
-        requirements: ['Offline synchronization', 'Mobile applications', 'Cross-platform support', 'Data consistency']
-      }
-    ],
-    folderStructure: {
-      'client': {
-        'src': {},
-        'package.json': ''
-      },
-      'server': {
-        'src': {},
-        'package.json': ''
-      },
-      'mobile': {
-        'src': {},
-        'package.json': ''
-      },
-      'collaboration-engine': {
-        'src': {},
-        'package.json': ''
-      },
-      'docker-compose.yml': '',
-      'README.md': ''
-    }
-  },
-  {
-    id: 'adv-10',
-    name: 'Distributed Data Analytics Platform',
-    description: 'Create a big data analytics platform with distributed processing, machine learning, and real-time insights.',
-    stack: 'fullstack',
-    difficulty: 'advanced',
-    technologies: ['React', 'Node.js', 'Apache Kafka', 'Apache Spark', 'Python', 'Elasticsearch'],
-    estimatedHours: 55,
-    maxPoints: 100,
-    requirements: [
-      'Distributed data ingestion and processing',
-      'Real-time stream processing',
-      'Machine learning model deployment',
-      'Interactive data visualization',
-      'Automated report generation',
-      'Data pipeline orchestration',
-      'Scalable storage and retrieval',
-      'API for data access and queries',
-      'Data governance and lineage tracking',
-      'Performance monitoring and optimization'
-    ],
-    gradingCriteria: [
-      {
-        id: 'adv-10-processing',
-        category: 'Data Processing',
-        description: 'Distributed data processing and streaming',
-        maxPoints: 30,
-        requirements: ['Distributed processing', 'Stream processing', 'Data pipelines', 'Scalable architecture']
-      },
-      {
-        id: 'adv-10-ml',
-        category: 'Machine Learning',
-        description: 'ML model deployment and analytics',
-        maxPoints: 25,
-        requirements: ['ML model deployment', 'Predictive analytics', 'Model management', 'Automated insights']
-      },
-      {
-        id: 'adv-10-visualization',
-        category: 'Visualization & Reporting',
-        description: 'Data visualization and reporting tools',
-        maxPoints: 25,
-        requirements: ['Interactive dashboards', 'Data visualization', 'Report generation', 'Real-time insights']
-      },
-      {
-        id: 'adv-10-infrastructure',
-        category: 'Infrastructure & Performance',
-        description: 'System infrastructure and optimization',
-        maxPoints: 20,
-        requirements: ['Scalable infrastructure', 'Performance optimization', 'Data governance', 'Monitoring tools']
-      }
-    ],
-    folderStructure: {
-      'client': {
-        'src': {},
-        'package.json': ''
-      },
-      'server': {
-        'src': {},
-        'package.json': ''
-      },
-      'data-processing': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'ml-service': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'docker-compose.yml': '',
-      'kubernetes': {},
-      'README.md': ''
-    }
-  },
-  {
-    id: 'adv-11',
-    name: 'Cybersecurity Operations Center',
-    description: 'Build a comprehensive SOC platform with threat detection, incident response, and security analytics.',
-    stack: 'fullstack',
-    difficulty: 'advanced',
-    technologies: ['React', 'Node.js', 'Python', 'Elasticsearch', 'Kibana', 'Docker'],
-    estimatedHours: 52,
-    maxPoints: 100,
-    requirements: [
-      'Real-time threat detection and monitoring',
-      'Incident response workflow management',
-      'Security information and event management (SIEM)',
-      'Vulnerability assessment and scanning',
-      'Threat intelligence integration',
-      'Automated response and remediation',
-      'Compliance reporting and auditing',
-      'Network traffic analysis',
-      'User behavior analytics',
-      'Security dashboard and alerting'
-    ],
-    gradingCriteria: [
-      {
-        id: 'adv-11-detection',
-        category: 'Threat Detection',
-        description: 'Real-time threat detection and monitoring',
-        maxPoints: 30,
-        requirements: ['Threat detection', 'Real-time monitoring', 'Anomaly detection', 'Alert management']
-      },
-      {
-        id: 'adv-11-response',
-        category: 'Incident Response',
-        description: 'Incident response and workflow management',
-        maxPoints: 25,
-        requirements: ['Incident response', 'Workflow management', 'Automated remediation', 'Case management']
-      },
-      {
-        id: 'adv-11-analytics',
-        category: 'Security Analytics',
-        description: 'Security analytics and intelligence',
-        maxPoints: 25,
-        requirements: ['Security analytics', 'Threat intelligence', 'Behavioral analysis', 'Risk assessment']
-      },
-      {
-        id: 'adv-11-compliance',
-        category: 'Compliance & Reporting',
-        description: 'Compliance management and reporting',
-        maxPoints: 20,
-        requirements: ['Compliance reporting', 'Audit trails', 'Regulatory compliance', 'Security metrics']
-      }
-    ],
-    folderStructure: {
-      'client': {
-        'src': {},
-        'package.json': ''
-      },
-      'server': {
-        'src': {},
-        'package.json': ''
-      },
-      'detection-engine': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'analytics': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'docker-compose.yml': '',
-      'README.md': ''
-    }
-  },
-  {
-    id: 'adv-12',
-    name: 'Autonomous Vehicle Fleet Management',
-    description: 'Create a fleet management system for autonomous vehicles with route optimization, predictive maintenance, and safety monitoring.',
-    stack: 'fullstack',
-    difficulty: 'advanced',
-    technologies: ['React', 'Node.js', 'Python', 'TensorFlow', 'MQTT', 'PostgreSQL'],
-    estimatedHours: 58,
-    maxPoints: 100,
-    requirements: [
-      'Real-time vehicle tracking and monitoring',
-      'Autonomous route planning and optimization',
-      'Predictive maintenance using ML',
-      'Safety monitoring and incident detection',
-      'Fleet performance analytics',
-      'Remote vehicle control and updates',
-      'Passenger management and booking',
-      'Regulatory compliance and reporting',
-      'Integration with traffic management systems',
-      'Emergency response coordination'
-    ],
-    gradingCriteria: [
-      {
-        id: 'adv-12-tracking',
-        category: 'Vehicle Tracking',
-        description: 'Real-time tracking and monitoring',
-        maxPoints: 25,
-        requirements: ['Real-time tracking', 'Vehicle monitoring', 'Telemetry data', 'Status reporting']
-      },
-      {
-        id: 'adv-12-autonomous',
-        category: 'Autonomous Features',
-        description: 'Route planning and autonomous operations',
-        maxPoints: 30,
-        requirements: ['Route optimization', 'Autonomous navigation', 'Traffic integration', 'Decision making']
-      },
-      {
-        id: 'adv-12-maintenance',
-        category: 'Predictive Maintenance',
-        description: 'ML-based maintenance and safety monitoring',
-        maxPoints: 25,
-        requirements: ['Predictive maintenance', 'Safety monitoring', 'Incident detection', 'Performance analytics']
-      },
-      {
-        id: 'adv-12-management',
-        category: 'Fleet Management',
-        description: 'Fleet operations and passenger management',
-        maxPoints: 20,
-        requirements: ['Fleet operations', 'Passenger management', 'Booking system', 'Emergency response']
-      }
-    ],
-    folderStructure: {
-      'client': {
-        'src': {},
-        'package.json': ''
-      },
-      'server': {
-        'src': {},
-        'package.json': ''
-      },
-      'ml-service': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'vehicle-simulator': {
-        'src': {},
-        'package.json': ''
-      },
-      'docker-compose.yml': '',
-      'README.md': ''
-    }
-  },
-  {
-    id: 'adv-13',
-    name: 'Smart City Infrastructure Platform',
-    description: 'Build a comprehensive smart city platform integrating IoT sensors, traffic management, and citizen services.',
-    stack: 'fullstack',
-    difficulty: 'advanced',
-    technologies: ['React', 'Node.js', 'Python', 'MQTT', 'InfluxDB', 'GIS'],
-    estimatedHours: 54,
-    maxPoints: 100,
-    requirements: [
-      'IoT sensor network management',
-      'Traffic flow optimization',
-      'Environmental monitoring and alerts',
-      'Citizen service portal',
-      'Emergency response coordination',
-      'Energy management and optimization',
-      'Public transportation integration',
-      'Data analytics and city insights',
-      'Mobile app for citizens',
-      'Integration with government systems'
-    ],
-    gradingCriteria: [
-      {
-        id: 'adv-13-iot',
-        category: 'IoT Integration',
-        description: 'IoT sensor network and data collection',
-        maxPoints: 30,
-        requirements: ['IoT sensor management', 'Data collection', 'Real-time monitoring', 'Device management']
-      },
-      {
-        id: 'adv-13-services',
-        category: 'City Services',
-        description: 'Traffic, environment, and citizen services',
-        maxPoints: 25,
-        requirements: ['Traffic management', 'Environmental monitoring', 'Citizen services', 'Emergency response']
-      },
-      {
-        id: 'adv-13-analytics',
-        category: 'Analytics & Insights',
-        description: 'City analytics and optimization',
-        maxPoints: 25,
-        requirements: ['City analytics', 'Performance insights', 'Optimization algorithms', 'Predictive modeling']
-      },
-      {
-        id: 'adv-13-integration',
-        category: 'System Integration',
-        description: 'Government and transportation integration',
-        maxPoints: 20,
-        requirements: ['Government integration', 'Transportation systems', 'Mobile applications', 'API development']
-      }
-    ],
-    folderStructure: {
-      'client': {
-        'src': {},
-        'package.json': ''
-      },
-      'server': {
-        'src': {},
-        'package.json': ''
-      },
-      'iot-service': {
-        'src': {},
-        'package.json': ''
-      },
-      'analytics': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'mobile': {
-        'src': {},
-        'package.json': ''
-      },
-      'docker-compose.yml': '',
-      'README.md': ''
-    }
-  },
-  {
-    id: 'adv-14',
-    name: 'Quantum Computing Simulation Platform',
-    description: 'Create a quantum computing simulation and development platform with circuit design and algorithm testing.',
-    stack: 'fullstack',
-    difficulty: 'advanced',
-    technologies: ['React', 'Node.js', 'Python', 'Qiskit', 'NumPy', 'WebGL'],
-    estimatedHours: 60,
-    maxPoints: 100,
-    requirements: [
-      'Quantum circuit design interface',
-      'Quantum algorithm simulation',
-      'Quantum state visualization',
-      'Educational quantum computing modules',
-      'Performance benchmarking tools',
-      'Quantum error correction simulation',
-      'Integration with real quantum hardware',
-      'Collaborative research features',
-      'Quantum programming language support',
-      'Advanced quantum algorithm library'
-    ],
-    gradingCriteria: [
-      {
-        id: 'adv-14-simulation',
-        category: 'Quantum Simulation',
-        description: 'Quantum circuit simulation and execution',
-        maxPoints: 35,
-        requirements: ['Circuit simulation', 'Quantum algorithms', 'State management', 'Performance optimization']
-      },
-      {
-        id: 'adv-14-interface',
-        category: 'User Interface',
-        description: 'Circuit design and visualization interface',
-        maxPoints: 25,
-        requirements: ['Circuit designer', 'State visualization', 'Interactive interface', 'Educational tools']
-      },
-      {
-        id: 'adv-14-algorithms',
-        category: 'Algorithm Library',
-        description: 'Quantum algorithm implementation and testing',
-        maxPoints: 25,
-        requirements: ['Algorithm library', 'Testing framework', 'Benchmarking tools', 'Error correction']
-      },
-      {
-        id: 'adv-14-integration',
-        category: 'Hardware Integration',
-        description: 'Real quantum hardware integration',
-        maxPoints: 15,
-        requirements: ['Hardware integration', 'Cloud quantum access', 'Collaborative features', 'Research tools']
-      }
-    ],
-    folderStructure: {
-      'client': {
-        'src': {},
-        'package.json': ''
-      },
-      'server': {
-        'src': {},
-        'package.json': ''
-      },
-      'quantum-simulator': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'algorithm-library': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'docker-compose.yml': '',
-      'README.md': ''
-    }
-  },
-  {
-    id: 'adv-15',
-    name: 'Decentralized Social Network',
-    description: 'Build a decentralized social media platform using blockchain technology with content ownership and privacy.',
-    stack: 'fullstack',
-    difficulty: 'advanced',
-    technologies: ['React', 'Node.js', 'Ethereum', 'IPFS', 'Web3.js', 'Solidity'],
-    estimatedHours: 56,
-    maxPoints: 100,
-    requirements: [
-      'Decentralized user identity and authentication',
-      'Content publishing on blockchain',
-      'Peer-to-peer content distribution',
-      'Cryptocurrency-based monetization',
-      'Decentralized governance and voting',
-      'Privacy-preserving features',
-      'Content moderation through consensus',
-      'Cross-platform mobile applications',
-      'Integration with existing social platforms',
-      'Decentralized storage and backup'
-    ],
-    gradingCriteria: [
-      {
-        id: 'adv-15-blockchain',
-        category: 'Blockchain Integration',
-        description: 'Decentralized architecture and blockchain features',
-        maxPoints: 35,
-        requirements: ['Decentralized identity', 'Blockchain integration', 'Smart contracts', 'Cryptocurrency features']
-      },
-      {
-        id: 'adv-15-social',
-        category: 'Social Features',
-        description: 'Social networking and content features',
-        maxPoints: 25,
-        requirements: ['Content publishing', 'Social interactions', 'User profiles', 'Community features']
-      },
-      {
-        id: 'adv-15-privacy',
-        category: 'Privacy & Security',
-        description: 'Privacy protection and security measures',
-        maxPoints: 25,
-        requirements: ['Privacy features', 'Data encryption', 'User control', 'Security protocols']
-      },
-      {
-        id: 'adv-15-governance',
-        category: 'Governance & Moderation',
-        description: 'Decentralized governance and content moderation',
-        maxPoints: 15,
-        requirements: ['Decentralized governance', 'Content moderation', 'Community voting', 'Consensus mechanisms']
-      }
-    ],
-    folderStructure: {
-      'client': {
-        'src': {},
-        'package.json': ''
-      },
-      'server': {
-        'src': {},
-        'package.json': ''
-      },
-      'smart-contracts': {
-        'contracts': {},
-        'migrations': {},
-        'truffle-config.js': ''
-      },
-      'mobile': {
-        'src': {},
-        'package.json': ''
-      },
-      'README.md': ''
-    }
-  },
-  {
-    id: 'adv-16',
-    name: 'Advanced Robotics Control System',
-    description: 'Create a comprehensive robotics control platform with AI navigation, task automation, and fleet coordination.',
-    stack: 'fullstack',
-    difficulty: 'advanced',
-    technologies: ['React', 'Node.js', 'Python', 'ROS', 'TensorFlow', 'WebRTC'],
-    estimatedHours: 62,
-    maxPoints: 100,
-    requirements: [
-      'Robot fleet management and coordination',
-      'AI-powered navigation and path planning',
-      'Task automation and scheduling',
-      'Real-time robot monitoring and control',
-      'Computer vision and object recognition',
-      'Human-robot interaction interface',
-      'Predictive maintenance for robots',
-      'Safety monitoring and emergency protocols',
-      'Integration with warehouse management systems',
-      'Remote operation and telepresence'
-    ],
-    gradingCriteria: [
-      {
-        id: 'adv-16-control',
-        category: 'Robot Control',
-        description: 'Robot control and fleet management',
-        maxPoints: 30,
-        requirements: ['Fleet management', 'Robot control', 'Task coordination', 'Real-time monitoring']
-      },
-      {
-        id: 'adv-16-ai',
-        category: 'AI & Navigation',
-        description: 'AI-powered navigation and automation',
-        maxPoints: 30,
-        requirements: ['AI navigation', 'Path planning', 'Computer vision', 'Autonomous operation']
-      },
-      {
-        id: 'adv-16-interaction',
-        category: 'Human-Robot Interaction',
-        description: 'User interface and interaction systems',
-        maxPoints: 25,
-        requirements: ['User interface', 'Remote control', 'Telepresence', 'Safety protocols']
-      },
-      {
-        id: 'adv-16-integration',
-        category: 'System Integration',
-        description: 'Integration with external systems',
-        maxPoints: 15,
-        requirements: ['System integration', 'Warehouse systems', 'Predictive maintenance', 'Performance analytics']
-      }
-    ],
-    folderStructure: {
-      'client': {
-        'src': {},
-        'package.json': ''
-      },
-      'server': {
-        'src': {},
-        'package.json': ''
-      },
-      'robot-control': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'ai-service': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'simulator': {
-        'src': {},
-        'package.json': ''
-      },
-      'docker-compose.yml': '',
-      'README.md': ''
-    }
-  },
-  {
-    id: 'adv-17',
-    name: 'Space Mission Control System',
-    description: 'Build a mission control platform for space operations with satellite tracking, telemetry, and mission planning.',
-    stack: 'fullstack',
-    difficulty: 'advanced',
-    technologies: ['React', 'Node.js', 'Python', 'WebGL', 'Real-time Data', 'GIS'],
-    estimatedHours: 58,
-    maxPoints: 100,
-    requirements: [
-      'Real-time satellite tracking and visualization',
-      'Telemetry data processing and analysis',
-      'Mission planning and trajectory calculation',
-      'Ground station network management',
-      'Spacecraft health monitoring',
-      'Communication protocol handling',
-      'Orbital mechanics simulation',
-      'Emergency response procedures',
-      'Data archival and historical analysis',
-      'Integration with space agency systems'
-    ],
-    gradingCriteria: [
-      {
-        id: 'adv-17-tracking',
-        category: 'Satellite Tracking',
-        description: 'Real-time tracking and visualization',
-        maxPoints: 30,
-        requirements: ['Satellite tracking', '3D visualization', 'Orbital calculations', 'Real-time updates']
-      },
-      {
-        id: 'adv-17-telemetry',
-        category: 'Telemetry & Monitoring',
-        description: 'Data processing and spacecraft monitoring',
-        maxPoints: 25,
-        requirements: ['Telemetry processing', 'Health monitoring', 'Data analysis', 'Alert systems']
-      },
-      {
-        id: 'adv-17-mission',
-        category: 'Mission Planning',
-        description: 'Mission planning and trajectory calculation',
-        maxPoints: 25,
-        requirements: ['Mission planning', 'Trajectory calculation', 'Orbital mechanics', 'Simulation tools']
-      },
-      {
-        id: 'adv-17-operations',
-        category: 'Operations & Integration',
-        description: 'Ground operations and system integration',
-        maxPoints: 20,
-        requirements: ['Ground station management', 'Communication protocols', 'Emergency procedures', 'System integration']
-      }
-    ],
-    folderStructure: {
-      'client': {
-        'src': {},
-        'package.json': ''
-      },
-      'server': {
-        'src': {},
-        'package.json': ''
-      },
-      'telemetry-service': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'orbital-mechanics': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'visualization': {
-        'src': {},
-        'package.json': ''
-      },
-      'docker-compose.yml': '',
-      'README.md': ''
-    }
-  },
-  {
-    id: 'adv-18',
-    name: 'Bioinformatics Research Platform',
-    description: 'Create a comprehensive bioinformatics platform for genomic analysis, protein modeling, and drug discovery.',
-    stack: 'fullstack',
-    difficulty: 'advanced',
-    technologies: ['React', 'Node.js', 'Python', 'BioPython', 'TensorFlow', 'PostgreSQL'],
-    estimatedHours: 55,
-    maxPoints: 100,
-    requirements: [
-      'Genomic sequence analysis and alignment',
-      'Protein structure prediction and modeling',
-      'Drug discovery and molecular docking',
-      'Phylogenetic tree construction',
-      'Gene expression analysis',
-      'Collaborative research workspace',
-      'High-performance computing integration',
-      'Bioinformatics workflow automation',
-      'Data visualization and reporting',
-      'Integration with biological databases'
-    ],
-    gradingCriteria: [
-      {
-        id: 'adv-18-genomics',
-        category: 'Genomic Analysis',
-        description: 'Genomic sequence analysis and processing',
-        maxPoints: 30,
-        requirements: ['Sequence analysis', 'Genome alignment', 'Variant calling', 'Gene annotation']
-      },
-      {
-        id: 'adv-18-protein',
-        category: 'Protein Analysis',
-        description: 'Protein structure and function analysis',
-        maxPoints: 25,
-        requirements: ['Protein modeling', 'Structure prediction', 'Molecular docking', 'Function analysis']
-      },
-      {
-        id: 'adv-18-discovery',
-        category: 'Drug Discovery',
-        description: 'Drug discovery and molecular analysis',
-        maxPoints: 25,
-        requirements: ['Drug discovery', 'Molecular screening', 'Compound analysis', 'Target identification']
-      },
-      {
-        id: 'adv-18-platform',
-        category: 'Research Platform',
-        description: 'Collaborative platform and workflow automation',
-        maxPoints: 20,
-        requirements: ['Collaborative workspace', 'Workflow automation', 'Data integration', 'Visualization tools']
-      }
-    ],
-    folderStructure: {
-      'client': {
-        'src': {},
-        'package.json': ''
-      },
-      'server': {
-        'src': {},
-        'package.json': ''
-      },
-      'bioinformatics': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'ml-service': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'workflow-engine': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'docker-compose.yml': '',
-      'README.md': ''
-    }
-  },
-  {
-    id: 'adv-19',
-    name: 'Climate Monitoring Network',
-    description: 'Build a global climate monitoring system with environmental sensors, predictive modeling, and policy recommendations.',
-    stack: 'fullstack',
-    difficulty: 'advanced',
-    technologies: ['React', 'Node.js', 'Python', 'TensorFlow', 'MQTT', 'GIS'],
-    estimatedHours: 53,
-    maxPoints: 100,
-    requirements: [
-      'Global sensor network management',
-      'Climate data collection and processing',
-      'Predictive climate modeling',
-      'Environmental impact assessment',
-      'Real-time monitoring dashboards',
-      'Policy recommendation engine',
-      'Public awareness and education tools',
-      'Integration with meteorological services',
-      'Mobile app for citizen reporting',
-      'API for research institutions'
-    ],
-    gradingCriteria: [
-      {
-        id: 'adv-19-monitoring',
-        category: 'Environmental Monitoring',
-        description: 'Sensor network and data collection',
-        maxPoints: 30,
-        requirements: ['Sensor network', 'Data collection', 'Real-time monitoring', 'Quality control']
-      },
-      {
-        id: 'adv-19-modeling',
-        category: 'Predictive Modeling',
-        description: 'Climate prediction and impact assessment',
-        maxPoints: 25,
-        requirements: ['Climate modeling', 'Predictive analytics', 'Impact assessment', 'Scenario analysis']
-      },
-      {
-        id: 'adv-19-visualization',
-        category: 'Data Visualization',
-        description: 'Dashboards and public awareness tools',
-        maxPoints: 25,
-        requirements: ['Interactive dashboards', 'Data visualization', 'Public tools', 'Educational content']
-      },
-      {
-        id: 'adv-19-integration',
-        category: 'System Integration',
-        description: 'External system integration and APIs',
-        maxPoints: 20,
-        requirements: ['Meteorological integration', 'Research APIs', 'Mobile applications', 'Policy tools']
-      }
-    ],
-    folderStructure: {
-      'client': {
-        'src': {},
-        'package.json': ''
-      },
-      'server': {
-        'src': {},
-        'package.json': ''
-      },
-      'climate-modeling': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'sensor-network': {
-        'src': {},
-        'package.json': ''
-      },
-      'mobile': {
-        'src': {},
-        'package.json': ''
-      },
-      'docker-compose.yml': '',
-      'README.md': ''
-    }
-  },
-  {
-    id: 'adv-20',
-    name: 'Neural Network Training Platform',
-    description: 'Create a comprehensive platform for training, deploying, and managing neural networks with distributed computing.',
-    stack: 'fullstack',
-    difficulty: 'advanced',
-    technologies: ['React', 'Node.js', 'Python', 'TensorFlow', 'PyTorch', 'Kubernetes'],
-    estimatedHours: 57,
-    maxPoints: 100,
-    requirements: [
-      'Distributed neural network training',
-      'Model architecture design interface',
-      'Hyperparameter optimization',
-      'Model versioning and experiment tracking',
-      'Automated model deployment',
-      'Performance monitoring and analytics',
-      'Collaborative research environment',
-      'GPU cluster management',
-      'Model marketplace and sharing',
-      'Integration with cloud ML services'
-    ],
-    gradingCriteria: [
-      {
-        id: 'adv-20-training',
-        category: 'Model Training',
-        description: 'Distributed training and optimization',
-        maxPoints: 35,
-        requirements: ['Distributed training', 'Hyperparameter optimization', 'Training orchestration', 'Resource management']
-      },
-      {
-        id: 'adv-20-platform',
-        category: 'Platform Features',
-        description: 'Model management and deployment',
-        maxPoints: 25,
-        requirements: ['Model versioning', 'Experiment tracking', 'Automated deployment', 'Performance monitoring']
-      },
-      {
-        id: 'adv-20-interface',
-        category: 'User Interface',
-        description: 'Design interface and collaboration tools',
-        maxPoints: 25,
-        requirements: ['Architecture designer', 'Collaboration tools', 'Visualization', 'User experience']
-      },
-      {
-        id: 'adv-20-infrastructure',
-        category: 'Infrastructure & Integration',
-        description: 'Cloud integration and infrastructure management',
-        maxPoints: 15,
-        requirements: ['GPU cluster management', 'Cloud integration', 'Scalable infrastructure', 'API development']
-      }
-    ],
-    folderStructure: {
-      'client': {
-        'src': {},
-        'package.json': ''
-      },
-      'server': {
-        'src': {},
-        'package.json': ''
-      },
-      'training-service': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'model-service': {
-        'src': {},
-        'requirements.txt': ''
-      },
-      'kubernetes': {},
-      'docker-compose.yml': '',
-      'README.md': ''
-    }
-  }
-];
-
-export const techStacks: TechStack[] = [
-  {
-    id: 'frontend',
-    name: 'Frontend Development',
-    description: 'Build user interfaces and client-side applications',
-    icon: '🎨',
-    templates: [
-      {
-        id: 'html-css-js',
-        name: 'HTML/CSS/JavaScript',
-        description: 'Vanilla web development with core technologies',
-        language: 'JavaScript',
-        folderStructure: {
-          'index.html': '',
-          'css': {
-            'style.css': ''
-          },
-          'js': {
-            'main.js': ''
-          },
-          'images': {},
-          'README.md': ''
-        },
-        dependencies: [],
-        startCommand: 'Open index.html in browser'
-      },
-      {
-        id: 'react',
-        name: 'React',
-        description: 'Modern React application with hooks and components',
-        language: 'JavaScript',
-        framework: 'React',
-        folderStructure: {
-          'src': {
-            'components': {},
-            'pages': {},
-            'hooks': {},
-            'utils': {},
-            'App.js': '',
-            'index.js': ''
-          },
-          'public': {
-            'index.html': ''
-          },
-          'package.json': '',
-          'README.md': ''
-        },
-        dependencies: ['react', 'react-dom', 'react-scripts'],
-        startCommand: 'npm start'
-      },
-      {
-        id: 'nextjs',
-        name: 'Next.js',
-        description: 'Full-stack React framework with SSR and API routes',
-        language: 'JavaScript',
-        framework: 'Next.js',
-        folderStructure: {
-          'pages': {
-            'api': {},
-            'index.js': '',
-            '_app.js': ''
-          },
-          'components': {},
-          'styles': {
-            'globals.css': ''
-          },
-          'public': {},
-          'package.json': '',
-          'README.md': ''
-        },
-        dependencies: ['next', 'react', 'react-dom'],
-        startCommand: 'npm run dev'
-      },
-      {
-        id: 'vue',
-        name: 'Vue.js',
-        description: 'Progressive Vue.js application',
-        language: 'JavaScript',
-        framework: 'Vue.js',
-        folderStructure: {
-          'src': {
-            'components': {},
-            'views': {},
-            'router': {},
-            'store': {},
-            'App.vue': '',
-            'main.js': ''
-          },
-          'public': {
-            'index.html': ''
-          },
-          'package.json': '',
-          'README.md': ''
-        },
-        dependencies: ['vue', '@vue/cli-service'],
-        startCommand: 'npm run serve'
-      }
-    ]
-  },
-  {
-    id: 'backend',
-    name: 'Backend Development',
-    description: 'Build server-side applications and APIs',
-    icon: '⚙️',
-    templates: [
-      {
-        id: 'nodejs-express',
-        name: 'Node.js + Express',
-        description: 'RESTful API with Express.js framework',
-        language: 'JavaScript',
-        framework: 'Express.js',
-        folderStructure: {
-          'src': {
-            'routes': {},
-            'controllers': {},
-            'models': {},
-            'middleware': {},
-            'config': {},
-            'utils': {}
-          },
-          'server.js': '',
-          'package.json': '',
-          'README.md': ''
-        },
-        dependencies: ['express', 'cors', 'dotenv', 'helmet'],
-        startCommand: 'npm start'
-      },
-      {
-        id: 'python-flask',
-        name: 'Python + Flask',
-        description: 'Lightweight Python web framework',
-        language: 'Python',
-        framework: 'Flask',
-        folderStructure: {
-          'app': {
-            'routes': {},
-            'models': {},
-            'utils': {},
-            '__init__.py': ''
-          },
-          'config.py': '',
-          'run.py': '',
-          'requirements.txt': '',
-          'README.md': ''
-        },
-        dependencies: ['Flask', 'Flask-CORS', 'python-dotenv'],
-        startCommand: 'python run.py'
-      },
-      {
-        id: 'python-django',
-        name: 'Python + Django',
-        description: 'Full-featured Python web framework',
-        language: 'Python',
-        framework: 'Django',
-        folderStructure: {
-          'project': {
-            'settings.py': '',
-            'urls.py': '',
-            'wsgi.py': ''
-          },
-          'apps': {},
-          'static': {},
-          'templates': {},
-          'manage.py': '',
-          'requirements.txt': '',
-          'README.md': ''
-        },
-        dependencies: ['Django', 'djangorestframework', 'django-cors-headers'],
-        startCommand: 'python manage.py runserver'
-      },
-      {
-        id: 'nodejs-fastify',
-        name: 'Node.js + Fastify',
-        description: 'Fast and low overhead web framework',
-        language: 'JavaScript',
-        framework: 'Fastify',
-        folderStructure: {
-          'src': {
-            'routes': {},
-            'plugins': {},
-            'schemas': {},
-            'services': {}
-          },
-          'server.js': '',
-          'package.json': '',
-          'README.md': ''
-        },
-        dependencies: ['fastify', '@fastify/cors', '@fastify/helmet'],
-        startCommand: 'npm start'
-      }
-    ]
-  },
-  {
-    id: 'fullstack',
-    name: 'Full-Stack Development',
-    description: 'Complete web applications with frontend and backend',
-    icon: '🚀',
-    templates: [
-      {
-        id: 'mern',
-        name: 'MERN Stack',
-        description: 'MongoDB, Express, React, Node.js',
-        language: 'JavaScript',
-        framework: 'MERN',
-        folderStructure: {
-          'client': {
-            'src': {
-              'components': {},
-              'pages': {},
-              'hooks': {},
-              'utils': {}
-            },
-            'public': {},
-            'package.json': ''
-          },
-          'server': {
-            'routes': {},
-            'models': {},
-            'middleware': {},
-            'controllers': {},
-            'config': {},
-            'server.js': '',
-            'package.json': ''
-          },
-          'README.md': ''
-        },
-        dependencies: ['react', 'express', 'mongoose', 'cors'],
-        startCommand: 'npm run dev'
-      },
-      {
-        id: 'mean',
-        name: 'MEAN Stack',
-        description: 'MongoDB, Express, Angular, Node.js',
-        language: 'TypeScript',
-        framework: 'MEAN',
-        folderStructure: {
-          'client': {
-            'src': {
-              'app': {
-                'components': {},
-                'services': {},
-                'models': {}
-              }
-            },
-            'angular.json': '',
-            'package.json': ''
-          },
-          'server': {
-            'routes': {},
-            'models': {},
-            'middleware': {},
-            'server.js': '',
-            'package.json': ''
-          },
-          'README.md': ''
-        },
-        dependencies: ['@angular/core', 'express', 'mongoose'],
-        startCommand: 'npm run dev'
-      },
-      {
-        id: 'nextjs-fullstack',
-        name: 'Next.js Full-Stack',
-        description: 'Next.js with API routes and database',
-        language: 'JavaScript',
-        framework: 'Next.js',
-        folderStructure: {
-          'pages': {
-            'api': {},
-            'index.js': '',
-            '_app.js': ''
-          },
-          'components': {},
-          'lib': {
-            'database.js': '',
-            'auth.js': ''
-          },
-          'styles': {},
-          'public': {},
-          'package.json': '',
-          'README.md': ''
-        },
-        dependencies: ['next', 'react', 'react-dom', 'mongoose'],
-        startCommand: 'npm run dev'
-      }
-    ]
-  }
-];
-
-// Combine all projects by stack
-export const allProjects = {
-  frontend: {
-    beginner: beginnerProjects.filter(p => p.stack === 'frontend'),
-    intermediate: intermediateProjects.filter(p => p.stack === 'frontend'),
-    advanced: advancedProjects.filter(p => p.stack === 'frontend')
-  },
-  backend: {
-    beginner: beginnerProjects.filter(p => p.stack === 'backend'),
-    intermediate: intermediateProjects.filter(p => p.stack === 'backend'),
-    advanced: advancedProjects.filter(p => p.stack === 'backend')
-  },
-  fullstack: {
-    beginner: beginnerProjects.filter(p => p.stack === 'fullstack'),
-    intermediate: intermediateProjects.filter(p => p.stack === 'fullstack'),
-    advanced: advancedProjects.filter(p => p.stack === 'fullstack')
-  }
-};
+      'Multi
