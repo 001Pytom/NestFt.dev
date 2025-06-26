@@ -2,24 +2,25 @@
 
 export const getFileContent = (fileName: string, template: any, projectName: string): string => {
   const templateId = template.id;
+  const isTypeScript = template.language === 'typescript' || templateId.includes('typescript');
   
   switch (templateId) {
     case 'html-css-js':
       return getVanillaFileContent(fileName, projectName);
     case 'react':
-      return getReactFileContent(fileName, projectName);
+      return getReactFileContent(fileName, projectName, isTypeScript);
     case 'nextjs':
-      return getNextJSFileContent(fileName, projectName);
+      return getNextJSFileContent(fileName, projectName, isTypeScript);
     case 'vue':
-      return getVueFileContent(fileName, projectName);
+      return getVueFileContent(fileName, projectName, isTypeScript);
     case 'nodejs-express':
-      return getNodeExpressFileContent(fileName, projectName);
+      return getNodeExpressFileContent(fileName, projectName, isTypeScript);
     case 'python-flask':
       return getPythonFlaskFileContent(fileName, projectName);
     case 'python-django':
       return getPythonDjangoFileContent(fileName, projectName);
     case 'mern':
-      return getMERNFileContent(fileName, projectName);
+      return getMERNFileContent(fileName, projectName, isTypeScript);
     default:
       return getDefaultFileContent(fileName, projectName);
   }
@@ -389,13 +390,21 @@ function showNotification(message, type = 'info') {
 };
 
 // React Templates
-const getReactFileContent = (fileName: string, projectName: string): string => {
+const getReactFileContent = (fileName: string, projectName: string, isTypeScript: boolean = false): string => {
+  const ext = isTypeScript ? 'tsx' : 'jsx';
+  const jsExt = isTypeScript ? 'ts' : 'js';
+  
   switch (fileName) {
+    case `src/App.${jsExt}`:
+    case `src/App.${ext}`:
     case 'src/App.js':
+    case 'src/App.jsx':
+    case 'src/App.ts':
+    case 'src/App.tsx':
       return `import React, { useState } from 'react';
 import './App.css';
 
-function App() {
+${isTypeScript ? 'const App: React.FC = () => {' : 'function App() {'}
   const [count, setCount] = useState(0);
 
   return (
@@ -427,17 +436,19 @@ function App() {
       </header>
     </div>
   );
-}
+${isTypeScript ? '}' : '}'}
 
 export default App;`;
 
+    case `src/index.${jsExt}`:
     case 'src/index.js':
+    case 'src/index.ts':
       return `import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById('root')${isTypeScript ? ' as HTMLElement' : ''});
 root.render(
   <React.StrictMode>
     <App />
@@ -547,7 +558,7 @@ code {
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1"
+    "react-scripts": "5.0.1"${isTypeScript ? ',\n    "@types/react": "^18.2.0",\n    "@types/react-dom": "^18.2.0",\n    "typescript": "^4.9.5"' : ''}
   },
   "scripts": {
     "start": "react-scripts start",
@@ -575,22 +586,64 @@ code {
   }
 }`;
 
+    case 'tsconfig.json':
+      if (isTypeScript) {
+        return `{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "es6"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "src"
+  ]
+}`;
+      }
+      return '';
+
     default:
       return '';
   }
 };
 
 // Node.js Express Templates
-const getNodeExpressFileContent = (fileName: string, projectName: string): string => {
+const getNodeExpressFileContent = (fileName: string, projectName: string, isTypeScript: boolean = false): string => {
+  const ext = isTypeScript ? 'ts' : 'js';
+  
   switch (fileName) {
+    case `server.${ext}`:
     case 'server.js':
-      return `const express = require('express');
+    case 'server.ts':
+      return `${isTypeScript ? 
+        `import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import dotenv from 'dotenv';
+
+dotenv.config();` :
+        `const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-require('dotenv').config();
+require('dotenv').config();`}
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT${isTypeScript ? ': number' : ''} = ${isTypeScript ? 'parseInt(process.env.PORT || "3000", 10)' : 'process.env.PORT || 3000'};
 
 // Middleware
 app.use(helmet());
@@ -619,7 +672,7 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api', require('./src/routes/api'));
+app.use('/api', ${isTypeScript ? `require('./src/routes/api')` : `require('./src/routes/api')`});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -643,12 +696,24 @@ app.listen(PORT, () => {
   console.log(\`📖 API documentation: http://localhost:\${PORT}\`);
 });`;
 
+    case `src/routes/api.${ext}`:
     case 'src/routes/api.js':
-      return `const express = require('express');
+    case 'src/routes/api.ts':
+      return `${isTypeScript ? 
+        `import express from 'express';` :
+        `const express = require('express');`}
 const router = express.Router();
 
+${isTypeScript ? `
+interface Item {
+  id: number;
+  name: string;
+  description: string;
+}
+` : ''}
+
 // Sample data (replace with database)
-let items = [
+let items${isTypeScript ? ': Item[]' : ''} = [
   { id: 1, name: 'Sample Item 1', description: 'This is a sample item' },
   { id: 2, name: 'Sample Item 2', description: 'This is another sample item' }
 ];
@@ -691,7 +756,7 @@ router.post('/items', (req, res) => {
     });
   }
   
-  const newItem = {
+  const newItem${isTypeScript ? ': Item' : ''} = {
     id: items.length + 1,
     name,
     description: description || ''
@@ -748,32 +813,57 @@ router.delete('/items/:id', (req, res) => {
   });
 });
 
-module.exports = router;`;
+${isTypeScript ? 'export default router;' : 'module.exports = router;'}`;
 
     case 'package.json':
       return `{
   "name": "${projectName.toLowerCase().replace(/\\s+/g, '-')}",
   "version": "1.0.0",
   "description": "${projectName} - Node.js Express API",
-  "main": "server.js",
+  "main": "server.${ext}",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "${isTypeScript ? 'ts-node server.ts' : 'node server.js'}",
+    "dev": "${isTypeScript ? 'nodemon --exec ts-node server.ts' : 'nodemon server.js'}",
+    "build": "${isTypeScript ? 'tsc' : 'echo \\"No build step needed\\"'}",
     "test": "echo \\"Error: no test specified\\" && exit 1"
   },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
     "helmet": "^7.0.0",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1"${isTypeScript ? ',\n    "ts-node": "^10.9.1"' : ''}
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1"${isTypeScript ? ',\n    "@types/express": "^4.17.17",\n    "@types/cors": "^2.8.13",\n    "@types/node": "^20.5.0",\n    "typescript": "^5.1.6"' : ''}
   },
   "keywords": ["nodejs", "express", "api"],
   "author": "",
   "license": "MIT"
 }`;
+
+    case 'tsconfig.json':
+      if (isTypeScript) {
+        return `{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "outDir": "./dist",
+    "rootDir": "./",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  },
+  "include": ["**/*"],
+  "exclude": ["node_modules", "dist"]
+}`;
+      }
+      return '';
 
     default:
       return '';
@@ -831,12 +921,12 @@ console.log('Welcome to ${projectName}!');
 export { getVanillaFileContent, getReactFileContent, getNodeExpressFileContent };
 
 // Additional template functions for other frameworks
-const getNextJSFileContent = (fileName: string, projectName: string): string => {
+const getNextJSFileContent = (fileName: string, projectName: string, isTypeScript: boolean = false): string => {
   // Implementation for Next.js templates
   return getDefaultFileContent(fileName, projectName);
 };
 
-const getVueFileContent = (fileName: string, projectName: string): string => {
+const getVueFileContent = (fileName: string, projectName: string, isTypeScript: boolean = false): string => {
   // Implementation for Vue.js templates
   return getDefaultFileContent(fileName, projectName);
 };
@@ -851,7 +941,7 @@ const getPythonDjangoFileContent = (fileName: string, projectName: string): stri
   return getDefaultFileContent(fileName, projectName);
 };
 
-const getMERNFileContent = (fileName: string, projectName: string): string => {
+const getMERNFileContent = (fileName: string, projectName: string, isTypeScript: boolean = false): string => {
   // Implementation for MERN stack templates
   return getDefaultFileContent(fileName, projectName);
 };

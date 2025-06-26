@@ -38,24 +38,49 @@ export default function ProjectSetupPage() {
     
     setProject(foundProject)
     
-    // Get available templates based on project stack
-    const relevantStacks = techStacks.filter(stack => 
-      stack.id === foundProject.stack || foundProject.stack === 'fullstack'
-    )
-    
-    const templates = relevantStacks.flatMap(stack => stack.templates)
-    setAvailableTemplates(templates)
-    
-    // Auto-select first template if only one available
-    if (templates.length === 1) {
-      setSelectedTemplate(templates[0])
-    }
+    // Update available templates when language changes
+    updateAvailableTemplates(foundProject, selectedLanguage)
     
     // Check if user has already submitted this project
     if (user && foundProject) {
       checkSubmissionStatus(foundProject.id)
     }
-  }, [projectId, router])
+  }, [projectId, router, selectedLanguage])
+  
+  const updateAvailableTemplates = (project: ProjectTemplate, language: 'javascript' | 'typescript') => {
+    // Get available templates based on project stack and language
+    const relevantStacks = techStacks.filter(stack => 
+      stack.id === project.stack || project.stack === 'fullstack'
+    )
+    
+    // Filter templates based on selected language
+    const allTemplates = relevantStacks.flatMap(stack => stack.templates)
+    const filteredTemplates = allTemplates.filter(template => {
+      if (language === 'typescript') {
+        // For TypeScript, show templates that support TypeScript or can be converted
+        return template.language === 'typescript' || 
+               template.id.includes('react') || 
+               template.id.includes('nextjs') || 
+               template.id.includes('vue') ||
+               template.id.includes('nodejs')
+      } else {
+        // For JavaScript, show all templates
+        return true
+      }
+    })
+    
+    setAvailableTemplates(filteredTemplates)
+    
+    // Reset selected template if it's not compatible with new language
+    if (selectedTemplate && !filteredTemplates.find(t => t.id === selectedTemplate.id)) {
+      setSelectedTemplate(null)
+    }
+    
+    // Auto-select first template if only one available
+    if (filteredTemplates.length === 1) {
+      setSelectedTemplate(filteredTemplates[0])
+    }
+  }
   
   const checkSubmissionStatus = async (projectId: string) => {
     if (!user) return
@@ -268,7 +293,10 @@ export default function ProjectSetupPage() {
                           name="language"
                           value="javascript"
                           checked={selectedLanguage === 'javascript'}
-                          onChange={(e) => setSelectedLanguage(e.target.value as 'javascript' | 'typescript')}
+                          onChange={(e) => {
+                            setSelectedLanguage(e.target.value as 'javascript' | 'typescript')
+                            setSelectedTemplate(null) // Reset template selection
+                          }}
                           className="w-4 h-4 text-primary"
                         />
                         <span className="text-sm font-medium">JavaScript</span>
@@ -279,12 +307,21 @@ export default function ProjectSetupPage() {
                           name="language"
                           value="typescript"
                           checked={selectedLanguage === 'typescript'}
-                          onChange={(e) => setSelectedLanguage(e.target.value as 'javascript' | 'typescript')}
+                          onChange={(e) => {
+                            setSelectedLanguage(e.target.value as 'javascript' | 'typescript')
+                            setSelectedTemplate(null) // Reset template selection
+                          }}
                           className="w-4 h-4 text-primary"
                         />
                         <span className="text-sm font-medium">TypeScript</span>
                       </label>
                     </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {selectedLanguage === 'typescript' 
+                        ? 'TypeScript templates and TypeScript-compatible frameworks will be shown'
+                        : 'All available templates will be shown'
+                      }
+                    </p>
                   </div>
                   
                   {/* Template Selection Dropdown */}
@@ -301,7 +338,13 @@ export default function ProjectSetupPage() {
                     </button>
                     
                     {showTemplateDropdown && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10 max-h-80 overflow-y-auto">
+                        {availableTemplates.length === 0 ? (
+                          <div className="p-4 text-center text-gray-500">
+                            <p>No templates available for {selectedLanguage}</p>
+                            <p className="text-xs mt-1">Try selecting a different language</p>
+                          </div>
+                        ) : (
                         {availableTemplates.map((template) => (
                           <button
                             key={template.id}
@@ -316,7 +359,9 @@ export default function ProjectSetupPage() {
                               <h4 className="font-medium">{template.name}</h4>
                               <div className="flex gap-1">
                                 <Badge variant="outline" className="text-xs">
-                                  {selectedLanguage === 'typescript' && template.language === 'javascript' ? 'TypeScript' : template.language}
+                                  {selectedLanguage === 'typescript' && 
+                                   (template.language === 'javascript' || template.id.includes('react') || template.id.includes('nextjs') || template.id.includes('vue') || template.id.includes('nodejs'))
+                                    ? 'TypeScript' : template.language}
                                 </Badge>
                                 {template.framework && (
                                   <Badge variant="secondary" className="text-xs">
@@ -330,6 +375,7 @@ export default function ProjectSetupPage() {
                             </p>
                           </button>
                         ))}
+                        )}
                       </div>
                     )}
                   </div>
@@ -344,7 +390,9 @@ export default function ProjectSetupPage() {
                       <p className="text-sm text-blue-700 mb-2">{selectedTemplate.description}</p>
                       <div className="flex gap-2">
                         <Badge variant="outline" className="text-xs">
-                          {selectedLanguage === 'typescript' && selectedTemplate.language === 'javascript' ? 'TypeScript' : selectedTemplate.language}
+                          {selectedLanguage === 'typescript' && 
+                           (selectedTemplate.language === 'javascript' || selectedTemplate.id.includes('react') || selectedTemplate.id.includes('nextjs') || selectedTemplate.id.includes('vue') || selectedTemplate.id.includes('nodejs'))
+                            ? 'TypeScript' : selectedTemplate.language}
                         </Badge>
                         {selectedTemplate.framework && (
                           <Badge variant="secondary" className="text-xs">

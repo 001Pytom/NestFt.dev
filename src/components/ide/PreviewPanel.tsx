@@ -16,13 +16,19 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
   const [previewUrl, setPreviewUrl] = useState<string>('')
   const [viewportSize, setViewportSize] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
   const [isLoading, setIsLoading] = useState(false)
-  const [consoleOutput, setConsoleOutput] = useState<string[]>([])
+  const [hasGenerated, setHasGenerated] = useState(false)
 
   useEffect(() => {
-    if (isRunning && files) {
+    if (isRunning && files && !hasGenerated) {
       generatePreview()
+      setHasGenerated(true)
     }
-  }, [files, isRunning, template])
+  }, [files, isRunning, template, hasGenerated])
+
+  // Reset hasGenerated when files change significantly
+  useEffect(() => {
+    setHasGenerated(false)
+  }, [Object.keys(files).length])
 
   const generatePreview = async () => {
     setIsLoading(true)
@@ -73,78 +79,89 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>React Preview</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
     <style>${cssFile}</style>
     <style>
       body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
       #root { min-height: 100vh; }
       .error { color: red; padding: 20px; background: #ffe6e6; margin: 10px; border-radius: 5px; }
+      .loading { padding: 20px; text-align: center; color: #666; }
     </style>
 </head>
 <body>
-    <div id="root"></div>
-    <div id="console-output" style="position: fixed; bottom: 0; left: 0; right: 0; background: #000; color: #0f0; padding: 10px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; display: none;"></div>
+    <div id="root">
+      <div class="loading">Loading React App...</div>
+    </div>
     
     <script>
       // Console capture
       const originalLog = console.log;
       const originalError = console.error;
       const originalWarn = console.warn;
-      const consoleDiv = document.getElementById('console-output');
       
-      function addToConsole(message, type = 'log') {
-        const timestamp = new Date().toLocaleTimeString();
-        const color = type === 'error' ? '#f00' : type === 'warn' ? '#ff0' : '#0f0';
-        consoleDiv.innerHTML += \`<div style="color: \${color}">[\${timestamp}] \${message}</div>\`;
-        consoleDiv.scrollTop = consoleDiv.scrollHeight;
-        consoleDiv.style.display = 'block';
-        
-        // Send to parent
-        if (window.parent) {
-          window.parent.postMessage({ type: 'console', level: type, message: message }, '*');
+      function sendToParent(level, message) {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ 
+            type: 'console', 
+            level: level, 
+            message: message 
+          }, '*');
         }
       }
       
       console.log = function(...args) {
         originalLog.apply(console, args);
-        addToConsole(args.join(' '), 'log');
+        sendToParent('log', args.join(' '));
       };
       
       console.error = function(...args) {
         originalError.apply(console, args);
-        addToConsole(args.join(' '), 'error');
+        sendToParent('error', args.join(' '));
       };
       
       console.warn = function(...args) {
         originalWarn.apply(console, args);
-        addToConsole(args.join(' '), 'warn');
+        sendToParent('warn', args.join(' '));
       };
       
-      // Error handling
       window.addEventListener('error', function(e) {
-        addToConsole(\`Error: \${e.message} at \${e.filename}:\${e.lineno}\`, 'error');
+        sendToParent('error', \`Error: \${e.message} at line \${e.lineno}\`);
       });
       
       window.addEventListener('unhandledrejection', function(e) {
-        addToConsole(\`Unhandled Promise Rejection: \${e.reason}\`, 'error');
+        sendToParent('error', \`Unhandled Promise Rejection: \${e.reason}\`);
       });
     </script>
     
-    <script type="text/babel">
+    <script type="text/babel" data-type="module">
       try {
-        ${appFile}
+        const { useState, useEffect, createElement } = React;
         
-        // Try to render the App component
+        // Transform and execute App component
+        ${appFile.replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, '').replace(/export\s+default\s+/, 'window.App = ')}
+        
+        // Render the app
         const root = ReactDOM.createRoot(document.getElementById('root'));
         
-        if (typeof App !== 'undefined') {
-          root.render(React.createElement(App));
-          console.log('React App rendered successfully!');
+        if (typeof window.App !== 'undefined') {
+          root.render(React.createElement(window.App));
+          console.log('✅ React App rendered successfully!');
         } else {
-          // Fallback: try to execute index file
-          ${indexFile}
+          // Try to find any function that looks like a component
+          const componentMatch = \`${appFile}\`.match(/function\\s+(\\w+)\\s*\\(/);
+          if (componentMatch) {
+            const componentName = componentMatch[1];
+            if (window[componentName]) {
+              root.render(React.createElement(window[componentName]));
+              console.log(\`✅ React Component \${componentName} rendered successfully!\`);
+            } else {
+              throw new Error('No valid React component found');
+            }
+          } else {
+            throw new Error('No valid React component found');
+          }
         }
       } catch (error) {
         console.error('React rendering error:', error);
@@ -152,7 +169,7 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
           <div class="error">
             <h3>React Error</h3>
             <p>\${error.message}</p>
-            <p>Check your component syntax and make sure you're exporting the App component.</p>
+            <p>Make sure your component is properly exported and uses valid JSX syntax.</p>
           </div>
         \`;
       }
@@ -181,60 +198,98 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
 </head>
 <body>
     <div id="app"></div>
-    <div id="console-output" style="position: fixed; bottom: 0; left: 0; right: 0; background: #000; color: #0f0; padding: 10px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; display: none;"></div>
     
     <script>
-      // Console capture (same as React)
+      // Console capture
       const originalLog = console.log;
-      const consoleDiv = document.getElementById('console-output');
+      const originalError = console.error;
       
-      function addToConsole(message, type = 'log') {
-        const timestamp = new Date().toLocaleTimeString();
-        const color = type === 'error' ? '#f00' : '#0f0';
-        consoleDiv.innerHTML += \`<div style="color: \${color}">[\${timestamp}] \${message}</div>\`;
-        consoleDiv.scrollTop = consoleDiv.scrollHeight;
-        consoleDiv.style.display = 'block';
-        
-        if (window.parent) {
-          window.parent.postMessage({ type: 'console', level: type, message: message }, '*');
+      function sendToParent(level, message) {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ 
+            type: 'console', 
+            level: level, 
+            message: message 
+          }, '*');
         }
       }
       
       console.log = function(...args) {
         originalLog.apply(console, args);
-        addToConsole(args.join(' '), 'log');
+        sendToParent('log', args.join(' '));
+      };
+      
+      console.error = function(...args) {
+        originalError.apply(console, args);
+        sendToParent('error', args.join(' '));
       };
       
       try {
-        const { createApp } = Vue;
+        const { createApp, ref, reactive } = Vue;
         
         const App = {
           template: \`
-            <div>
-              <h1>Vue App</h1>
-              <p>Your Vue application will render here!</p>
-              <button @click="count++">Count: {{ count }}</button>
+            <div class="vue-app">
+              <h1>🚀 Vue.js App</h1>
+              <p>Your Vue application is running!</p>
+              <div class="counter">
+                <button @click="count--">-</button>
+                <span class="count">{{ count }}</span>
+                <button @click="count++">+</button>
+              </div>
+              <p>Edit your Vue components to see changes here.</p>
             </div>
           \`,
-          data() {
+          setup() {
+            const count = ref(0);
+            
+            console.log('Vue app setup complete');
+            
             return {
-              count: 0
+              count
             }
           }
         };
         
         createApp(App).mount('#app');
-        console.log('Vue App mounted successfully!');
+        console.log('✅ Vue App mounted successfully!');
       } catch (error) {
         console.error('Vue error:', error);
         document.getElementById('app').innerHTML = \`
           <div class="error">
             <h3>Vue Error</h3>
             <p>\${error.message}</p>
+            <p>Check your Vue component syntax and structure.</p>
           </div>
         \`;
       }
     </script>
+    
+    <style>
+      .vue-app {
+        padding: 2rem;
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      .counter {
+        margin: 2rem 0;
+      }
+      .counter button {
+        padding: 0.5rem 1rem;
+        margin: 0 0.5rem;
+        border: none;
+        background: #42b883;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .count {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin: 0 1rem;
+      }
+    </style>
 </body>
 </html>`
   }
@@ -250,66 +305,86 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Next.js Preview</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
     <style>${cssFile}</style>
     <style>
       body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
       .error { color: red; padding: 20px; background: #ffe6e6; margin: 10px; border-radius: 5px; }
+      .nextjs-preview {
+        padding: 2rem;
+        text-align: center;
+      }
     </style>
 </head>
 <body>
     <div id="__next"></div>
-    <div id="console-output" style="position: fixed; bottom: 0; left: 0; right: 0; background: #000; color: #0f0; padding: 10px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; display: none;"></div>
     
     <script>
       // Console capture
       const originalLog = console.log;
-      const consoleDiv = document.getElementById('console-output');
       
-      function addToConsole(message, type = 'log') {
-        const timestamp = new Date().toLocaleTimeString();
-        const color = type === 'error' ? '#f00' : '#0f0';
-        consoleDiv.innerHTML += \`<div style="color: \${color}">[\${timestamp}] \${message}</div>\`;
-        consoleDiv.scrollTop = consoleDiv.scrollHeight;
-        consoleDiv.style.display = 'block';
-        
-        if (window.parent) {
-          window.parent.postMessage({ type: 'console', level: type, message: message }, '*');
+      function sendToParent(level, message) {
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ 
+            type: 'console', 
+            level: level, 
+            message: message 
+          }, '*');
         }
       }
       
       console.log = function(...args) {
         originalLog.apply(console, args);
-        addToConsole(args.join(' '), 'log');
+        sendToParent('log', args.join(' '));
       };
     </script>
     
     <script type="text/babel">
       try {
-        ${pageFile}
+        const { useState } = React;
+        
+        // Default Next.js page component
+        function HomePage() {
+          const [count, setCount] = useState(0);
+          
+          return React.createElement('div', { className: 'nextjs-preview' },
+            React.createElement('h1', null, '⚡ Next.js Preview'),
+            React.createElement('p', null, 'Your Next.js application is running!'),
+            React.createElement('div', { style: { margin: '2rem 0' } },
+              React.createElement('button', { 
+                onClick: () => setCount(count - 1),
+                style: { margin: '0 0.5rem', padding: '0.5rem 1rem' }
+              }, '-'),
+              React.createElement('span', { style: { fontSize: '1.5rem', margin: '0 1rem' } }, count),
+              React.createElement('button', { 
+                onClick: () => setCount(count + 1),
+                style: { margin: '0 0.5rem', padding: '0.5rem 1rem' }
+              }, '+')
+            ),
+            React.createElement('p', null, 'Edit your pages to see changes here.')
+          );
+        }
+        
+        ${pageFile.replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, '').replace(/export\s+default\s+/, 'window.PageComponent = ')}
         
         const root = ReactDOM.createRoot(document.getElementById('__next'));
         
-        if (typeof Home !== 'undefined') {
-          root.render(React.createElement(Home));
-        } else if (typeof Page !== 'undefined') {
-          root.render(React.createElement(Page));
+        if (typeof window.PageComponent !== 'undefined') {
+          root.render(React.createElement(window.PageComponent));
         } else {
-          root.render(React.createElement('div', null, 
-            React.createElement('h1', null, 'Next.js Preview'),
-            React.createElement('p', null, 'Your Next.js page will render here!')
-          ));
+          root.render(React.createElement(HomePage));
         }
         
-        console.log('Next.js page rendered successfully!');
+        console.log('✅ Next.js page rendered successfully!');
       } catch (error) {
         console.error('Next.js error:', error);
         document.getElementById('__next').innerHTML = \`
           <div class="error">
             <h3>Next.js Error</h3>
             <p>\${error.message}</p>
+            <p>Check your page component syntax.</p>
           </div>
         \`;
       }
@@ -333,7 +408,7 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
       .server-info { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
       .status { display: inline-block; padding: 5px 15px; background: #4CAF50; color: white; border-radius: 20px; font-size: 14px; }
       .endpoint { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #007bff; }
-      .code-preview { background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 5px; margin: 20px 0; overflow-x: auto; }
+      .code-preview { background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 5px; margin: 20px 0; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -359,18 +434,32 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
             </div>
             
             <p><strong>Note:</strong> This is a preview of your Node.js server code. In a real environment, your server would be running on a specific port and handling HTTP requests.</p>
+            
+            <h3>Console Output:</h3>
+            <div id="console-output" style="background: #000; color: #0f0; padding: 15px; border-radius: 5px; font-family: monospace; min-height: 100px;">
+                <div>Server starting...</div>
+                <div>✅ Express server initialized</div>
+                <div>🚀 Server running on port 3000</div>
+                <div>📖 API documentation available</div>
+            </div>
         </div>
     </div>
     
     <script>
       console.log('Node.js server preview loaded');
       console.log('Server code preview generated successfully');
+      console.log('Express server would be running on port 3000');
       
-      if (window.parent) {
+      if (window.parent && window.parent !== window) {
         window.parent.postMessage({ 
           type: 'console', 
           level: 'log', 
           message: 'Node.js server preview ready' 
+        }, '*');
+        window.parent.postMessage({ 
+          type: 'console', 
+          level: 'log', 
+          message: 'Server would be running on http://localhost:3000' 
         }, '*');
       }
     </script>
@@ -418,7 +507,7 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
       const originalWarn = console.warn;
       
       function sendToParent(level, message) {
-        if (window.parent) {
+        if (window.parent && window.parent !== window) {
           window.parent.postMessage({ 
             type: 'console', 
             level: level, 
@@ -484,7 +573,6 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
   const addConsoleOutput = (message: string, level: 'log' | 'error' | 'warn' = 'log') => {
     const timestamp = new Date().toLocaleTimeString()
     const formattedMessage = `[${timestamp}] ${message}`
-    setConsoleOutput(prev => [...prev, formattedMessage])
     
     if (onConsoleOutput) {
       onConsoleOutput(formattedMessage)
@@ -504,10 +592,10 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
   }, [])
 
   const refreshPreview = () => {
+    setHasGenerated(false)
     if (iframeRef.current) {
       iframeRef.current.src = iframeRef.current.src
     }
-    setConsoleOutput([])
   }
 
   const openInNewTab = () => {

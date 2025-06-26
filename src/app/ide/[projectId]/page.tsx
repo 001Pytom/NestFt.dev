@@ -69,6 +69,7 @@ export default function IDEPage() {
 
   // Language preference
   const [selectedLanguage, setSelectedLanguage] = useState<'javascript' | 'typescript'>('javascript');
+  const [consoleMessages, setConsoleMessages] = useState<string[]>([]);
 
   useEffect(() => {
     loadProject();
@@ -619,7 +620,7 @@ export default function IDEPage() {
                 files={collectAllFiles(fileTree)}
                 isRunning={isRunning}
                 template={userProject?.template_id}
-                onConsoleOutput={(output) => setConsoleOutput(prev => [...prev, output])}
+                onConsoleOutput={(output) => setConsoleMessages(prev => [...prev, output])}
               />
             </div>
           </div>
@@ -675,10 +676,10 @@ export default function IDEPage() {
                   value="preview"
                   className="flex-1 m-0 overflow-hidden p-4"
                 >
-                  <div className="h-full bg-black text-green-400 font-mono text-sm p-4 overflow-auto whitespace-pre-wrap">
+                  <div className="h-full bg-black text-green-400 font-mono text-sm p-4 overflow-y-auto whitespace-pre-wrap">
                     <div className="text-blue-400 mb-2">Console Output:</div>
-                    {consoleOutput.length > 0 ? (
-                      consoleOutput.map((output, index) => (
+                    {consoleMessages.length > 0 ? (
+                      consoleMessages.map((output, index) => (
                         <div key={index} className="mb-1">{output}</div>
                       ))
                     ) : (
