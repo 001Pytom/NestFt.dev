@@ -7,9 +7,10 @@ interface PreviewPanelProps {
   projectId: string
   files: Record<string, string>
   isRunning: boolean
+  template?: string
 }
 
-export function PreviewPanel({ projectId, files, isRunning }: PreviewPanelProps) {
+export function PreviewPanel({ projectId, files, isRunning, template }: PreviewPanelProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [previewUrl, setPreviewUrl] = useState<string>('')
   const [viewportSize, setViewportSize] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
@@ -25,10 +26,22 @@ export function PreviewPanel({ projectId, files, isRunning }: PreviewPanelProps)
     setIsLoading(true)
     
     try {
-      // Create a blob URL for the HTML content
-      const htmlContent = files['index.html'] || generateDefaultHTML()
-      const cssContent = files['css/style.css'] || files['style.css'] || ''
-      const jsContent = files['js/main.js'] || files['main.js'] || files['script.js'] || ''
+      let htmlContent = ''
+      let cssContent = ''
+      let jsContent = ''
+      
+      // Handle different project templates
+      if (template === 'react' || template === 'nextjs') {
+        // For React projects, create a simple HTML wrapper
+        htmlContent = generateReactHTML()
+        jsContent = files['src/App.js'] || files['src/App.jsx'] || files['src/index.js'] || ''
+        cssContent = files['src/App.css'] || files['src/index.css'] || ''
+      } else {
+        // For vanilla HTML/CSS/JS projects
+        htmlContent = files['index.html'] || generateDefaultHTML()
+        cssContent = files['css/style.css'] || files['style.css'] || files['styles.css'] || ''
+        jsContent = files['js/main.js'] || files['main.js'] || files['script.js'] || files['app.js'] || ''
+      }
       
       // Inject CSS and JS into HTML
       const fullHTML = injectAssetsIntoHTML(htmlContent, cssContent, jsContent)
@@ -69,6 +82,29 @@ export function PreviewPanel({ projectId, files, isRunning }: PreviewPanelProps)
 </body>
 </html>`
   }
+  
+  const generateReactHTML = () => {
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Preview</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+    <div style="display: flex; align-items: center; justify-content: center; height: 100vh; font-family: Arial, sans-serif;">
+        <div style="text-align: center;">
+            <h1>🚀 React Preview</h1>
+            <p>Your React components will render here!</p>
+        </div>
+    </div>
+</body>
+</html>`
+  }
 
   const injectAssetsIntoHTML = (html: string, css: string, js: string) => {
     let modifiedHTML = html
@@ -85,7 +121,11 @@ export function PreviewPanel({ projectId, files, isRunning }: PreviewPanelProps)
 
     // Inject JavaScript
     if (js) {
-      const jsTag = `<script>${js}</script>`
+      // For React code, wrap in Babel transform
+      const jsTag = template === 'react' || template === 'nextjs' 
+        ? `<script type="text/babel">${js}</script>`
+        : `<script>${js}</script>`
+        
       if (modifiedHTML.includes('</body>')) {
         modifiedHTML = modifiedHTML.replace('</body>', `${jsTag}\n</body>`)
       } else {

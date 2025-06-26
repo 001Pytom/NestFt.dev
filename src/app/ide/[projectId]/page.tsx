@@ -21,11 +21,19 @@ import {
   GitBranch,
   Send,
   CheckCircle,
+  ExternalLink,
+  PanelLeftClose,
+  PanelLeftOpen,
+  PanelBottomClose,
+  PanelBottomOpen,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import { CodeEditor } from "@/components/ide/CodeEditor";
 import { Terminal } from "@/components/ide/Terminal";
 import { PreviewPanel } from "@/components/ide/PreviewPanel";
 import { GitHubIntegration } from "@/components/ide/GitHubIntegration";
+import { FileExplorer } from "@/components/ide/FileExplorer";
 import { FileNode } from "@/types/ide";
 import { saveProjectCode, updateUserProject } from "@/lib/database";
 import { UserProject } from "@/lib/database";
@@ -49,11 +57,17 @@ export default function IDEPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [activePanel, setActivePanel] = useState<
-    "terminal" | "preview" | "github"
-  >("preview");
-  const [sidebarWidth, setSidebarWidth] = useState(250);
+  const [activePanel, setActivePanel] = useState<"terminal" | "preview" | "github">("preview");
+  
+  // Layout state
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [bottomPanelCollapsed, setBottomPanelCollapsed] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(280);
   const [bottomPanelHeight, setBottomPanelHeight] = useState(300);
+
+  // Language preference
+  const [useTypeScript, setUseTypeScript] = useState(false);
 
   useEffect(() => {
     loadProject();
@@ -98,6 +112,9 @@ export default function IDEPage() {
         setSelectedFile(firstFile);
         setCode(firstFile.content || "");
       }
+
+      // Set TypeScript preference based on template
+      setUseTypeScript(template.language === 'typescript' || templateId.includes('typescript'));
 
       // Create mock user project
       setUserProject({
@@ -185,6 +202,91 @@ export default function IDEPage() {
     setCode(file.content || "");
   };
 
+  const handleCreateFile = (parentPath: string, fileName: string) => {
+    const newFile: FileNode = {
+      name: fileName,
+      type: "file",
+      content: "",
+      path: parentPath ? `${parentPath}/${fileName}` : fileName,
+    };
+
+    const addFileToTree = (nodes: FileNode[]): FileNode[] => {
+      return nodes.map((node) => {
+        if (node.path === parentPath && node.type === "folder") {
+          return {
+            ...node,
+            children: [...(node.children || []), newFile],
+            isOpen: true,
+          };
+        }
+        if (node.children) {
+          return { ...node, children: addFileToTree(node.children) };
+        }
+        return node;
+      });
+    };
+
+    if (parentPath === "") {
+      setFileTree([...fileTree, newFile]);
+    } else {
+      setFileTree(addFileToTree(fileTree));
+    }
+  };
+
+  const handleCreateFolder = (parentPath: string, folderName: string) => {
+    const newFolder: FileNode = {
+      name: folderName,
+      type: "folder",
+      children: [],
+      path: parentPath ? `${parentPath}/${folderName}` : folderName,
+      isOpen: true,
+    };
+
+    const addFolderToTree = (nodes: FileNode[]): FileNode[] => {
+      return nodes.map((node) => {
+        if (node.path === parentPath && node.type === "folder") {
+          return {
+            ...node,
+            children: [...(node.children || []), newFolder],
+            isOpen: true,
+          };
+        }
+        if (node.children) {
+          return { ...node, children: addFolderToTree(node.children) };
+        }
+        return node;
+      });
+    };
+
+    if (parentPath === "") {
+      setFileTree([...fileTree, newFolder]);
+    } else {
+      setFileTree(addFolderToTree(fileTree));
+    }
+  };
+
+  const handleDeleteNode = (path: string) => {
+    const deleteFromTree = (nodes: FileNode[]): FileNode[] => {
+      return nodes.filter((node) => {
+        if (node.path === path) {
+          return false;
+        }
+        if (node.children) {
+          node.children = deleteFromTree(node.children);
+        }
+        return true;
+      });
+    };
+
+    setFileTree(deleteFromTree(fileTree));
+    
+    // If deleted file was selected, clear selection
+    if (selectedFile?.path === path) {
+      setSelectedFile(null);
+      setCode("");
+    }
+  };
+
   const handleSave = async (showFeedback = true) => {
     if (!selectedFile || !userProject) return;
 
@@ -213,8 +315,6 @@ export default function IDEPage() {
   };
 
   const handleSubmit = async () => {
-    // console.log("submitting");
-
     if (!userProject || !user) return;
 
     setIsSubmitting(true);
@@ -232,7 +332,6 @@ export default function IDEPage() {
         code_files: allFiles,
       });
 
-      // console.log(projectId,userProjectId);
       // Navigate to submission page for AI grading
       router.push(
         `/projects/${userProject.project_id}/submit?userProjectId=${userProject.id}`
@@ -268,53 +367,34 @@ export default function IDEPage() {
     setIsRunning(false);
   };
 
-  const renderFileTree = (nodes: FileNode[], level = 0) => {
-    return nodes.map((node) => (
-      <div key={node.path}>
-        <div
-          className={`flex items-center gap-2 p-1 rounded cursor-pointer hover:bg-gray-100 ${
-            selectedFile?.path === node.path ? "bg-blue-100 text-blue-700" : ""
-          }`}
-          style={{ marginLeft: `${level * 16}px` }}
-          onClick={() => {
-            if (node.type === "file") {
-              handleFileSelect(node);
-            } else {
-              // Toggle folder
-              const updateTree = (nodes: FileNode[]): FileNode[] => {
-                return nodes.map((n) =>
-                  n.path === node.path
-                    ? { ...n, isOpen: !n.isOpen }
-                    : n.children
-                    ? { ...n, children: updateTree(n.children) }
-                    : n
-                );
-              };
-              setFileTree(updateTree(fileTree));
-            }
-          }}
-        >
-          {node.type === "folder" ? (
-            <>
-              <span className="text-gray-500">{node.isOpen ? "📂" : "📁"}</span>
-              <span className="text-sm font-medium">{node.name}</span>
-            </>
-          ) : (
-            <>
-              <span className="text-gray-500">📄</span>
-              <span className="text-sm">{node.name}</span>
-              {selectedFile?.path === node.path && code !== node.content && (
-                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full ml-auto"></div>
-              )}
-            </>
-          )}
-        </div>
-        {node.type === "folder" &&
-          node.isOpen &&
-          node.children &&
-          renderFileTree(node.children, level + 1)}
-      </div>
-    ));
+  const handleDownload = () => {
+    const allFiles = collectAllFiles(fileTree);
+    const zip = new JSZip();
+    
+    Object.entries(allFiles).forEach(([path, content]) => {
+      zip.file(path, content);
+    });
+    
+    zip.generateAsync({ type: "blob" }).then((content) => {
+      const url = URL.createObjectURL(content);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${userProject?.project_name || 'project'}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  };
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
   };
 
   if (!userProject) {
@@ -329,9 +409,9 @@ export default function IDEPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between">
+      <div className="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-4">
           <h1 className="text-lg font-semibold text-gray-800">
             {userProject.project_name}
@@ -353,11 +433,44 @@ export default function IDEPage() {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          >
+            {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setBottomPanelCollapsed(!bottomPanelCollapsed)}
+          >
+            {bottomPanelCollapsed ? <PanelBottomOpen className="h-4 w-4" /> : <PanelBottomClose className="h-4 w-4" />}
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleFullscreen}
+          >
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => handleSave(true)}
             disabled={isSaving}
           >
             <Save className="h-4 w-4 mr-1" />
             {isSaving ? "Saving..." : "Save"}
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDownload}
+          >
+            <Download className="h-4 w-4 mr-1" />
+            Download
           </Button>
 
           {isRunning ? (
@@ -386,7 +499,7 @@ export default function IDEPage() {
             ) : (
               <>
                 <Send className="h-4 w-4 mr-1" />
-                Submit for Gradingg
+                Submit for Grading
               </>
             )}
           </Button>
@@ -397,66 +510,140 @@ export default function IDEPage() {
         </div>
       </div>
 
-      {/* Main IDE Layout - Fixed height */}
+      {/* Main IDE Layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar - File Explorer */}
-        <div
-          className="bg-gray-50 border-r border-gray-200 flex flex-col"
-          style={{ width: `${sidebarWidth}px` }}
-        >
-          <div className="p-3 border-b border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-medium text-sm text-gray-700">Explorer</h3>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                  <FolderPlus className="h-3 w-3" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                  <FilePlus className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
+        {!sidebarCollapsed && (
+          <div
+            className="bg-gray-50 border-r border-gray-200 flex flex-col flex-shrink-0"
+            style={{ width: `${sidebarWidth}px` }}
+          >
+            <FileExplorer
+              fileTree={fileTree}
+              selectedFile={selectedFile}
+              onFileSelect={handleFileSelect}
+              onCreateFile={handleCreateFile}
+              onCreateFolder={handleCreateFolder}
+              onDeleteNode={handleDeleteNode}
+              onToggleFolder={(path) => {
+                const toggleInTree = (nodes: FileNode[]): FileNode[] => {
+                  return nodes.map((node) => {
+                    if (node.path === path && node.type === "folder") {
+                      return { ...node, isOpen: !node.isOpen };
+                    }
+                    if (node.children) {
+                      return { ...node, children: toggleInTree(node.children) };
+                    }
+                    return node;
+                  });
+                };
+                setFileTree(toggleInTree(fileTree));
+              }}
+            />
           </div>
-
-          <div className="flex-1 overflow-y-auto p-2">
-            {renderFileTree(fileTree)}
-          </div>
-        </div>
+        )}
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Editor and Preview */}
-          <div className="flex-1 flex overflow-hidden">
+          <div 
+            className="flex-1 flex overflow-hidden"
+            style={{ 
+              height: bottomPanelCollapsed 
+                ? '100%' 
+                : `calc(100% - ${bottomPanelHeight}px)` 
+            }}
+          >
             {/* Code Editor */}
             <div className="flex-1 flex flex-col">
+              <div className="bg-gray-100 border-b border-gray-200 px-4 py-2 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">Editor</span>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs">
+                      <input
+                        type="radio"
+                        name="language"
+                        checked={!useTypeScript}
+                        onChange={() => setUseTypeScript(false)}
+                        className="mr-1"
+                      />
+                      JavaScript
+                    </label>
+                    <label className="text-xs">
+                      <input
+                        type="radio"
+                        name="language"
+                        checked={useTypeScript}
+                        onChange={() => setUseTypeScript(true)}
+                        className="mr-1"
+                      />
+                      TypeScript
+                    </label>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const previewUrl = collectAllFiles(fileTree);
+                    const blob = new Blob([previewUrl['index.html'] || ''], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    window.open(url, '_blank');
+                  }}
+                >
+                  <ExternalLink className="h-4 w-4 mr-1" />
+                  Open in New Tab
+                </Button>
+              </div>
               <CodeEditor
                 file={selectedFile}
                 code={code}
                 onChange={setCode}
                 onSave={() => handleSave(true)}
+                useTypeScript={useTypeScript}
               />
             </div>
 
-            {/* Right Panel */}
+            {/* Right Panel - Preview */}
             <div className="w-1/2 border-l border-gray-200 flex flex-col">
+              <div className="bg-gray-100 border-b border-gray-200 px-4 py-2">
+                <span className="text-sm font-medium">Preview</span>
+              </div>
+              <PreviewPanel
+                projectId={projectId}
+                files={collectAllFiles(fileTree)}
+                isRunning={isRunning}
+                template={userProject.template_id}
+              />
+            </div>
+          </div>
+
+          {/* Bottom Panel */}
+          {!bottomPanelCollapsed && (
+            <div
+              className="border-t border-gray-200 flex flex-col"
+              style={{ height: `${bottomPanelHeight}px` }}
+            >
               <Tabs
                 value={activePanel}
                 onValueChange={(value) => setActivePanel(value as any)}
+                className="flex-1 flex flex-col"
               >
                 <TabsList className="w-full rounded-none border-b">
-                  <TabsTrigger
-                    value="preview"
-                    className="flex items-center gap-2"
-                  >
-                    <Eye className="h-4 w-4" />
-                    Preview
-                  </TabsTrigger>
                   <TabsTrigger
                     value="terminal"
                     className="flex items-center gap-2"
                   >
                     <TerminalIcon className="h-4 w-4" />
                     Terminal
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="preview"
+                    className="flex items-center gap-2"
+                  >
+                    <Eye className="h-4 w-4" />
+                    Console
                   </TabsTrigger>
                   <TabsTrigger
                     value="github"
@@ -468,21 +655,25 @@ export default function IDEPage() {
                 </TabsList>
 
                 <TabsContent
-                  value="preview"
+                  value="terminal"
                   className="flex-1 m-0 overflow-hidden"
                 >
-                  <PreviewPanel
+                  <Terminal
                     projectId={projectId}
-                    files={collectAllFiles(fileTree)}
-                    isRunning={isRunning}
+                    fileTree={fileTree}
+                    onFileTreeUpdate={setFileTree}
+                    onFileSelect={handleFileSelect}
                   />
                 </TabsContent>
 
                 <TabsContent
-                  value="terminal"
-                  className="flex-1 m-0 overflow-hidden"
+                  value="preview"
+                  className="flex-1 m-0 overflow-hidden p-4"
                 >
-                  <Terminal projectId={projectId} />
+                  <div className="h-full bg-black text-green-400 font-mono text-sm p-4 overflow-auto">
+                    <div>Console Output:</div>
+                    <div>Ready to run your code...</div>
+                  </div>
                 </TabsContent>
 
                 <TabsContent
@@ -499,7 +690,7 @@ export default function IDEPage() {
                 </TabsContent>
               </Tabs>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
