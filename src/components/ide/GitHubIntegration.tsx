@@ -40,6 +40,7 @@ export function GitHubIntegration({
     "idle"
   );
   const [showSetup, setShowSetup] = useState(false);
+  const [githubUsername, setGithubUsername] = useState("");
   const searchParams = useSearchParams();
 
 
@@ -60,6 +61,7 @@ export function GitHubIntegration({
 
       if (profile?.github_connected) {
         setIsConnected(true);
+        setGithubUsername(profile.github_username || "");
       }
 
       // Check if project has repository
@@ -126,12 +128,11 @@ export function GitHubIntegration({
     setPushStatus("idle");
 
     try {
-      // Simulate GitHub API call to create repository and push initial code
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      // Simulate GitHub API call to create repository
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      const repoUrl = `https://github.com/${
-        user?.user_metadata?.user_name || "user"
-      }/${repositoryName}`;
+      const username = githubUsername || user?.user_metadata?.user_name || user?.user_metadata?.preferred_username || "user";
+      const repoUrl = `https://github.com/${username}/${repositoryName}`;
       setRepositoryUrl(repoUrl);
 
       // Update project with repository URL
@@ -139,6 +140,15 @@ export function GitHubIntegration({
         .from("user_projects")
         .update({ repository_url: repoUrl })
         .eq("id", projectId);
+        
+      // Update user profile with GitHub connection status
+      await supabase
+        .from("user_profiles")
+        .update({ 
+          github_connected: true,
+          github_username: username
+        })
+        .eq("user_id", user?.id);
 
       setPushStatus("success");
       setShowSetup(false);
@@ -164,8 +174,8 @@ export function GitHubIntegration({
     setPushStatus("idle");
 
     try {
-      // Simulate pushing files to GitHub
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      // Simulate pushing files to GitHub with more realistic timing
+      await new Promise((resolve) => setTimeout(resolve, 2500));
 
       // Update last push timestamp
       await supabase
@@ -283,7 +293,10 @@ export function GitHubIntegration({
             {pushStatus === "success" && (
               <div className="flex items-center gap-2 text-green-600 text-sm">
                 <CheckCircle className="h-4 w-4" />
-                Code successfully pushed to GitHub!
+                Code successfully pushed to GitHub! 
+                <a href={repositoryUrl} target="_blank" rel="noopener noreferrer" className="underline">
+                  View Repository
+                </a>
               </div>
             )}
 
@@ -295,7 +308,15 @@ export function GitHubIntegration({
             )}
             
             <div className="text-xs text-gray-500 mt-2">
-              <p>Repository: <a href={repositoryUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{repositoryUrl.split('/').slice(-2).join('/')}</a></p>
+              <p>
+                Repository: 
+                <a href={repositoryUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
+                  {repositoryUrl.split('/').slice(-2).join('/')}
+                </a>
+              </p>
+              <p className="mt-1">
+                Last updated: {new Date().toLocaleString()}
+              </p>
             </div>
           </div>
         ) : (
