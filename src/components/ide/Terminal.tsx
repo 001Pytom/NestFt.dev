@@ -510,60 +510,57 @@ export function Terminal({ projectId, fileTree, onFileTreeUpdate, onFileSelect, 
   }
 
   const handleGitCommand = async (terminal: XTerm, args: string[]) => {
-    const subcommand = args[0]
-    
-    switch (subcommand) {
-      case 'status':
-        terminal.writeln('On branch main')
-        terminal.writeln('Your branch is up to date with \'origin/main\'.')
-        terminal.writeln('')
-        terminal.writeln('Changes not staged for commit:')
-          // Add to history
-          setCommandHistory(prev => [...prev, currentLine.trim()])
-          setHistoryIndex(-1)
-        terminal.writeln('  \x1b[31mmodified:   src/App.js\x1b[0m')
-        terminal.writeln('  \x1b[31mmodified:   src/components/Header.js\x1b[0m')
-        break
-        
-      case 'add':
-        const files = args.slice(1)
-        if (files.includes('.')) {
-          terminal.writeln('Added all files to staging area')
-        } else {
-          terminal.writeln(`Added ${files.join(', ')} to staging area`)
-        }
-      } else if (code === 27) { // Arrow keys (escape sequences)
-        // Handle arrow key navigation for command history
-        return
-        break
-        
-      case 'commit':
-        const messageIndex = args.indexOf('-m')
-        const message = messageIndex !== -1 ? args[messageIndex + 1] : 'Update files'
-        terminal.writeln(`[main ${Math.random().toString(36).substr(2, 7)}] ${message}`)
-        terminal.writeln(' 2 files changed, 15 insertions(+), 3 deletions(-)')
-        break
-        
-      case 'push':
-        terminal.writeln('Pushing to origin main...')
-        await new Promise(resolve => setTimeout(resolve, 1500))
-        terminal.writeln('\x1b[32m✓\x1b[0m Successfully pushed to GitHub')
-        break
-        
-      case 'pull':
-        terminal.writeln('Pulling from origin main...')
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        terminal.writeln('Already up to date.')
-        break
-        
-      case 'init':
-        terminal.writeln('Initialized empty Git repository in current directory')
-        break
-        
-      default:
-        terminal.writeln(`git: '${subcommand}' is not a git command.`)
-    }
+  const subcommand = args[0];
+
+  switch (subcommand) {
+    case 'status':
+      terminal.writeln('On branch main');
+      terminal.writeln('Your branch is up to date with \'origin/main\'.');
+      terminal.writeln('');
+      terminal.writeln('Changes not staged for commit:');
+      terminal.writeln('  \x1b[31mmodified:   src/App.js\x1b[0m');
+      terminal.writeln('  \x1b[31mmodified:   src/components/Header.js\x1b[0m');
+      break;
+
+    case 'add':
+      const files = args.slice(1);
+      if (files.includes('.')) {
+        terminal.writeln('Added all files to staging area');
+      } else if (files.length > 0) {
+        terminal.writeln(`Added ${files.join(', ')} to staging area`);
+      } else {
+        terminal.writeln('No files specified to add');
+      }
+      break;
+
+    case 'commit':
+      const messageIndex = args.indexOf('-m');
+      const message = messageIndex !== -1 ? args[messageIndex + 1] : 'Update files';
+      terminal.writeln(`[main ${Math.random().toString(36).substr(2, 7)}] ${message}`);
+      terminal.writeln(' 2 files changed, 15 insertions(+), 3 deletions(-)');
+      break;
+
+    case 'push':
+      terminal.writeln('Pushing to origin main...');
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      terminal.writeln('\x1b[32m✓\x1b[0m Successfully pushed to GitHub');
+      break;
+
+    case 'pull':
+      terminal.writeln('Pulling from origin main...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      terminal.writeln('Already up to date.');
+      break;
+
+    case 'init':
+      terminal.writeln('Initialized empty Git repository in current directory');
+      break;
+
+    default:
+      terminal.writeln(`git: '${subcommand}' is not a git command.`);
   }
+};
+
 
   const handleNodeCommand = async (terminal: XTerm, args: string[]) => {
     if (args.length === 0) {
