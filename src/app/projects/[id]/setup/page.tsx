@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Code, Clock, Trophy, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Code, Clock, Trophy, CheckCircle,ChevronDown } from 'lucide-react'
 import { beginnerProjects, intermediateProjects, advancedProjects, techStacks } from '@/data/projects'
 import { ProjectTemplate, TechTemplate } from '@/types/project'
 import { useAuthStore } from '@/lib/store'
@@ -389,7 +389,7 @@ export default function ProjectSetupPage() {
                     ))}
                   </div>
                 */}
-                </div>
+                {/* </div> */}
                 
                 <Button
                   onClick={handleCreateProject}
