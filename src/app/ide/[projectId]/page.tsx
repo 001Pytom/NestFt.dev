@@ -58,6 +58,7 @@ export default function IDEPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [activePanel, setActivePanel] = useState<"terminal" | "preview" | "github">("preview");
+  const [consoleOutput, setConsoleOutput] = useState<string[]>([]);
   
   // Layout state
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -67,7 +68,7 @@ export default function IDEPage() {
   const [bottomPanelHeight, setBottomPanelHeight] = useState(300);
 
   // Language preference
-  const [useTypeScript, setUseTypeScript] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<'javascript' | 'typescript'>('javascript');
 
   useEffect(() => {
     loadProject();
@@ -88,8 +89,11 @@ export default function IDEPage() {
     try {
       const templateId = searchParams.get("template");
       const projectName = searchParams.get("name");
+      const language = searchParams.get("language") as 'javascript' | 'typescript' || 'javascript';
 
       if (!templateId || !projectName) return;
+      
+      setSelectedLanguage(language);
 
       // Find template
       const allTemplates = techStacks.flatMap((stack) => stack.templates);
@@ -114,7 +118,7 @@ export default function IDEPage() {
       }
 
       // Set TypeScript preference based on template
-      setUseTypeScript(template.language === 'typescript' || templateId.includes('typescript'));
+      // setUseTypeScript(template.language === 'typescript' || templateId.includes('typescript') || language === 'typescript');
 
       // Create mock user project
       setUserProject({
@@ -564,8 +568,8 @@ export default function IDEPage() {
                       <input
                         type="radio"
                         name="language"
-                        checked={!useTypeScript}
-                        onChange={() => setUseTypeScript(false)}
+                        checked={selectedLanguage === 'javascript'}
+                        onChange={() => setSelectedLanguage('javascript')}
                         className="mr-1"
                       />
                       JavaScript
@@ -574,8 +578,8 @@ export default function IDEPage() {
                       <input
                         type="radio"
                         name="language"
-                        checked={useTypeScript}
-                        onChange={() => setUseTypeScript(true)}
+                        checked={selectedLanguage === 'typescript'}
+                        onChange={() => setSelectedLanguage('typescript')}
                         className="mr-1"
                       />
                       TypeScript
@@ -601,7 +605,7 @@ export default function IDEPage() {
                 code={code}
                 onChange={setCode}
                 onSave={() => handleSave(true)}
-                useTypeScript={useTypeScript}
+                selectedLanguage={selectedLanguage}
               />
             </div>
 
@@ -614,7 +618,8 @@ export default function IDEPage() {
                 projectId={projectId}
                 files={collectAllFiles(fileTree)}
                 isRunning={isRunning}
-                template={userProject.template_id}
+                template={userProject?.template_id}
+                onConsoleOutput={(output) => setConsoleOutput(prev => [...prev, output])}
               />
             </div>
           </div>
@@ -670,9 +675,15 @@ export default function IDEPage() {
                   value="preview"
                   className="flex-1 m-0 overflow-hidden p-4"
                 >
-                  <div className="h-full bg-black text-green-400 font-mono text-sm p-4 overflow-auto">
-                    <div>Console Output:</div>
-                    <div>Ready to run your code...</div>
+                  <div className="h-full bg-black text-green-400 font-mono text-sm p-4 overflow-auto whitespace-pre-wrap">
+                    <div className="text-blue-400 mb-2">Console Output:</div>
+                    {consoleOutput.length > 0 ? (
+                      consoleOutput.map((output, index) => (
+                        <div key={index} className="mb-1">{output}</div>
+                      ))
+                    ) : (
+                      <div className="text-gray-500">Ready to run your code... Try console.log('Hello World!');</div>
+                    )}
                   </div>
                 </TabsContent>
 

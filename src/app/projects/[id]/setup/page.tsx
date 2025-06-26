@@ -22,6 +22,8 @@ export default function ProjectSetupPage() {
   const [project, setProject] = useState<ProjectTemplate | null>(null)
   const [selectedTemplate, setSelectedTemplate] = useState<TechTemplate | null>(null)
   const [availableTemplates, setAvailableTemplates] = useState<TechTemplate[]>([])
+  const [selectedLanguage, setSelectedLanguage] = useState<'javascript' | 'typescript'>('javascript')
+  const [showTemplateDropdown, setShowTemplateDropdown] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [hasAlreadySubmitted, setHasAlreadySubmitted] = useState(false)
 
@@ -81,7 +83,7 @@ export default function ProjectSetupPage() {
         project_name: project.name,
         stack: project.stack,
         difficulty: project.difficulty,
-        template_id: selectedTemplate.id,
+        template_id: `${selectedTemplate.id}-${selectedLanguage}`,
         status: 'in_progress',
         code_files: {},
         started_at: new Date().toISOString(),
@@ -90,7 +92,7 @@ export default function ProjectSetupPage() {
 
       if (userProject) {
         // Navigate to IDE with project setup
-        router.push(`/ide/${userProject.id}?template=${selectedTemplate.id}&name=${encodeURIComponent(project.name)}&project_id=${projectId}`)
+        router.push(`/ide/${userProject.id}?template=${selectedTemplate.id}&language=${selectedLanguage}&name=${encodeURIComponent(project.name)}&project_id=${projectId}`)
       } else {
         throw new Error('Failed to create project')
       }
@@ -253,8 +255,109 @@ export default function ProjectSetupPage() {
                 
                 <div>
                   <label className="text-sm font-medium mb-2 block">
-                    Technology Template
+                    Technology Stack & Language
                   </label>
+                  
+                  {/* Language Selection */}
+                  <div className="mb-4 p-4 border rounded-lg bg-gray-50">
+                    <label className="text-sm font-medium mb-2 block">Programming Language</label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="language"
+                          value="javascript"
+                          checked={selectedLanguage === 'javascript'}
+                          onChange={(e) => setSelectedLanguage(e.target.value as 'javascript' | 'typescript')}
+                          className="w-4 h-4 text-primary"
+                        />
+                        <span className="text-sm font-medium">JavaScript</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="language"
+                          value="typescript"
+                          checked={selectedLanguage === 'typescript'}
+                          onChange={(e) => setSelectedLanguage(e.target.value as 'javascript' | 'typescript')}
+                          className="w-4 h-4 text-primary"
+                        />
+                        <span className="text-sm font-medium">TypeScript</span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  {/* Template Selection Dropdown */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowTemplateDropdown(!showTemplateDropdown)}
+                      className="w-full p-3 border rounded-lg bg-white text-left flex items-center justify-between hover:border-primary transition-colors"
+                    >
+                      <span className={selectedTemplate ? 'text-gray-900' : 'text-gray-500'}>
+                        {selectedTemplate ? selectedTemplate.name : 'Select a technology stack...'}
+                      </span>
+                      <ChevronDown className={`h-4 w-4 transition-transform ${showTemplateDropdown ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {showTemplateDropdown && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
+                        {availableTemplates.map((template) => (
+                          <button
+                            key={template.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedTemplate(template);
+                              setShowTemplateDropdown(false);
+                            }}
+                            className="w-full p-4 text-left hover:bg-gray-50 border-b last:border-b-0 transition-colors"
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-medium">{template.name}</h4>
+                              <div className="flex gap-1">
+                                <Badge variant="outline" className="text-xs">
+                                  {selectedLanguage === 'typescript' && template.language === 'javascript' ? 'TypeScript' : template.language}
+                                </Badge>
+                                {template.framework && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    {template.framework}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {template.description}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Selected Template Preview */}
+                  {selectedTemplate && (
+                    <div className="mt-4 p-4 border rounded-lg bg-blue-50 border-blue-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="h-4 w-4 text-blue-600" />
+                        <span className="font-medium text-blue-900">Selected: {selectedTemplate.name}</span>
+                      </div>
+                      <p className="text-sm text-blue-700 mb-2">{selectedTemplate.description}</p>
+                      <div className="flex gap-2">
+                        <Badge variant="outline" className="text-xs">
+                          {selectedLanguage === 'typescript' && selectedTemplate.language === 'javascript' ? 'TypeScript' : selectedTemplate.language}
+                        </Badge>
+                        {selectedTemplate.framework && (
+                          <Badge variant="secondary" className="text-xs">
+                            {selectedTemplate.framework}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Old template selection - remove this */}
+                {/*
                   <div className="space-y-2">
                     {availableTemplates.map((template) => (
                       <Card
@@ -285,6 +388,7 @@ export default function ProjectSetupPage() {
                       </Card>
                     ))}
                   </div>
+                */}
                 </div>
                 
                 <Button
