@@ -66,8 +66,8 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-24">
-      <div className="container flex h-16 items-center justify-between">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:px-24 px-6">
+      <div className="container mx-auto flex h-16 items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-2">
           <Link
@@ -82,7 +82,7 @@ export function Navbar() {
               height={42}
               className="transition-transform group-hover:rotate-6"
             />
-            <p className="text-[1.6rem] font-bold text-gray-900 font-noto tracking-tight group-hover:text-primary">
+            <p className="md:text-[1.6rem] text-[1.2rem] font-bold text-gray-900 font-noto tracking-tight group-hover:text-primary">
               NestFT<span className="text-primary">.dev</span>
             </p>
           </Link>
@@ -184,7 +184,7 @@ export function Navbar() {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden flex items-center justify-center rounded-md p-2 text-foreground"
+          className="md:hidden flex items-center justify-center rounded-md py-2 text-foreground"
           onClick={toggleMenu}
         >
           {isMenuOpen ? (
@@ -197,7 +197,7 @@ export function Navbar() {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="md:hidden container py-4 flex flex-col gap-4 border-t animate-in slide-in-from-top-5">
+        <div className="md:hidden container mx-auto py-4 flex flex-col gap-4 border-t animate-in slide-in-from-top-5">
           {isAuthenticated ? (
             <>
               <div className="flex items-center gap-3 pb-3 mb-2 border-b">
