@@ -16,7 +16,7 @@ export function Testimonial({ quote, name, title, avatar }: TestimonialProps) {
         <div className="text-lg italic text-black ">&ldquo;{quote}&rdquo;</div>
         <div className="flex items-center gap-3 mt-2">
           <Avatar>
-            <AvatarImage src={avatar} alt={name} />
+            <AvatarImage src={avatar} alt={name} className="object-cover" />
             <AvatarFallback>{name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div>

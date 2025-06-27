@@ -2,6 +2,7 @@
 
 import { ProjectCard } from "@/components/project-card";
 import { Testimonial } from "@/components/testimonial";
+import TestimonialsSwiper from "@/components/testimonialSection";
 import { Button } from "@/components/ui/button";
 import { Project } from "@/types";
 import {
@@ -254,7 +255,7 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-8 md:px-24 px-6 md:py-24 ">
+      {/* <section className="py-8 md:px-24 px-6 md:py-24 ">
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="sm:text-3xl text-2xl md:text-4xl font-bold mb-4">
@@ -287,7 +288,10 @@ export default function Home() {
             />
           </div>
         </div>
-      </section>
+      </section> */}
+
+      {/* New Testimonial slider */}
+      <TestimonialsSwiper />
 
       {/* CTA Section */}
       <section className="py-8 md:py-24 px-6 bg-primary/5">
