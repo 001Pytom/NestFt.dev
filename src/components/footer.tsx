@@ -8,7 +8,7 @@ import Image from "next/image";
 export function Footer() {
   return (
     <footer className="w-full border-t bg-background py-12 md:px-24 px-6">
-      <div className="container mx-auto grid grid-cols-1 sm:gap-12 gap-8 md:grid-cols-2 lg:grid-cols-4 items-start">
+      <div className="relative container mx-auto grid grid-cols-1 sm:gap-12 gap-8 md:grid-cols-2 lg:grid-cols-4 items-start">
         <div className="flex-1 flex-col gap-2">
           <div className="flex items-center">
             <Link
@@ -167,6 +167,22 @@ export function Footer() {
             </li>
           </ul>
         </div>
+
+        <div className="absolute md:-right-15 right-0 bottom-0 hover:opacity-50 duration-500">
+          <Link
+            href={'https://bolt.new/'}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image 
+              src={'/bolt-logo.png'}
+              alt="powered by bolt"
+              width={100}
+              height={100}
+              loading="lazy"
+            />  
+          </Link>
+        </div>    
       </div>
 
       <div className="container mt-8 border-t pt-6">
@@ -198,4 +214,4 @@ export function Footer() {
       </div>
     </footer>
   );
-}
+} 
