@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/lib/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,15 +48,55 @@ export default function CertificatesPage() {
   const [showCertificateTemplate, setShowCertificateTemplate] = useState(false);
   const certificateRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (user) {
-      loadCertificateData();
-    }
-  }, [user]);
+  // const loadCertificateData = async () => {
+  //   if (!user) return;
 
-  const loadCertificateData = async () => {
+  //   try {
+  //     const [profile, progress, leaderboardPosition] = await Promise.all([
+  //       getUserProfile(user.id),
+  //       calculateUserProgress(user.id),
+  //       getUserLeaderboardPosition(user.id),
+  //     ]);
+
+  //     setUserProfile(profile);
+
+  //     const certificateData: CertificateData[] = [
+  //       {
+  //         stage: "beginner",
+  //         completionDate: new Date().toISOString(),
+  //         percentage: progress.beginner.percentage,
+  //         isEligible: progress.beginner.percentage >= 70,
+  //         userRank: leaderboardPosition?.rank,
+  //         totalUsers: leaderboardPosition?.totalUsers,
+  //       },
+  //       {
+  //         stage: "intermediate",
+  //         completionDate: new Date().toISOString(),
+  //         percentage: progress.intermediate.percentage,
+  //         isEligible: progress.intermediate.percentage >= 70,
+  //         userRank: leaderboardPosition?.rank,
+  //         totalUsers: leaderboardPosition?.totalUsers,
+  //       },
+  //       {
+  //         stage: "advanced",
+  //         completionDate: new Date().toISOString(),
+  //         percentage: progress.advanced.percentage,
+  //         isEligible: progress.advanced.percentage >= 70,
+  //         userRank: leaderboardPosition?.rank,
+  //         totalUsers: leaderboardPosition?.totalUsers,
+  //       },
+  //     ];
+
+  //     setCertificates(certificateData);
+  //   } catch (error) {
+  //     console.error("Error loading certificate data:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const loadCertificateData = useCallback(async () => {
     if (!user) return;
-
     try {
       const [profile, progress, leaderboardPosition] = await Promise.all([
         getUserProfile(user.id),
@@ -99,7 +139,13 @@ export default function CertificatesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadCertificateData();
+    }
+  }, [user, loadCertificateData]);
 
   const getStageColor = (stage: string) => {
     switch (stage) {
@@ -848,13 +894,16 @@ ${window.location.origin}`;
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-accent">
-                    {userProfile?.current_stage?.charAt(0).toUpperCase()! +
-                      userProfile?.current_stage?.slice(1) || "Beginner"}
+                    {userProfile?.current_stage
+                      ? userProfile.current_stage.charAt(0).toUpperCase() +
+                        userProfile.current_stage.slice(1)
+                      : "Beginner"}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Current Level
                   </div>
                 </div>
+
                 <div className="text-center">
                   <div className="text-3xl font-bold text-success">
                     {userProfile?.streak_days || 0}

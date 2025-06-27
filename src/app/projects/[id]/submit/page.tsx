@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   CheckCircle,
   AlertCircle,
-  Clock,
   Trophy,
   Star,
   RefreshCw,
@@ -32,31 +31,41 @@ import {
   hasUserSubmittedProject,
   checkAndUpdateUserStage,
   updateUserStreak,
+  UserProject,
 } from "@/lib/database";
-import { gradeProject } from "@/lib/aiGrading";
+import { gradeProject, GradingResult } from "@/lib/aiGrading";
 import Link from "next/link";
 import { useToast, toast } from "@/components/ui/toast";
 
 export default function ProjectSubmitPage() {
   const params = useParams();
   const searchParams = useSearchParams();
-  const router = useRouter();
+  // const router = useRouter();
   const { user } = useAuthStore();
   const { addToast } = useToast();
   const projectId = params.id as string;
   const userProjectId = searchParams.get("userProjectId");
 
   const [project, setProject] = useState<ProjectTemplate | null>(null);
-  const [userProject, setUserProject] = useState<any>(null);
+  const [userProject, setUserProject] = useState<UserProject | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [gradingStatus, setGradingStatus] = useState<
     "idle" | "submitting" | "grading" | "completed" | "error"
   >("idle");
-  const [gradingResults, setGradingResults] = useState<any>(null);
+  const [gradingResults, setGradingResults] = useState<GradingResult | null>(
+    null
+  );
   const [repositoryUrl, setRepositoryUrl] = useState("");
   const [deployedUrl, setDeployedUrl] = useState("");
   const [hasAlreadySubmitted, setHasAlreadySubmitted] = useState(false);
   const [showResubmitModal, setShowResubmitModal] = useState(false);
+
+  enum GradingStatus {
+    GRADING = "grading",
+    PENDING = "pending",
+    COMPLETED = "completed",
+    FAILED = "failed",
+  }
 
   useEffect(() => {
     loadProjectData();
@@ -81,13 +90,16 @@ export default function ProjectSubmitPage() {
       }
 
       setProject(foundProject);
-      
+
       // Check if user has already submitted this project
       if (user) {
-        const alreadySubmitted = await hasUserSubmittedProject(user.id, projectId);
+        const alreadySubmitted = await hasUserSubmittedProject(
+          user.id,
+          projectId
+        );
         setHasAlreadySubmitted(alreadySubmitted);
       }
-      
+
       // Load user project if ID provided
       if (userProjectId && user) {
         const userProj = await getUserProject(userProjectId);
@@ -111,7 +123,9 @@ export default function ProjectSubmitPage() {
   };
   const handleSubmitForGrading = async () => {
     if (!project || !userProject || !user) {
-      addToast(toast.error("Missing required data for submission", "Submission Error"));
+      addToast(
+        toast.error("Missing required data for submission", "Submission Error")
+      );
       return;
     }
 
@@ -140,9 +154,9 @@ export default function ProjectSubmitPage() {
           deployed_url: deployedUrl,
           submitted_at: new Date().toISOString(),
         },
-        repository_url: repositoryUrl || null,
-        deployed_url: deployedUrl || null,
-        grading_status: "grading",
+        repository_url: repositoryUrl || undefined,
+        deployed_url: deployedUrl || undefined,
+        grading_status: GradingStatus.GRADING,
       };
 
       const submission = await submitProject(submissionData);
@@ -162,12 +176,12 @@ export default function ProjectSubmitPage() {
       const gradingResult = await gradeProject(project, codeAnalysis);
 
       // Update submission with grading results
-      const updatedSubmission = await updateSubmission(submission.id, {
-        ai_score: gradingResult.totalScore,
-        ai_feedback: gradingResult.feedback,
-        grading_status: "completed",
-        graded_at: new Date().toISOString(),
-      });
+      // const updatedSubmission = await updateSubmission(submission.id, {
+      //   ai_score: gradingResult.totalScore,
+      //   ai_feedback: gradingResult.feedback,
+      //   grading_status: "completed",
+      //   graded_at: new Date().toISOString(),
+      // });
 
       // Update user project with completion data
       await updateUserProject(userProject.id, {
@@ -181,36 +195,47 @@ export default function ProjectSubmitPage() {
       await updateUserProgress(
         user.id,
         gradingResult.totalScore,
-        project.difficulty,
-        project.id
+        project.difficulty
+        // project.id
       );
-      
+
       // Update user streak for project submission activity
       await updateUserStreak(user.id);
 
       setGradingResults(gradingResult);
       setGradingStatus("completed");
       setHasAlreadySubmitted(true);
-    } catch (error) {
-      console.error("Error during submission and grading:", error);
-      setGradingStatus("error");
-      addToast(toast.error("Error during submission: " + error.message, "Submission Failed"));
-    } finally {
-      setIsSubmitting(false);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Error during submission and grading:", error);
+        setGradingStatus("error");
+        addToast(
+          toast.error(
+            "Error during submission: " + error.message,
+            "Submission Failed"
+          )
+        );
+      } else {
+        console.error("Unknown error during submission and grading:", error);
+        setGradingStatus("error");
+        addToast(
+          toast.error("Unknown error during submission", "Submission Failed")
+        );
+      }
     }
   };
 
-  const updateSubmission = async (submissionId: string, updates: any) => {
-    // This would be implemented in the database module
-    // For now, we'll simulate it
-    return { id: submissionId, ...updates };
-  };
+  // const updateSubmission = async (submissionId: string, updates: any) => {
+  //   // This would be implemented in the database module
+  //   // For now, we'll simulate it
+  //   return { id: submissionId, ...updates };
+  // };
 
   const updateUserProgress = async (
     userId: string,
     points: number,
-    difficulty: string,
-    projectId: string
+    difficulty: string
+    // projectId: string
   ) => {
     try {
       const userProfile = await getUserProfile(userId);
@@ -224,9 +249,9 @@ export default function ProjectSubmitPage() {
         streak_days: newStreakDays,
         last_activity_date: new Date().toISOString().split("T")[0],
       });
-      
+
       // Check if user should advance to next stage
-      await checkAndUpdateUserStage(userId, difficulty)
+      await checkAndUpdateUserStage(userId, difficulty);
     } catch (error) {
       console.error("Error updating user progress:", error);
     }
@@ -315,24 +340,33 @@ export default function ProjectSubmitPage() {
                       <span className="font-medium">Already Submitted</span>
                     </div>
                     <p className="text-yellow-700 text-sm mt-1">
-                      You have already submitted this project and earned points for it. 
-                      You can view your previous submission but cannot earn additional points.
+                      You have already submitted this project and earned points
+                      for it. You can view your previous submission but cannot
+                      earn additional points.
                     </p>
                     <div className="mt-3 flex gap-2">
                       <Link href="/projects/browse">
-                        <Button size="sm" variant="outline" className="text-yellow-800 border-yellow-300 hover:bg-yellow-100">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-yellow-800 border-yellow-300 hover:bg-yellow-100"
+                        >
                           Browse Other Projects
                         </Button>
                       </Link>
                       <Link href="/dashboard">
-                        <Button size="sm" variant="outline" className="text-yellow-800 border-yellow-300 hover:bg-yellow-100">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-yellow-800 border-yellow-300 hover:bg-yellow-100"
+                        >
                           View Dashboard
                         </Button>
                       </Link>
                     </div>
                   </div>
                 )}
-                
+
                 <div>
                   <label className="text-sm font-medium mb-2 block">
                     GitHub Repository URL (Optional)
@@ -363,7 +397,7 @@ export default function ProjectSubmitPage() {
                     disabled={hasAlreadySubmitted}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Provide the live URL if you've deployed your project
+                    Provide the live URL if you&apos;ve deployed your project
                   </p>
                 </div>
 
@@ -410,7 +444,7 @@ export default function ProjectSubmitPage() {
             </Card>
           </motion.div>
         )}
-        
+
         {/* Resubmit Modal */}
         {showResubmitModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -421,34 +455,38 @@ export default function ProjectSubmitPage() {
             >
               <div className="text-center">
                 <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                <h3 className="text-xl font-bold mb-4">Project Already Submitted</h3>
-                
+                <h3 className="text-xl font-bold mb-4">
+                  Project Already Submitted
+                </h3>
+
                 <div className="space-y-3 text-left">
                   <p className="text-muted-foreground">
-                    You have already submitted this project and earned points for it. 
-                    To maintain fairness, you cannot earn additional points for the same project.
+                    You have already submitted this project and earned points
+                    for it. To maintain fairness, you cannot earn additional
+                    points for the same project.
                   </p>
-                  
+
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <h4 className="font-medium text-blue-800 mb-1">Want to earn more points?</h4>
+                    <h4 className="font-medium text-blue-800 mb-1">
+                      Want to earn more points?
+                    </h4>
                     <p className="text-blue-700 text-sm">
-                      Try working on a different project to continue building your skills and earning points!
+                      Try working on a different project to continue building
+                      your skills and earning points!
                     </p>
                   </div>
                 </div>
 
                 <div className="flex gap-3 mt-6">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => setShowResubmitModal(false)}
                     className="flex-1"
                   >
                     Close
                   </Button>
                   <Link href="/projects/browse" className="flex-1">
-                    <Button className="w-full">
-                      Browse Projects
-                    </Button>
+                    <Button className="w-full">Browse Projects</Button>
                   </Link>
                 </div>
               </div>
@@ -526,7 +564,7 @@ export default function ProjectSubmitPage() {
             {/* Detailed Feedback */}
             <div className="space-y-4">
               <h3 className="text-xl font-semibold">Detailed Feedback</h3>
-              {gradingResults.feedback.map((item: any, index: number) => (
+              {gradingResults.feedback.map((item, index: number) => (
                 <Card key={index}>
                   <CardHeader>
                     <div className="flex items-center justify-between">

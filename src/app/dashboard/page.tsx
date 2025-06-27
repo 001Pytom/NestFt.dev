@@ -16,7 +16,7 @@ import {
   Award,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   getOrCreateUserProfile,
   getUserProjects,
@@ -39,19 +39,10 @@ export default function DashboardPage() {
   });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      loadUserData();
-      // Update user streak when they visit dashboard (indicates daily activity)
-      updateUserStreak(user.id);
-    }
-  }, [user]);
-
-  const loadUserData = async () => {
+  const loadUserData = useCallback(async () => {
     if (!user) return;
 
     try {
-      // Get or create user profile
       const profile = await getOrCreateUserProfile(user.id, user);
       if (!profile) {
         console.error("Failed to get or create user profile");
@@ -59,22 +50,17 @@ export default function DashboardPage() {
       }
       setUserProfile(profile);
 
-      // Get user projects
       const projects = await getUserProjects(user.id);
       setUserProjects(projects);
 
-      // Get submitted project IDs
       const submittedIds = await getUserSubmittedProjects(user.id);
       setSubmittedProjectIds(submittedIds);
 
-      // Calculate progress
       const userProgress = await calculateUserProgress(user.id);
       setProgress(userProgress);
 
-      // Check if user stage needs updating (in case they completed projects but stage wasn't updated)
       if (profile) {
         await checkAndUpdateUserStage(user.id, profile.current_stage);
-        // Reload profile to get updated stage
         const updatedProfile = await getOrCreateUserProfile(user.id, user);
         if (updatedProfile) {
           setUserProfile(updatedProfile);
@@ -85,7 +71,14 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadUserData();
+      updateUserStreak(user.id);
+    }
+  }, [user, loadUserData]);
 
   const getStageColor = (stage: string) => {
     switch (stage) {

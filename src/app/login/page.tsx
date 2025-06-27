@@ -1,56 +1,72 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Github, Mail, Eye, EyeOff, ArrowLeft } from 'lucide-react'
-import { useAuthStore } from '@/lib/store'
-import { useToast, toast } from '@/components/ui/toast'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Github, Mail, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { useAuthStore } from "@/lib/store";
+import { useToast, toast } from "@/components/ui/toast";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  
-  const { login } = useAuthStore()
-  const { addToast } = useToast()
-  const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const { login } = useAuthStore();
+  const { addToast } = useToast();
+  const router = useRouter();
 
   const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError('')
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
     try {
-      await login('email', { email, password })
-      router.push('/dashboard')
-      addToast(toast.success('Successfully logged in!', 'Welcome Back'))
-    } catch (error: any) {
-      setError(error.message || 'Login failed')
-      addToast(toast.error(error.message || 'Login failed', 'Login Error'))
+      await login("email", { email, password });
+      router.push("/dashboard");
+      addToast(toast.success("Successfully logged in!", "Welcome Back"));
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message || "Login failed");
+        addToast(toast.error(error.message || "Login failed", "Login Error"));
+      } else {
+        setError("Login failed");
+        addToast(toast.error("Login failed", "Login Error"));
+      }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  const handleOAuthLogin = async (provider: 'github' | 'google') => {
-    setIsLoading(true)
-    setError('')
+  const handleOAuthLogin = async (provider: "github" | "google") => {
+    setIsLoading(true);
+    setError("");
 
     try {
-      await login(provider)
-    } catch (error: any) {
-      setError(error.message || 'Login failed')
-      addToast(toast.error(error.message || 'Login failed', 'Login Error'))
+      await login(provider);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message || "Login failed");
+        addToast(toast.error(error.message || "Login failed", "Login Error"));
+      } else {
+        setError("Login failed");
+        addToast(toast.error("Login failed", "Login Error"));
+      }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-4">
@@ -65,7 +81,7 @@ export default function LoginPage() {
           transition={{
             duration: 20,
             repeat: Infinity,
-            ease: "linear"
+            ease: "linear",
           }}
         />
         <motion.div
@@ -77,7 +93,7 @@ export default function LoginPage() {
           transition={{
             duration: 25,
             repeat: Infinity,
-            ease: "linear"
+            ease: "linear",
           }}
         />
       </div>
@@ -135,7 +151,7 @@ export default function LoginPage() {
               <Button
                 variant="outline"
                 className="w-full h-11 relative overflow-hidden group"
-                onClick={() => handleOAuthLogin('google')}
+                onClick={() => handleOAuthLogin("google")}
                 disabled={isLoading}
               >
                 <motion.div
@@ -149,7 +165,7 @@ export default function LoginPage() {
               <Button
                 variant="outline"
                 className="w-full h-11 relative overflow-hidden group"
-                onClick={() => handleOAuthLogin('github')}
+                onClick={() => handleOAuthLogin("github")}
                 disabled={isLoading}
               >
                 <motion.div
@@ -172,7 +188,9 @@ export default function LoginPage() {
                 <span className="w-full border-t" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                <span className="bg-card px-2 text-muted-foreground">
+                  Or continue with
+                </span>
               </div>
             </motion.div>
 
@@ -207,7 +225,7 @@ export default function LoginPage() {
                 <div className="relative">
                   <motion.input
                     whileFocus={{ scale: 1.02 }}
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     id="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -220,7 +238,11 @@ export default function LoginPage() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -247,11 +269,15 @@ export default function LoginPage() {
                   {isLoading ? (
                     <motion.div
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
                       className="h-4 w-4 border-2 border-current border-t-transparent rounded-full"
                     />
                   ) : (
-                    'Sign In'
+                    "Sign In"
                   )}
                 </Button>
               </motion.div>
@@ -264,7 +290,9 @@ export default function LoginPage() {
               transition={{ delay: 0.8 }}
               className="text-center text-sm"
             >
-              <span className="text-muted-foreground">Don't have an account? </span>
+              <span className="text-muted-foreground">
+                Don&apos;t have an account?{" "}
+              </span>
               <Link
                 href="/signup"
                 className="text-primary hover:underline font-medium"
@@ -276,5 +304,5 @@ export default function LoginPage() {
         </Card>
       </motion.div>
     </div>
-  )
+  );
 }

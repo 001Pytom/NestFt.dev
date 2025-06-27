@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowRight, Code, Server, Layers } from 'lucide-react'
 import { techStacks } from '@/data/projects'
-import { TechStack } from '@/types/project'
+// import { TechStack } from '@/types/project'
 import Link from 'next/link'
 
 export default function BrowseProjectsPage() {

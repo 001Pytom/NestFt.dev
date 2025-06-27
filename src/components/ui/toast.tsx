@@ -69,7 +69,7 @@ function ToastContainer() {
   )
 }
 
-function Toast({ id, title, description, type = 'default', onClose }: ToastProps) {
+function Toast({  title, description, type = 'default', onClose }: ToastProps) {
   const getToastStyles = () => {
     switch (type) {
       case 'success':

@@ -8,7 +8,7 @@ import {
   GitBranch,
   LayoutDashboard,
   User,
-  Menu, 
+  Menu,
   X,
   // Award,
 } from "lucide-react";
@@ -16,7 +16,7 @@ import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useAuthStore } from "../lib/store";
 import Image from "next/image";
-import { useEffect} from "react";
+import { useEffect } from "react";
 import { getOrCreateUserProfile, UserProfile } from "@/lib/database";
 
 export function Navbar() {
@@ -28,20 +28,20 @@ export function Navbar() {
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
-  
+
   useEffect(() => {
     if (user && isAuthenticated) {
       loadUserProfile();
     }
   }, [user, isAuthenticated]);
-  
+
   const loadUserProfile = async () => {
     if (!user) return;
     try {
       const profile = await getOrCreateUserProfile(user.id, user);
       setUserProfile(profile);
     } catch (error) {
-      console.error('Error loading user profile:', error);
+      console.error("Error loading user profile:", error);
     }
   };
 
@@ -114,14 +114,14 @@ export function Navbar() {
                   isActive("/leaderboard") ? "text-primary" : "text-black"
                 }`}
               >
-                Leaderboard 
+                Leaderboard
               </Link>
               <Link
                 href="/certificates"
                 className={`text-sm font-medium transition-colors hover:text-primary ${
                   isActive("/certificates") ? "text-primary" : "text-black"
                 }`}
-              > 
+              >
                 Certificates
               </Link>
               <Link href="/profile" className="ml-4">
@@ -148,7 +148,7 @@ export function Navbar() {
               >
                 Features
               </Link>
-               <Link
+              <Link
                 href="/about"
                 className={`text-sm font-medium transition-colors hover:text-primary ${
                   isActive("/about") ? "text-primary" : "text-black"
@@ -213,12 +213,14 @@ export function Navbar() {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <div className="font-medium">{user?.user_name}</div>
+                  <div className="font-medium">{user?.user_metadata?.name}</div>
                   <div className="text-sm text-muted-foreground">
-                    {userProfile?.current_stage ? 
-                      `${userProfile.current_stage.charAt(0).toUpperCase() + userProfile.current_stage.slice(1)} Level` : 
-                      user?.email
-                    }
+                    {userProfile?.current_stage
+                      ? `${
+                          userProfile.current_stage.charAt(0).toUpperCase() +
+                          userProfile.current_stage.slice(1)
+                        } Level`
+                      : user?.email}
                   </div>
                 </div>
               </div>

@@ -127,13 +127,22 @@ function BlogPage() {
               <Badge className="mb-4">Featured Post</Badge>
               <Card className="overflow-hidden">
                 <div className="md:flex">
-                  <div className="md:w-1/2">
-                    <Image
+                  {/* <div className="md:w-1/2">
+                    <img
                       src={featuredPost.image}
                       alt={featuredPost.title}
                       className="w-full h-64 md:h-full object-cover"
                     />
+                  </div> */}
+                  <div className="md:w-1/2 relative">
+                    <Image
+                      src={featuredPost.image}
+                      alt={featuredPost.title}
+                      layout="fill"
+                      className="w-full h-64 md:h-full object-cover"
+                    />
                   </div>
+
                   <div className="md:w-1/2 p-8">
                     <div className="flex flex-wrap gap-2 mb-4">
                       {featuredPost.tags.map((tag) => (
@@ -149,11 +158,14 @@ function BlogPage() {
                       {featuredPost.excerpt}
                     </p>
                     <div className="flex items-center gap-4 mb-6">
-                      <img
+                      <Image
                         src={featuredPost.authorAvatar}
                         alt={featuredPost.author}
+                        width={40}
+                        height={40}
                         className="w-10 h-10 rounded-full object-cover"
                       />
+
                       <div>
                         <div className="font-medium text-sm">
                           {featuredPost.author}
@@ -194,13 +206,15 @@ function BlogPage() {
                 key={post.id}
                 className="overflow-hidden h-full flex flex-col"
               >
-                <div className="aspect-video overflow-hidden">
+                <div className="relative w-full h-full min-h-64 transition-transform hover:scale-105">
                   <Image
                     src={post.image}
                     alt={post.title}
-                    className="w-full h-full object-cover transition-transform hover:scale-105"
+                    fill
+                    className="object-cover"
                   />
                 </div>
+
                 <CardContent className="p-6 flex-1 flex flex-col">
                   <div className="flex flex-wrap gap-2 mb-3">
                     {post.tags.slice(0, 2).map((tag) => (
@@ -216,11 +230,15 @@ function BlogPage() {
                     {post.excerpt}
                   </p>
                   <div className="flex items-center gap-3 mb-4">
-                    <img
-                      src={post.authorAvatar}
-                      alt={post.author}
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
+                    <div className="relative w-8 h-8">
+                      <Image
+                        src={post.authorAvatar}
+                        alt={post.author}
+                        fill
+                        className="rounded-full object-cover"
+                      />
+                    </div>
+
                     <div>
                       <div className="font-medium text-sm">{post.author}</div>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">

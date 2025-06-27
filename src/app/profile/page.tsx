@@ -1,72 +1,81 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import { useAuthStore } from '@/lib/store'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Calendar, Mail, Github, ExternalLink, Settings, Trophy, Users, Star, Clock } from 'lucide-react'
-import { getUserStats, getUserRecentActivity, getOrCreateUserProfile } from '@/lib/database'
+import { useCallback, useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { useAuthStore } from "@/lib/store";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Mail, Trophy, Star, Clock } from "lucide-react";
+import {
+  getUserStats,
+  getUserRecentActivity,
+  getOrCreateUserProfile,
+  RecentActivityItem,
+} from "@/lib/database";
 
 export default function ProfilePage() {
-  const { user, logout } = useAuthStore()
+  const { user, logout } = useAuthStore();
   const [stats, setStats] = useState({
     totalProjects: 0,
     totalPoints: 0,
     streakDays: 0,
-    currentStage: 'beginner'
-  })
-  const [recentActivity, setRecentActivity] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+    currentStage: "beginner",
+  });
+ 
+
+  const [recentActivity, setRecentActivity] = useState<RecentActivityItem[]>(
+    []
+  );
+  const [loading, setLoading] = useState(true);
+
+  const loadUserData = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      // Ensure user profile exists
+      await getOrCreateUserProfile(user.id, user);
+
+      const [userStats, activity] = await Promise.all([
+        getUserStats(user.id),
+        getUserRecentActivity(user.id, 5),
+      ]);
+
+      setStats(userStats);
+      setRecentActivity(activity);
+    } catch (error) {
+      console.error("Error loading user data:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (user) {
-      loadUserData()
+      loadUserData();
     }
-  }, [user])
-
-  const loadUserData = async () => {
-    if (!user) return
-    
-    try {
-      // Ensure user profile exists
-      await getOrCreateUserProfile(user.id, user)
-      
-      const [userStats, activity] = await Promise.all([
-        getUserStats(user.id),
-        getUserRecentActivity(user.id, 5)
-      ])
-      
-      setStats(userStats)
-      setRecentActivity(activity)
-    } catch (error) {
-      console.error('Error loading user data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [user, loadUserData]);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'beginner':
-        return 'text-green-600'
-      case 'intermediate':
-        return 'text-yellow-600'
-      case 'advanced':
-        return 'text-red-600'
+      case "beginner":
+        return "text-green-600";
+      case "intermediate":
+        return "text-yellow-600";
+      case "advanced":
+        return "text-red-600";
       default:
-        return 'text-gray-600'
+        return "text-gray-600";
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -94,12 +103,17 @@ export default function ProfilePage() {
             <Card>
               <CardHeader className="text-center">
                 <Avatar className="h-24 w-24 mx-auto mb-4">
-                  <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.name} />
+                  <AvatarImage
+                    src={user?.user_metadata?.avatar_url}
+                    alt={user?.user_metadata?.name}
+                  />
                   <AvatarFallback className="text-2xl">
-                    {user?.user_metadata?.name?.charAt(0) || user?.email?.charAt(0) || 'U'}
+                    {user?.user_metadata?.name?.charAt(0) ||
+                      user?.email?.charAt(0) ||
+                      "U"}
                   </AvatarFallback>
                 </Avatar>
-                <CardTitle>{user?.user_metadata?.name || 'User'}</CardTitle>
+                <CardTitle>{user?.user_metadata?.name || "User"}</CardTitle>
                 <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                   <Mail className="h-4 w-4" />
                   {user?.email}
@@ -109,11 +123,14 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">
-                    Joined {new Date(user?.created_at || '').toLocaleDateString()}
+                    Joined{" "}
+                    {new Date(user?.created_at || "").toLocaleDateString()}
                   </span>
                 </div>
                 <Badge variant="secondary" className="w-full justify-center">
-                  {stats.currentStage.charAt(0).toUpperCase() + stats.currentStage.slice(1)} Level
+                  {stats.currentStage.charAt(0).toUpperCase() +
+                    stats.currentStage.slice(1)}{" "}
+                  Level
                 </Badge>
                 <Button variant="outline" className="w-full" onClick={logout}>
                   Sign Out
@@ -137,22 +154,38 @@ export default function ProfilePage() {
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{stats.totalProjects}</div>
-                    <div className="text-sm text-muted-foreground">Projects</div>
+                    <div className="text-2xl font-bold text-primary">
+                      {stats.totalProjects}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Projects
+                    </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-secondary">{stats.totalPoints}</div>
+                    <div className="text-2xl font-bold text-secondary">
+                      {stats.totalPoints}
+                    </div>
                     <div className="text-sm text-muted-foreground">Points</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-accent">
-                      {recentActivity.filter(a => a.type === 'project_submission').length}
+                      {
+                        recentActivity.filter(
+                          (a) => a.type === "project_submission"
+                        ).length
+                      }
                     </div>
-                    <div className="text-sm text-muted-foreground">Collaborations</div>
+                    <div className="text-sm text-muted-foreground">
+                      Collaborations
+                    </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-success">{stats.streakDays}</div>
-                    <div className="text-sm text-muted-foreground">Streak Days</div>
+                    <div className="text-2xl font-bold text-success">
+                      {stats.streakDays}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Streak Days
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -167,9 +200,12 @@ export default function ProfilePage() {
                 {recentActivity.length > 0 ? (
                   <div className="space-y-4">
                     {recentActivity.map((activity, index) => (
-                      <div key={activity.id || index} className="flex items-start gap-3 p-3 border rounded-lg">
+                      <div
+                        key={activity.id || index}
+                        className="flex items-start gap-3 p-3 border rounded-lg"
+                      >
                         <div className="flex-shrink-0">
-                          {activity.type === 'project_submission' && (
+                          {activity.type === "project_submission" && (
                             <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                               <Trophy className="h-4 w-4 text-green-600" />
                             </div>
@@ -177,12 +213,20 @@ export default function ProfilePage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <p className="font-medium text-sm">{activity.title}</p>
-                            <span className={`text-xs font-medium ${getDifficultyColor(activity.difficulty)}`}>
+                            <p className="font-medium text-sm">
+                              {activity.title}
+                            </p>
+                            <span
+                              className={`text-xs font-medium ${getDifficultyColor(
+                                activity.difficulty
+                              )}`}
+                            >
                               {activity.difficulty}
                             </span>
                           </div>
-                          <p className="text-sm text-muted-foreground">{activity.description}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {activity.description}
+                          </p>
                           <div className="flex items-center gap-2 mt-1">
                             <Calendar className="h-3 w-3 text-muted-foreground" />
                             <span className="text-xs text-muted-foreground">
@@ -190,9 +234,13 @@ export default function ProfilePage() {
                             </span>
                             {activity.score && (
                               <>
-                                <span className="text-xs text-muted-foreground">•</span>
+                                <span className="text-xs text-muted-foreground">
+                                  •
+                                </span>
                                 <Star className="h-3 w-3 text-yellow-500" />
-                                <span className="text-xs font-medium">{activity.score} pts</span>
+                                <span className="text-xs font-medium">
+                                  {activity.score} pts
+                                </span>
                               </>
                             )}
                           </div>
@@ -215,5 +263,5 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

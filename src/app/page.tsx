@@ -1,7 +1,7 @@
 "use client";
 
 import { ProjectCard } from "@/components/project-card";
-import { Testimonial } from "@/components/testimonial";
+// import { Testimonial } from "@/components/testimonial";
 import TestimonialsSwiper from "@/components/testimonialSection";
 import { Button } from "@/components/ui/button";
 import { Project } from "@/types";
