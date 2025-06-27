@@ -50,6 +50,25 @@ export interface ProjectSubmission {
   graded_at?: string;
 }
 
+export interface GuideStep {
+  title: string;
+  description: string;
+  duration: string;
+  topics?: string[];
+}
+export interface RecentActivityItem {
+  id: number;
+  name: string;
+  date: Date | string;
+  difficulty: string;
+  aiScore: number;
+  aiFeedback: string;
+  type: string;
+  title: string;
+  description: string;
+  score: number;
+}
+
 export interface LearningGuide {
   id: string;
   title: string;
@@ -57,12 +76,17 @@ export interface LearningGuide {
   category: string;
   difficulty: string;
   duration: string;
-  steps: unknown[];
+  // steps: unknown[];
+  steps: {
+    title: string;
+    description: string;
+    duration: string;
+    topics?: string[];
+  }[];
   rating: number;
   image_url?: string;
   created_at: string;
   updated_at: string;
-  
 }
 
 // User Profile Functions
@@ -208,7 +232,7 @@ export async function updateUserStreak(userId: string): Promise<void> {
 export async function getUserRecentActivity(
   userId: string,
   limit: number = 5
-): Promise<unknown[]> {
+): Promise<RecentActivityItem[]> {
   try {
     // Get recent project submissions
     const { data: submissions, error: submissionsError } = await supabase

@@ -98,11 +98,21 @@ export default function SignupPage() {
         setSuccess(
           `A confirmation link has been sent to ${formData.email}. Please check your inbox to complete your signup.`
         );
-        addToast(toast.info(`Confirmation email sent to ${formData.email}`, "Check Your Email"));
+        addToast(
+          toast.info(
+            `Confirmation email sent to ${formData.email}`,
+            "Check Your Email"
+          )
+        );
       }
-    } catch (error: any) {
-      setError(error.message || "Signup failed");
-      addToast(toast.error(error.message || "Signup failed", "Signup Error"));
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message || "Signup failed");
+        addToast(toast.error(error.message || "Signup failed", "Signup Error"));
+      } else {
+        setError("Signup failed");
+        addToast(toast.error("Signup failed", "Signup Error"));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -114,9 +124,14 @@ export default function SignupPage() {
 
     try {
       await login(provider);
-    } catch (error: any) {
-      setError(error.message || "Signup failed");
-      addToast(toast.error(error.message || "Signup failed", "Signup Error"));
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message || "Signup failed");
+        addToast(toast.error(error.message || "Signup failed", "Signup Error"));
+      } else {
+        setError("Signup failed");
+        addToast(toast.error("Signup failed", "Signup Error"));
+      }
     } finally {
       setIsLoading(false);
     }

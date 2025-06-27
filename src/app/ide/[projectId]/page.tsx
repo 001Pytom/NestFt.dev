@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -74,22 +74,9 @@ export default function IDEPage() {
   >("javascript");
   const [consoleMessages, setConsoleMessages] = useState<string[]>([]);
 
-  useEffect(() => {
-    loadProject();
-  }, [projectId]);
+  // Your other imports and state setup...
 
-  // Auto-save functionality
-  useEffect(() => {
-    const autoSaveInterval = setInterval(() => {
-      if (selectedFile && code !== selectedFile.content) {
-        handleSave(false); // Silent save
-      }
-    }, 30000); // Auto-save every 30 seconds
-
-    return () => clearInterval(autoSaveInterval);
-  }, [selectedFile, code]);
-
-  const loadProject = async () => {
+  const loadProject = useCallback(async () => {
     try {
       const templateId = searchParams.get("template");
       const projectName = searchParams.get("name");
@@ -101,13 +88,11 @@ export default function IDEPage() {
 
       setSelectedLanguage(language);
 
-      // Find template
       const allTemplates = techStacks.flatMap((stack) => stack.templates);
       const template = allTemplates.find((t) => t.id === templateId);
 
       if (!template) return;
 
-      // Initialize file tree from template
       const initialTree = initializeFileTree(
         template.folderStructure,
         "",
@@ -116,17 +101,12 @@ export default function IDEPage() {
       );
       setFileTree(initialTree);
 
-      // Select first file
       const firstFile = findFirstFile(initialTree);
       if (firstFile) {
         setSelectedFile(firstFile);
         setCode(firstFile.content || "");
       }
 
-      // Set TypeScript preference based on template
-      // setUseTypeScript(template.language === 'typescript' || templateId.includes('typescript') || language === 'typescript');
-
-      // Create mock user project
       setUserProject({
         id: projectId,
         user_id: user?.id || "user-id",
@@ -143,12 +123,16 @@ export default function IDEPage() {
     } catch (error) {
       console.error("Error loading project:", error);
     }
-  };
+  }, [searchParams,  projectId, user?.id, userProjectId]);
+
+  useEffect(() => {
+    loadProject();
+  }, [loadProject]);
 
   const initializeFileTree = (
-    structure:object,
+    structure: object,
     basePath = "",
-    template:TechTemplate,
+    template: TechTemplate,
     projectName: string
   ): FileNode[] => {
     return Object.entries(structure).map(([name, content]) => {
@@ -297,40 +281,52 @@ export default function IDEPage() {
     }
   };
 
-  const handleSave = async (showFeedback = true) => {
-    if (!selectedFile || !userProject) return;
+  const handleSave = useCallback(
+    async (showFeedback = true) => {
+      if (!selectedFile || !userProject) return;
 
-    setIsSaving(true);
+      setIsSaving(true);
 
-    try {
-      // Update file content in tree
-      updateFileContent(selectedFile.path, code);
+      try {
+        updateFileContent(selectedFile.path, code);
+        const allFiles = collectAllFiles(fileTree);
+        await saveProjectCode(userProject.id, allFiles);
 
-      // Collect all file contents
-      const allFiles = collectAllFiles(fileTree);
+        setLastSaved(new Date());
 
-      // Save to database
-      await saveProjectCode(userProject.id, allFiles);
-
-      setLastSaved(new Date());
-
-      if (showFeedback) {
-        addToast(toast.success("Project saved successfully!", "Saved"));
+        if (showFeedback) {
+          addToast(toast.success("Project saved successfully!", "Saved"));
+        }
+      } catch (error) {
+        console.error("Error saving project:", error);
+        addToast(
+          toast.error(
+            "Failed to save project. Please try again.",
+            "Save Failed"
+          )
+        );
+        addToast(
+          toast.error(
+            "Failed to create project. Please try again.",
+            "Project Creation Failed"
+          )
+        );
+      } finally {
+        setIsSaving(false);
       }
-    } catch (error) {
-      console.error("Error saving project:", error);
-      addToast(
-        toast.error("Failed to save project. Please try again.", "Save Failed")
-      );
-      addToast(
-        toast.error(
-          "Failed to create project. Please try again.",
-          "Project Creation Failed"
-        )
-      );
-      setIsSaving(false);
-    }
-  };
+    },
+    [selectedFile, userProject, code, fileTree, addToast]
+  );
+
+  useEffect(() => {
+    const autoSaveInterval = setInterval(() => {
+      if (selectedFile && code !== selectedFile.content) {
+        handleSave(false);
+      }
+    }, 30000);
+
+    return () => clearInterval(autoSaveInterval);
+  }, [selectedFile, code, handleSave]);
 
   const handleSubmit = async () => {
     if (!userProject || !user) return;
@@ -662,7 +658,9 @@ export default function IDEPage() {
             >
               <Tabs
                 value={activePanel}
-                onValueChange={(value) => setActivePanel(value as "terminal" | "preview" | "github")}
+                onValueChange={(value) =>
+                  setActivePanel(value as "terminal" | "preview" | "github")
+                }
                 className="flex-1 flex flex-col"
               >
                 <TabsList className="w-full rounded-none border-b">

@@ -1,78 +1,108 @@
-'use client'
+"use client";
 
-import { useEffect, useRef, useState } from 'react'
-import { RefreshCw, ExternalLink, Smartphone, Tablet, Monitor } from 'lucide-react'
+import { useEffect, useRef, useState } from "react";
+import {
+  RefreshCw,
+  ExternalLink,
+  Smartphone,
+  Tablet,
+  Monitor,
+} from "lucide-react";
 
 interface PreviewPanelProps {
-  projectId: string
-  files: Record<string, string>
-  isRunning: boolean
-  template?: string
-  onConsoleOutput?: (output: string) => void
+  projectId: string;
+  files: Record<string, string>;
+  isRunning: boolean;
+  template?: string;
+  onConsoleOutput?: (output: string) => void;
 }
 
-export function PreviewPanel({ projectId, files, isRunning, template, onConsoleOutput }: PreviewPanelProps) {
-  const iframeRef = useRef<HTMLIFrameElement>(null)
-  const [previewUrl, setPreviewUrl] = useState<string>('')
-  const [viewportSize, setViewportSize] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
-  const [isLoading, setIsLoading] = useState(false)
-  const [hasGenerated, setHasGenerated] = useState(false)
+export function PreviewPanel({
+  files,
+  isRunning,
+  template,
+  onConsoleOutput,
+}: PreviewPanelProps) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [viewportSize, setViewportSize] = useState<
+    "mobile" | "tablet" | "desktop"
+  >("desktop");
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasGenerated, setHasGenerated] = useState(false);
 
   useEffect(() => {
     if (isRunning && files && !hasGenerated) {
-      generatePreview()
-      setHasGenerated(true)
+      generatePreview();
+      setHasGenerated(true);
     }
-  }, [files, isRunning, template, hasGenerated])
+  }, [files, isRunning, template, hasGenerated]);
 
   // Reset hasGenerated when files change significantly
   useEffect(() => {
-    setHasGenerated(false)
-  }, [Object.keys(files).length])
+    setHasGenerated(false);
+  }, [Object.keys(files).length]);
 
   const generatePreview = async () => {
-    setIsLoading(true)
-    
+    setIsLoading(true);
+
     try {
-      let htmlContent = ''
-      
+      let htmlContent = "";
+
       // Handle different project templates
-      if (template?.includes('react')) {
-        htmlContent = generateReactPreview()
-      } else if (template?.includes('vue')) {
-        htmlContent = generateVuePreview()
-      } else if (template?.includes('nextjs')) {
-        htmlContent = generateNextJSPreview()
-      } else if (template?.includes('nodejs') || template?.includes('express')) {
-        htmlContent = generateNodeJSPreview()
+      if (template?.includes("react")) {
+        htmlContent = generateReactPreview();
+      } else if (template?.includes("vue")) {
+        htmlContent = generateVuePreview();
+      } else if (template?.includes("nextjs")) {
+        htmlContent = generateNextJSPreview();
+      } else if (
+        template?.includes("nodejs") ||
+        template?.includes("express")
+      ) {
+        htmlContent = generateNodeJSPreview();
       } else {
         // Vanilla HTML/CSS/JS projects
-        htmlContent = generateVanillaPreview()
+        htmlContent = generateVanillaPreview();
       }
-      
-      const blob = new Blob([htmlContent], { type: 'text/html' })
-      const url = URL.createObjectURL(blob)
-      
+
+      const blob = new Blob([htmlContent], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+
       // Clean up previous URL
       if (previewUrl) {
-        URL.revokeObjectURL(previewUrl)
+        URL.revokeObjectURL(previewUrl);
       }
-      
-      setPreviewUrl(url)
-      
-    } catch (error) {
-      console.error('Error generating preview:', error)
-      addConsoleOutput(`Error: ${error.message}`, 'error')
+
+      setPreviewUrl(url);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(`Error generating preview:, ${error.message}`);
+        addConsoleOutput(`Error: ${error.message}`);
+      } else {
+        console.error("Error generating preview:");
+        addConsoleOutput(`Error: ${error}`);
+      }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const generateReactPreview = () => {
-    const appFile = files['src/App.js'] || files['src/App.jsx'] || files['src/App.ts'] || files['src/App.tsx'] || ''
-    const indexFile = files['src/index.js'] || files['src/index.jsx'] || files['src/index.ts'] || files['src/index.tsx'] || ''
-    const cssFile = files['src/App.css'] || files['src/index.css'] || ''
-    
+    const appFile =
+      files["src/App.js"] ||
+      files["src/App.jsx"] ||
+      files["src/App.ts"] ||
+      files["src/App.tsx"] ||
+      "";
+    // const indexFile =
+    //   files["src/index.js"] ||
+    //   files["src/index.jsx"] ||
+    //   files["src/index.ts"] ||
+    //   files["src/index.tsx"] ||
+    //   "";
+    const cssFile = files["src/App.css"] || files["src/index.css"] || "";
+
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -140,7 +170,9 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
         const { useState, useEffect, createElement } = React;
         
         // Transform and execute App component
-        ${appFile.replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, '').replace(/export\s+default\s+/, 'window.App = ')}
+        ${appFile
+          .replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, "")
+          .replace(/export\s+default\s+/, "window.App = ")}
         
         // Render the app
         const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -175,14 +207,14 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
       }
     </script>
 </body>
-</html>`
-  }
+</html>`;
+  };
 
   const generateVuePreview = () => {
-    const appFile = files['src/App.vue'] || files['App.vue'] || ''
-    const mainFile = files['src/main.js'] || files['src/main.ts'] || ''
-    const cssFile = files['src/style.css'] || files['src/App.css'] || ''
-    
+    // const appFile = files["src/App.vue"] || files["App.vue"] || "";
+    // const mainFile = files["src/main.js"] || files["src/main.ts"] || "";
+    const cssFile = files["src/style.css"] || files["src/App.css"] || "";
+
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -291,14 +323,20 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
       }
     </style>
 </body>
-</html>`
-  }
+</html>`;
+  };
 
   const generateNextJSPreview = () => {
-    const pageFile = files['pages/index.js'] || files['pages/index.tsx'] || files['app/page.js'] || files['app/page.tsx'] || ''
-    const appFile = files['pages/_app.js'] || files['pages/_app.tsx'] || ''
-    const cssFile = files['styles/globals.css'] || files['app/globals.css'] || ''
-    
+    const pageFile =
+      files["pages/index.js"] ||
+      files["pages/index.tsx"] ||
+      files["app/page.js"] ||
+      files["app/page.tsx"] ||
+      "";
+    // const appFile = files["pages/_app.js"] || files["pages/_app.tsx"] || "";
+    const cssFile =
+      files["styles/globals.css"] || files["app/globals.css"] || "";
+
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -367,7 +405,9 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
           );
         }
         
-        ${pageFile.replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, '').replace(/export\s+default\s+/, 'window.PageComponent = ')}
+        ${pageFile
+          .replace(/import\s+.*?from\s+['"].*?['"];?\s*/g, "")
+          .replace(/export\s+default\s+/, "window.PageComponent = ")}
         
         const root = ReactDOM.createRoot(document.getElementById('__next'));
         
@@ -390,12 +430,13 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
       }
     </script>
 </body>
-</html>`
-  }
+</html>`;
+  };
 
   const generateNodeJSPreview = () => {
-    const serverFile = files['server.js'] || files['app.js'] || files['index.js'] || ''
-    
+    const serverFile =
+      files["server.js"] || files["app.js"] || files["index.js"] || "";
+
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -430,7 +471,9 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
             
             <h3>Server Code:</h3>
             <div class="code-preview">
-                <pre><code>${serverFile.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>
+                <pre><code>${serverFile
+                  .replace(/</g, "&lt;")
+                  .replace(/>/g, "&gt;")}</code></pre>
             </div>
             
             <p><strong>Note:</strong> This is a preview of your Node.js server code. In a real environment, your server would be running on a specific port and handling HTTP requests.</p>
@@ -464,18 +507,24 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
       }
     </script>
 </body>
-</html>`
-  }
+</html>`;
+  };
 
   const generateVanillaPreview = () => {
-    let htmlContent = files['index.html'] || generateDefaultHTML()
-    const cssContent = files['css/style.css'] || files['style.css'] || files['styles.css'] || ''
-    const jsContent = files['js/main.js'] || files['main.js'] || files['script.js'] || files['app.js'] || ''
-    
+    const htmlContent = files["index.html"] || generateDefaultHTML();
+    const cssContent =
+      files["css/style.css"] || files["style.css"] || files["styles.css"] || "";
+    const jsContent =
+      files["js/main.js"] ||
+      files["main.js"] ||
+      files["script.js"] ||
+      files["app.js"] ||
+      "";
+
     // Inject CSS and JS into HTML with console capture
-    const fullHTML = injectAssetsIntoHTML(htmlContent, cssContent, jsContent)
-    return fullHTML
-  }
+    const fullHTML = injectAssetsIntoHTML(htmlContent, cssContent, jsContent);
+    return fullHTML;
+  };
 
   const generateDefaultHTML = () => {
     return `<!DOCTYPE html>
@@ -493,11 +542,11 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
         </div>
     </div>
 </body>
-</html>`
-  }
+</html>`;
+  };
 
   const injectAssetsIntoHTML = (html: string, css: string, js: string) => {
-    let modifiedHTML = html
+    let modifiedHTML = html;
 
     // Add console capture script
     const consoleScript = `
@@ -538,84 +587,93 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
       window.addEventListener('unhandledrejection', function(e) {
         sendToParent('error', \`Unhandled Promise Rejection: \${e.reason}\`);
       });
-    </script>`
+    </script>`;
 
     // Inject CSS
     if (css) {
-      const cssTag = `<style>${css}</style>`
-      if (modifiedHTML.includes('</head>')) {
-        modifiedHTML = modifiedHTML.replace('</head>', `${cssTag}\n</head>`)
+      const cssTag = `<style>${css}</style>`;
+      if (modifiedHTML.includes("</head>")) {
+        modifiedHTML = modifiedHTML.replace("</head>", `${cssTag}\n</head>`);
       } else {
-        modifiedHTML = `<head>${cssTag}</head>${modifiedHTML}`
+        modifiedHTML = `<head>${cssTag}</head>${modifiedHTML}`;
       }
     }
 
     // Inject console script first
-    if (modifiedHTML.includes('</head>')) {
-      modifiedHTML = modifiedHTML.replace('</head>', `${consoleScript}\n</head>`)
+    if (modifiedHTML.includes("</head>")) {
+      modifiedHTML = modifiedHTML.replace(
+        "</head>",
+        `${consoleScript}\n</head>`
+      );
     } else {
-      modifiedHTML = `<head>${consoleScript}</head>${modifiedHTML}`
+      modifiedHTML = `<head>${consoleScript}</head>${modifiedHTML}`;
     }
 
     // Inject JavaScript
     if (js) {
-      const jsTag = `<script>${js}</script>`
-      if (modifiedHTML.includes('</body>')) {
-        modifiedHTML = modifiedHTML.replace('</body>', `${jsTag}\n</body>`)
+      const jsTag = `<script>${js}</script>`;
+      if (modifiedHTML.includes("</body>")) {
+        modifiedHTML = modifiedHTML.replace("</body>", `${jsTag}\n</body>`);
       } else {
-        modifiedHTML = `${modifiedHTML}<script>${js}</script>`
+        modifiedHTML = `${modifiedHTML}<script>${js}</script>`;
       }
     }
 
-    return modifiedHTML
-  }
+    return modifiedHTML;
+  };
 
-  const addConsoleOutput = (message: string, level: 'log' | 'error' | 'warn' = 'log') => {
-    const timestamp = new Date().toLocaleTimeString()
-    const formattedMessage = `[${timestamp}] ${message}`
-    
+  const addConsoleOutput = (
+    message: string
+    // level: "log" | "error" | "warn" = "log"
+  ) => {
+    const timestamp = new Date().toLocaleTimeString();
+    const formattedMessage = `[${timestamp}] ${message}`;
+
     if (onConsoleOutput) {
-      onConsoleOutput(formattedMessage)
+      onConsoleOutput(formattedMessage);
     }
-  }
+  };
 
   // Listen for console messages from iframe
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'console') {
-        addConsoleOutput(event.data.message, event.data.level)
+      if (event.data.type === "console") {
+        addConsoleOutput(
+          event.data.message
+          //  event.data.level
+        );
       }
-    }
+    };
 
-    window.addEventListener('message', handleMessage)
-    return () => window.removeEventListener('message', handleMessage)
-  }, [])
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
 
   const refreshPreview = () => {
-    setHasGenerated(false)
+    setHasGenerated(false);
     if (iframeRef.current) {
-      iframeRef.current.src = iframeRef.current.src
+      iframeRef.current.src = iframeRef.current.src;
     }
-  }
+  };
 
   const openInNewTab = () => {
     if (previewUrl) {
-      window.open(previewUrl, '_blank')
+      window.open(previewUrl, "_blank");
     }
-  }
+  };
 
   const getViewportDimensions = () => {
     switch (viewportSize) {
-      case 'mobile':
-        return { width: '375px', height: '667px' }
-      case 'tablet':
-        return { width: '768px', height: '1024px' }
-      case 'desktop':
-        return { width: '100%', height: '100%' }
+      case "mobile":
+        return { width: "375px", height: "667px" };
+      case "tablet":
+        return { width: "768px", height: "1024px" };
+      case "desktop":
+        return { width: "100%", height: "100%" };
     }
-  }
+  };
 
-  const dimensions = getViewportDimensions()
+  const dimensions = getViewportDimensions();
 
   return (
     <div className="h-full bg-white flex flex-col">
@@ -625,46 +683,58 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
           {isRunning && (
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
           )}
-          {isLoading && (
-            <div className="text-xs text-gray-500">Loading...</div>
-          )}
+          {isLoading && <div className="text-xs text-gray-500">Loading...</div>}
         </div>
-        
+
         <div className="flex items-center gap-2">
           {/* Viewport size controls */}
           <div className="flex items-center gap-1 bg-white rounded border">
             <button
-              onClick={() => setViewportSize('mobile')}
-              className={`p-1 rounded ${viewportSize === 'mobile' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              onClick={() => setViewportSize("mobile")}
+              className={`p-1 rounded ${
+                viewportSize === "mobile"
+                  ? "bg-blue-500 text-white"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
               title="Mobile view"
             >
               <Smartphone className="h-4 w-4" />
             </button>
             <button
-              onClick={() => setViewportSize('tablet')}
-              className={`p-1 rounded ${viewportSize === 'tablet' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              onClick={() => setViewportSize("tablet")}
+              className={`p-1 rounded ${
+                viewportSize === "tablet"
+                  ? "bg-blue-500 text-white"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
               title="Tablet view"
             >
               <Tablet className="h-4 w-4" />
             </button>
             <button
-              onClick={() => setViewportSize('desktop')}
-              className={`p-1 rounded ${viewportSize === 'desktop' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              onClick={() => setViewportSize("desktop")}
+              className={`p-1 rounded ${
+                viewportSize === "desktop"
+                  ? "bg-blue-500 text-white"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
               title="Desktop view"
             >
               <Monitor className="h-4 w-4" />
             </button>
           </div>
-          
+
           <button
             onClick={refreshPreview}
             className="text-gray-600 hover:text-gray-800 p-1 rounded hover:bg-gray-100"
             title="Refresh preview"
             disabled={isLoading}
           >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
           </button>
-          
+
           <button
             onClick={openInNewTab}
             className="text-gray-600 hover:text-gray-800 p-1 rounded hover:bg-gray-100"
@@ -675,16 +745,16 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
           </button>
         </div>
       </div>
-      
+
       <div className="flex-1 flex items-center justify-center bg-gray-100 p-4">
         {previewUrl ? (
-          <div 
+          <div
             className="bg-white shadow-lg rounded-lg overflow-hidden transition-all duration-300"
             style={{
               width: dimensions.width,
               height: dimensions.height,
-              maxWidth: '100%',
-              maxHeight: '100%',
+              maxWidth: "100%",
+              maxHeight: "100%",
             }}
           >
             <iframe
@@ -700,11 +770,13 @@ export function PreviewPanel({ projectId, files, isRunning, template, onConsoleO
             <div className="text-6xl mb-4">👁️</div>
             <h3 className="text-lg font-medium mb-2">No preview available</h3>
             <p className="text-sm">
-              {isRunning ? 'Generating preview...' : 'Run your project to see the preview'}
+              {isRunning
+                ? "Generating preview..."
+                : "Run your project to see the preview"}
             </p>
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }

@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { getLearningGuides, LearningGuide } from "@/lib/database";
+import Image from "next/image";
 
 const categories = [
   "All",
@@ -32,7 +33,7 @@ function GuidesPage() {
       const data = await getLearningGuides();
       setGuides(data);
     } catch (error) {
-      console.error('Error loading guides:', error);
+      console.error("Error loading guides:", error);
     } finally {
       setLoading(false);
     }
@@ -116,13 +117,26 @@ function GuidesPage() {
                   key={guide.id}
                   className="overflow-hidden h-full flex flex-col hover:shadow-lg transition-shadow"
                 >
-                  <div className="aspect-video overflow-hidden">
+                  {/* <div className="aspect-video overflow-hidden">
                     <img
                       src={guide.image_url || 'https://images.pexels.com/photos/1181677/pexels-photo-1181677.jpeg'}
                       alt={guide.title}
                       className="w-full h-full object-cover transition-transform hover:scale-105"
                     />
+                  </div> */}
+                  <div className="aspect-video overflow-hidden relative">
+                    <Image
+                      src={
+                        guide.image_url ||
+                        "https://images.pexels.com/photos/1181677/pexels-photo-1181677.jpeg"
+                      }
+                      alt={guide.title}
+                      fill
+                      className="object-cover transition-transform hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, 100vw"
+                    />
                   </div>
+
                   <CardContent className="p-6 flex-1 flex flex-col">
                     <div className="flex items-center justify-between mb-3">
                       <Badge variant="outline" className="text-xs">
@@ -176,10 +190,9 @@ function GuidesPage() {
               <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">No Guides Found</h3>
               <p className="text-muted-foreground">
-                {selectedCategory === "All" 
+                {selectedCategory === "All"
                   ? "No learning guides available at the moment."
-                  : `No guides found in the ${selectedCategory} category.`
-                }
+                  : `No guides found in the ${selectedCategory} category.`}
               </p>
             </div>
           )}

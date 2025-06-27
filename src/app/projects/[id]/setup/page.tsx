@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,6 +48,60 @@ export default function ProjectSetupPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [hasAlreadySubmitted, setHasAlreadySubmitted] = useState(false);
 
+  const updateAvailableTemplates = useCallback(
+    (project: ProjectTemplate, language: "javascript" | "typescript") => {
+      const relevantStacks = techStacks.filter(
+        (stack) => stack.id === project.stack || project.stack === "fullstack"
+      );
+
+      const allTemplates = relevantStacks.flatMap((stack) => stack.templates);
+      const filteredTemplates = allTemplates.filter((template) => {
+        if (language === "typescript") {
+          return (
+            template.language === "typescript" ||
+            template.id.includes("react") ||
+            template.id.includes("nextjs") ||
+            template.id.includes("vue") ||
+            template.id.includes("nodejs")
+          );
+        } else {
+          return true;
+        }
+      });
+
+      setAvailableTemplates(filteredTemplates);
+
+      if (
+        selectedTemplate &&
+        !filteredTemplates.find((t) => t.id === selectedTemplate.id)
+      ) {
+        setSelectedTemplate(null);
+      }
+
+      if (filteredTemplates.length === 1) {
+        setSelectedTemplate(filteredTemplates[0]);
+      }
+    },
+    [selectedTemplate]
+  );
+
+  const checkSubmissionStatus = useCallback(
+    async (projectId: string) => {
+      if (!user) return;
+
+      try {
+        const alreadySubmitted = await hasUserSubmittedProject(
+          user.id,
+          projectId
+        );
+        setHasAlreadySubmitted(alreadySubmitted);
+      } catch (error) {
+        console.error("Error checking submission status:", error);
+      }
+    },
+    [user]
+  );
+
   useEffect(() => {
     const allProjects = [
       ...beginnerProjects,
@@ -62,72 +116,19 @@ export default function ProjectSetupPage() {
     }
 
     setProject(foundProject);
-
-    // Update available templates when language changes
     updateAvailableTemplates(foundProject, selectedLanguage);
 
-    // Check if user has already submitted this project
     if (user && foundProject) {
       checkSubmissionStatus(foundProject.id);
     }
-  }, [projectId, router, selectedLanguage]);
-
-  const updateAvailableTemplates = (
-    project: ProjectTemplate,
-    language: "javascript" | "typescript"
-  ) => {
-    // Get available templates based on project stack and language
-    const relevantStacks = techStacks.filter(
-      (stack) => stack.id === project.stack || project.stack === "fullstack"
-    );
-
-    // Filter templates based on selected language
-    const allTemplates = relevantStacks.flatMap((stack) => stack.templates);
-    const filteredTemplates = allTemplates.filter((template) => {
-      if (language === "typescript") {
-        // For TypeScript, show templates that support TypeScript or can be converted
-        return (
-          template.language === "typescript" ||
-          template.id.includes("react") ||
-          template.id.includes("nextjs") ||
-          template.id.includes("vue") ||
-          template.id.includes("nodejs")
-        );
-      } else {
-        // For JavaScript, show all templates
-        return true;
-      }
-    });
-
-    setAvailableTemplates(filteredTemplates);
-
-    // Reset selected template if it's not compatible with new language
-    if (
-      selectedTemplate &&
-      !filteredTemplates.find((t) => t.id === selectedTemplate.id)
-    ) {
-      setSelectedTemplate(null);
-    }
-
-    // Auto-select first template if only one available
-    if (filteredTemplates.length === 1) {
-      setSelectedTemplate(filteredTemplates[0]);
-    }
-  };
-
-  const checkSubmissionStatus = async (projectId: string) => {
-    if (!user) return;
-
-    try {
-      const alreadySubmitted = await hasUserSubmittedProject(
-        user.id,
-        projectId
-      );
-      setHasAlreadySubmitted(alreadySubmitted);
-    } catch (error) {
-      console.error("Error checking submission status:", error);
-    }
-  };
+  }, [
+    projectId,
+    router,
+    selectedLanguage,
+    updateAvailableTemplates,
+    checkSubmissionStatus,
+    user,
+  ]);
 
   const handleCreateProject = async () => {
     if (!project || !selectedTemplate || !user) {

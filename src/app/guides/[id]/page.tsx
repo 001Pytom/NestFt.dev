@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams} from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,21 +19,14 @@ import { getLearningGuide, LearningGuide } from "@/lib/database";
 import Link from "next/link";
 
 export default function GuideDetailPage() {
-  const params = useParams();
-  // const router = useRouter();
-  const guideId = params.id as string;
+  const params = useParams<{ id: string }>();
+  const guideId = params.id;
 
   const [guide, setGuide] = useState<LearningGuide | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
 
-  useEffect(() => {
-    if (guideId) {
-      loadGuide();
-    }
-  }, [guideId]);
-
-  const loadGuide = async () => {
+  const loadGuide = useCallback(async () => {
     try {
       const data = await getLearningGuide(guideId);
       setGuide(data);
@@ -42,8 +35,13 @@ export default function GuideDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [guideId]);
 
+  useEffect(() => {
+    if (guideId) {
+      loadGuide();
+    }
+  }, [guideId, loadGuide]);
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {
       case "beginner":
@@ -163,7 +161,7 @@ export default function GuideDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {guide.steps.map((step: any, index: number) => (
+                {guide.steps.map((step, index: number) => (
                   <div
                     key={index}
                     className={`border rounded-lg p-4 transition-all cursor-pointer ${

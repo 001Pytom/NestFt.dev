@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Github,
   GitBranch,
@@ -15,8 +15,6 @@ import { useAuthStore } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
 import { useSearchParams } from "next/navigation";
 import { useToast, toast } from "@/components/ui/toast";
-
-
 
 interface GitHubIntegrationProps {
   projectId: string;
@@ -45,12 +43,7 @@ export function GitHubIntegration({
   const [githubUsername, setGithubUsername] = useState("");
   const searchParams = useSearchParams();
 
-
-  useEffect(() => {
-    checkGitHubConnection();
-  }, [user]);
-
-  const checkGitHubConnection = async () => {
+  const checkGitHubConnection = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -79,7 +72,11 @@ export function GitHubIntegration({
     } catch (error) {
       console.error("Error checking GitHub connection:", error);
     }
-  };
+  }, [user, projectId]);
+
+  useEffect(() => {
+    checkGitHubConnection();
+  }, [user, checkGitHubConnection]);
 
   // const connectGitHub = async () => {
   //   try {
@@ -120,7 +117,12 @@ export function GitHubIntegration({
       if (error) throw error;
     } catch (error) {
       console.error("Error connecting GitHub:", error);
-      addToast(toast.error("Failed to connect GitHub. Please try again.", "GitHub Connection Failed"));
+      addToast(
+        toast.error(
+          "Failed to connect GitHub. Please try again.",
+          "GitHub Connection Failed"
+        )
+      );
     }
   };
 
@@ -134,7 +136,11 @@ export function GitHubIntegration({
       // Simulate GitHub API call to create repository
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      const username = githubUsername || user?.user_metadata?.user_name || user?.user_metadata?.preferred_username || "user";
+      const username =
+        githubUsername ||
+        user?.user_metadata?.user_name ||
+        user?.user_metadata?.preferred_username ||
+        "user";
       const repoUrl = `https://github.com/${username}/${repositoryName}`;
       setRepositoryUrl(repoUrl);
 
@@ -143,20 +149,25 @@ export function GitHubIntegration({
         .from("user_projects")
         .update({ repository_url: repoUrl })
         .eq("id", projectId);
-        
+
       // Update user profile with GitHub connection status
       await supabase
         .from("user_profiles")
-        .update({ 
+        .update({
           github_connected: true,
-          github_username: username
+          github_username: username,
         })
         .eq("user_id", user?.id);
 
       setPushStatus("success");
       setShowSetup(false);
 
-      addToast(toast.success(`Repository "${repositoryName}" created and code pushed successfully!`, "GitHub Repository Created"));
+      addToast(
+        toast.success(
+          `Repository "${repositoryName}" created and code pushed successfully!`,
+          "GitHub Repository Created"
+        )
+      );
 
       if (onPushComplete) {
         onPushComplete(repoUrl);
@@ -164,7 +175,12 @@ export function GitHubIntegration({
     } catch (error) {
       console.error("Error creating repository:", error);
       setPushStatus("error");
-      addToast(toast.error("Failed to create repository. Please try again.", "Repository Creation Failed"));
+      addToast(
+        toast.error(
+          "Failed to create repository. Please try again.",
+          "Repository Creation Failed"
+        )
+      );
     } finally {
       setIsCreatingRepo(false);
     }
@@ -191,7 +207,9 @@ export function GitHubIntegration({
 
       setPushStatus("success");
 
-      addToast(toast.success("Code successfully pushed to GitHub!", "Push Complete"));
+      addToast(
+        toast.success("Code successfully pushed to GitHub!", "Push Complete")
+      );
 
       if (onPushComplete) {
         onPushComplete(repositoryUrl);
@@ -199,7 +217,12 @@ export function GitHubIntegration({
     } catch (error) {
       console.error("Error pushing to GitHub:", error);
       setPushStatus("error");
-      addToast(toast.error("Failed to push code to GitHub. Please try again.", "Push Failed"));
+      addToast(
+        toast.error(
+          "Failed to push code to GitHub. Please try again.",
+          "Push Failed"
+        )
+      );
     } finally {
       setIsPushing(false);
     }
@@ -255,7 +278,9 @@ export function GitHubIntegration({
               disabled={!repositoryName.trim() || isCreatingRepo}
               className="flex-1"
             >
-              {isCreatingRepo ? "Creating Repository & Pushing Code..." : "Create Repository & Push Code"}
+              {isCreatingRepo
+                ? "Creating Repository & Pushing Code..."
+                : "Create Repository & Push Code"}
             </Button>
             <Button variant="outline" onClick={() => setShowSetup(false)}>
               Cancel
@@ -302,8 +327,13 @@ export function GitHubIntegration({
             {pushStatus === "success" && (
               <div className="flex items-center gap-2 text-green-600 text-sm">
                 <CheckCircle className="h-4 w-4" />
-                Code successfully pushed to GitHub! 
-                <a href={repositoryUrl} target="_blank" rel="noopener noreferrer" className="underline">
+                Code successfully pushed to GitHub!
+                <a
+                  href={repositoryUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
                   View Repository
                 </a>
               </div>
@@ -315,12 +345,17 @@ export function GitHubIntegration({
                 Failed to push code. Please try again.
               </div>
             )}
-            
+
             <div className="text-xs text-gray-500 mt-2">
               <p>
-                Repository: 
-                <a href={repositoryUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
-                  {repositoryUrl.split('/').slice(-2).join('/')}
+                Repository:
+                <a
+                  href={repositoryUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline ml-1"
+                >
+                  {repositoryUrl.split("/").slice(-2).join("/")}
                 </a>
               </p>
               <p className="mt-1">
