@@ -1,6 +1,6 @@
 // File templates for different technologies and frameworks
 
-export const getFileContent = (fileName: string, template: any, projectName: string): string => {
+export const getFileContent = (fileName: string, template: {id:string; language?:string}, projectName: string): string => {
   const templateId = template.id;
   const isTypeScript = template.language === 'typescript' || templateId.includes('typescript');
   
