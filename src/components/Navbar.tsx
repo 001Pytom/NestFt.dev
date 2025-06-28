@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -29,13 +29,7 @@ export function Navbar() {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
-  useEffect(() => {
-    if (user && isAuthenticated) {
-      loadUserProfile();
-    }
-  }, [user, isAuthenticated]);
-
-  const loadUserProfile = async () => {
+  const loadUserProfile = useCallback(async () => {
     if (!user) return;
     try {
       const profile = await getOrCreateUserProfile(user.id, user);
@@ -43,7 +37,13 @@ export function Navbar() {
     } catch (error) {
       console.error("Error loading user profile:", error);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user && isAuthenticated) {
+      loadUserProfile();
+    }
+  }, [user, isAuthenticated, loadUserProfile]);
 
   const isActive = (path: string) => pathname === path;
 

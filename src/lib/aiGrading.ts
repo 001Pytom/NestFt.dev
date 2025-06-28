@@ -76,9 +76,15 @@ export async function gradeProject(
       feedback,
       overallGrade,
     };
-  } catch (error) {
-    console.error("Error grading project:", error);
-    throw new Error("Failed to grade project: " + error.message);
+  } catch (err:unknown) {
+    console.error("Error grading project:", err);
+    let message: string;
+    if (err instanceof Error) {
+      message = err.message;
+    } else {
+      message = String(err);
+    }
+    throw new Error("Failed to grade project: " + message);
   }
 }
 
