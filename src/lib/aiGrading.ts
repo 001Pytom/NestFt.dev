@@ -76,7 +76,7 @@ export async function gradeProject(
       feedback,
       overallGrade,
     };
-  } catch (err:unknown) {
+  } catch (err: unknown) {
     console.error("Error grading project:", err);
     let message: string;
     if (err instanceof Error) {
@@ -187,7 +187,7 @@ async function gradeCriteria(
   switch (category.toLowerCase()) {
     case "design & ui":
     case "design":
-      score = await gradeDesignAndUI(codeAnalysis, maxPoints, requirements);
+      score = await gradeDesignAndUI(codeAnalysis, maxPoints);
       feedback = generateDesignFeedback(score, maxPoints);
       suggestions = generateDesignSuggestions(score, maxPoints);
       break;

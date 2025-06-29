@@ -56,13 +56,23 @@ export interface GuideStep {
   duration: string;
   topics?: string[];
 }
+
+interface UserData {
+  user_metadata?: {
+    name?: string;
+    full_name?: string;
+    avatar_url?: string;
+  };
+  email?: string;
+}
+
 export interface RecentActivityItem {
-  id: number;
-  name: string;
+  id: number | string;
+  name?: string;
   date: Date | string;
   difficulty: string;
-  aiScore: number;
-  aiFeedback: string;
+  aiScore?: number;
+  aiFeedback?: string;
   type: string;
   title: string;
   description: string;
@@ -156,7 +166,7 @@ export async function updateUserProfile(
 // Get or create user profile (prevents duplicates)
 export async function getOrCreateUserProfile(
   userId: string,
-  userData?: unknown
+  userData?: UserData
 ): Promise<UserProfile | null> {
   try {
     // First try to get existing profile
@@ -228,6 +238,17 @@ export async function updateUserStreak(userId: string): Promise<void> {
   }
 }
 
+type SubmissionItem = {
+  id: string;
+  project_id: string;
+  ai_score: number | null;
+  submitted_at: string;
+  user_projects: {
+    project_name: string;
+    difficulty: string;
+  };
+};
+
 // Get user's recent activity for profile page
 export async function getUserRecentActivity(
   userId: string,
@@ -239,16 +260,17 @@ export async function getUserRecentActivity(
       .from("project_submissions")
       .select(
         `
-        id,
-        project_id,
-        ai_score,
-        submitted_at,
-        user_projects!inner(project_name, difficulty)
-      `
+    id,
+    project_id,
+    ai_score,
+    submitted_at,
+    user_projects(project_name, difficulty)
+  `
       )
       .eq("user_id", userId)
       .order("submitted_at", { ascending: false })
-      .limit(limit);
+      .limit(limit)
+      .returns<SubmissionItem[]>();
 
     if (submissionsError) {
       console.error("Error fetching recent submissions:", submissionsError);
@@ -264,7 +286,7 @@ export async function getUserRecentActivity(
         description: `Earned ${submission.ai_score || 0} points`,
         difficulty: submission.user_projects.difficulty,
         date: submission.submitted_at,
-        score: submission.ai_score,
+        score: submission.ai_score || 0,
       })) || [];
 
     return activities;

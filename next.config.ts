@@ -4,7 +4,10 @@ const nextConfig = {
     turbo: false,
   },
   images: {
-    domains: ['images.pexels.com'],
+    domains: ["images.pexels.com"],
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 };
 

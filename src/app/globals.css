@@ -94,7 +94,7 @@
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(222.2 84% 4.9%);
 
-  --primary: hsla(247, 76%, 51%, 0.4);
+  --primary: hsla(247, 76%, 51%, 0.6);
   --primary-foreground: hsl(210 40% 98%);
 
   --secondary: hsla(247, 76%, 51%, 0.8);
@@ -158,7 +158,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 
   --swiper-navigation-top-offset: 75%;
-   --swiper-pagination-bottom: 16px;
+  --swiper-pagination-bottom: 16px;
 }
 
 :root {
@@ -171,7 +171,7 @@
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(222.2 84% 4.9%);
 
-  --primary: hsla(247, 76%, 51%, 0.4);
+  --primary: hsla(247, 76%, 51%, 0.6);
   --primary-foreground: hsl(210 40% 98%);
 
   --secondary: hsla(247, 76%, 51%, 0.8);
@@ -245,7 +245,7 @@
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(222.2 84% 4.9%);
 
-  --primary: hsla(247, 76%, 51%, 0.4);
+  --primary: hsla(247, 76%, 51%, 0.6);
   --primary-foreground: hsl(210 40% 98%);
 
   --secondary: hsla(247, 76%, 51%, 0.8);
