@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -24,11 +25,37 @@ import {
   Maximize2,
   Minimize2,
 } from "lucide-react";
-import { CodeEditor } from "@/components/ide/CodeEditor";
-import { Terminal } from "@/components/ide/Terminal";
-import { PreviewPanel } from "@/components/ide/PreviewPanel";
-import { GitHubIntegration } from "@/components/ide/GitHubIntegration";
-import { FileExplorer } from "@/components/ide/FileExplorer";
+// import { CodeEditor } from "@/components/ide/CodeEditor";
+// import { Terminal } from "@/components/ide/Terminal";
+// import { PreviewPanel } from "@/components/ide/PreviewPanel";
+// import { GitHubIntegration } from "@/components/ide/GitHubIntegration";
+// import { FileExplorer } from "@/components/ide/FileExplorer";
+
+const CodeEditor = dynamic(
+  () => import("@/components/ide/CodeEditor").then((mod) => mod.CodeEditor),
+  { ssr: false }
+);
+const Terminal = dynamic(
+  () => import("@/components/ide/Terminal").then((mod) => mod.Terminal),
+  { ssr: false }
+);
+const PreviewPanel = dynamic(
+  () => import("@/components/ide/PreviewPanel").then((mod) => mod.PreviewPanel),
+  { ssr: false }
+);
+const GitHubIntegration = dynamic(
+  () =>
+    import("@/components/ide/GitHubIntegration").then(
+      (mod) => mod.GitHubIntegration
+    ),
+  { ssr: false }
+);
+const FileExplorer = dynamic(
+  () => import("@/components/ide/FileExplorer").then((mod) => mod.FileExplorer),
+  { ssr: false }
+);
+
+//
 import { FileNode } from "@/types/ide";
 import { saveProjectCode, updateUserProject } from "@/lib/database";
 import { UserProject } from "@/lib/database";
@@ -123,7 +150,7 @@ export default function IDEPage() {
     } catch (error) {
       console.error("Error loading project:", error);
     }
-  }, [searchParams,  projectId, user?.id, userProjectId]);
+  }, [searchParams, projectId, user?.id, userProjectId]);
 
   useEffect(() => {
     loadProject();
