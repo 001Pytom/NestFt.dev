@@ -184,7 +184,7 @@ export function Navbar() {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden flex items-center justify-center rounded-md py-2 text-foreground"
+          className="md:hidden flex items-center justify-center rounded-md py-2 text-black"
           onClick={toggleMenu}
         >
           {isMenuOpen ? (
