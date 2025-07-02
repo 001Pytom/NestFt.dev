@@ -18,7 +18,7 @@ NestFT.dev bridges the gap between traditional coding education and real-world d
 - **AI-Powered Grading**: Intelligent feedback system that evaluates code quality, functionality, and best practices
 - **Collaborative Environment**: Browser-based IDE with real-time collaboration features
 - **Progressive Learning**: Structured learning paths from beginner to advanced levels
-- **Professional Portfolios**: Automatically generated portfolios showcasing completed projects
+- **Achievement Certificates**: Downloadable and shareable certificates for completed learning stages
 - **Industry Recognition**: Certificates and achievements that employers value
 
 ## ✨ Key Features
@@ -43,8 +43,8 @@ NestFT.dev bridges the gap between traditional coding education and real-world d
 ### 📊 **Progress Tracking**
 - **Skill Progression**: Clear advancement through beginner, intermediate, and advanced levels
 - **Leaderboards**: Global rankings based on project completions and code quality
-- **Achievement System**: Certificates and badges for milestones and accomplishments
-- **Portfolio Generation**: Professional portfolios with live project demonstrations
+- **Achievement Certificates**: Professional certificates for learning stage completions
+- **Certificate Features**: Download as PDF, share on social media, include leaderboard rankings
 
 ### 🛠 **Development Tools**
 - **Multi-language Support**: JavaScript, TypeScript, Python, and more
@@ -285,6 +285,27 @@ docker run -p 3000:3000 nestft-dev
 - **HTTPS**: Enforced in production
 - **CORS**: Properly configured for API access
 
+## 🏆 Certificate System
+
+### Features
+- **Professional Certificates**: High-quality, branded certificates for each learning stage completion
+- **PDF Download**: Download certificates as professional PDF documents
+- **Social Sharing**: Share achievements directly to LinkedIn, Twitter, and other platforms
+- **Ranking Integration**: Optional inclusion of leaderboard ranking on certificates
+- **Verification**: Unique certificate IDs for employer verification
+
+### Certificate Requirements
+- **Beginner**: Complete 70% of beginner-level projects (14 out of 20)
+- **Intermediate**: Complete 70% of intermediate-level projects (14 out of 20)
+- **Advanced**: Complete 70% of advanced-level projects (14 out of 20)
+
+### Certificate Features
+- Professional design with NestFT.dev branding
+- Unique certificate ID for verification
+- Completion date and achievement details
+- Optional leaderboard ranking display
+- High-resolution PDF format suitable for printing
+
 ## 📱 Browser Support
 
 - **Chrome** (latest 2 versions)
@@ -331,6 +352,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Community**: [Discord Server](https://discord.gg/nestft-dev)
 - **Issues**: [GitHub Issues](https://github.com/your-username/nestft-dev/issues)
 - **Email**: support@nestft.dev
+- **Certificates**: [certificates.nestft.dev](https://certificates.nestft.dev) - Verify certificates
 
 ---
 
@@ -339,6 +361,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   <p>
     <a href="https://nestft.dev">Website</a> •
     <a href="https://docs.nestft.dev">Documentation</a> •
+    <a href="https://certificates.nestft.dev">Verify Certificates</a> •
     <a href="https://twitter.com/nestftdev">Twitter</a> •
     <a href="https://linkedin.com/company/nestft-dev">LinkedIn</a>
   </p>
