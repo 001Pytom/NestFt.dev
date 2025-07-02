@@ -233,7 +233,7 @@ export function Navbar() {
                 <span>Dashboard</span>
               </Link>
               <Link
-                href="/projects"
+                href="/projects/browse"
                 className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-muted"
                 onClick={closeMenu}
               >
