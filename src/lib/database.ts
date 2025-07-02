@@ -232,7 +232,7 @@ export async function updateUserStreak(userId: string): Promise<void> {
       last_activity_date: today,
     });
 
-    console.log(`Updated user ${userId} streak to ${newStreakDays} days`);
+    // console.log(`Updated user ${userId} streak to ${newStreakDays} days`);
   } catch (error) {
     console.error("Error updating user streak:", error);
   }
