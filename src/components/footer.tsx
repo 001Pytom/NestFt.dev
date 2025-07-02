@@ -168,7 +168,7 @@ export function Footer() {
           </ul>
         </div>
 
-        <div className="absolute md:-right-15 right-0 bottom-0 hover:opacity-50 duration-500">
+        {/* <div className="absolute md:-right-15 right-0 bottom-0 hover:opacity-50 duration-500">
           <Link
             href={'https://bolt.new/'}
             target="_blank"
@@ -182,7 +182,7 @@ export function Footer() {
               loading="lazy"
             />  
           </Link>
-        </div>    
+        </div>     */}
       </div>
 
       <div className="container mt-8 border-t pt-6">
